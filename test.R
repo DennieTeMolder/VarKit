@@ -6,7 +6,7 @@ MemSize <- function(x) {
   format(object.size(x), units = "auto")
 }
 
-path <- "./celegans.vcf.bgz"
+path <- "./inst/extdata/celegans.vcf.bgz"
 
 header <- read_vcf_header(path)
 data <- readr::read_tsv(path,

@@ -7,7 +7,7 @@
 ##' @author Dennie te Molder
 ##' @export
 ##' @examples
-##' path <- "./celegans.vcf.bgz"
+##' path <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
 ##' vcf <- read_vcf(path)
 
 read_vcf <- function(path, keep_info = FALSE, keep_filter = FALSE) {
