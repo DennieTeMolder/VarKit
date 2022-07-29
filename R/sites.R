@@ -5,7 +5,7 @@ sites <- function(x) {
 
 ##' @export
 sites.varkit <- function(x) {
-  dplyr::select(info(x), chrom, pos)
+  dplyr::select(fixed(x), chrom, pos)
 }
 
 ##' @export

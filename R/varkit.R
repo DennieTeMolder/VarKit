@@ -9,22 +9,22 @@ varkit <- function(df, header = NULL, spec = NULL) {
   if (!is.null(spec))
     stopifnot(is.character(spec))
 
-  info_idx <- na.omit(match(.fixed_columns(), colnames(df)))
+  fixed_idx <- na.omit(match(.fixed_columns(), colnames(df)))
 
-  if (!ncol(df) > length(info_idx))
+  if (!ncol(df) > length(fixed_idx))
     stop("Only fixed columns detected in df, missing genotypes!")
-  if (!all(c("chrom", "pos") %in% colnames(df)[info_idx]))
+  if (!all(c("chrom", "pos") %in% colnames(df)[fixed_idx]))
     stop("Missing 'chrom' and 'pos' columns in df")
 
-  info <- df[, info_idx]
-  df[, info_idx] <- NULL
+  fixed <- df[, fixed_idx]
+  df[, fixed_idx] <- NULL
   geno <- varkit_geno(df)
   rm(df)
 
   vcf <- list(
     spec = spec,
     header = header,
-    info = info,
+    fixed = fixed,
     geno = geno,
     use_sites = 1:ncol(geno),
     use_samples = 1:nrow(geno)
@@ -42,8 +42,8 @@ print.varkit <- function(x) {
     print(x$header)
     cat("\n")
   }
-  cat("Site info:\n")
-  print(x$info)
+  cat("Fixed fields:\n")
+  print(x$fixed)
   cat("\n")
   print(x$geno)
   cat("\nSamples:\n")

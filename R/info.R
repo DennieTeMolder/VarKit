@@ -1,9 +1,9 @@
 ##' @export
-info <- function(x) {
-  UseMethod("info", x)
+fixed <- function(x) {
+  UseMethod("fixed", x)
 }
 
 ##' @export
-info.varkit <- function(x) {
-  dplyr::slice(x$info, x$use_sites)
+fixed.varkit <- function(x) {
+  dplyr::slice(x$fixed, x$use_sites)
 }

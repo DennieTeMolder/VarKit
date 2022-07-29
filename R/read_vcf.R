@@ -10,7 +10,7 @@
 ##' path <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
 ##' vcf <- read_vcf(path)
 
-read_vcf <- function(path, keep_info = FALSE, keep_filter = FALSE) {
+read_vcf <- function(path, ploidy = 2, keep_info = FALSE, keep_filter = FALSE) {
   header <- read_vcf_header(path)
 
   # Load the entire file according to user specifications
@@ -20,11 +20,15 @@ read_vcf <- function(path, keep_info = FALSE, keep_filter = FALSE) {
   if (keep_filter && "filter" %in% col_names)
     spec$cols$filter <- NULL
 
+  # NAs are represented differently after the format field
+  # TODO This only works if GT is the only format field
+  na <- c(".", paste(rep(".", ploidy), collapse = "/"))
+
   geno <- readr::read_tsv(path,
     col_names = header$col_names,
     col_types = spec,
     comment = "#",
-    na = "."
+    na = na
   )
 
   varkit(geno, header = header$header, spec = header$spec)
