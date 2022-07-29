@@ -2,6 +2,7 @@ varkit_geno <- function(x) {
   UseMethod("varkit_geno", x)
 }
 
+##' @export
 varkit_geno.data.frame <- function(x) {
   x <- t(x)
   # Tibbles require colnames, supply an arbitrary ones
