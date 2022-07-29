@@ -18,12 +18,24 @@ data <- readr::read_tsv(path,
 data[, .fixed_columns()] <- NULL
 
 geno <- varkit_geno(data)
-isTRUE(all.equal(data, to_tibble(geno), check.attributes = F))
+
+test <- data |>
+  dplyr::mutate(rowname = paste0("V", 1:nrow(data))) |>
+  tidyr::pivot_longer(-rowname) |>
+  tidyr::pivot_wider(names_from = rowname) |>
+  dplyr::select(-name)
+
+isTRUE(all.equal(geno, test, check.attributes = F))
 
 vcf <- read_vcf(path)
 sites(vcf)
 samples(vcf)
-info(vcf)
+fixed(vcf)
 geno(vcf)
 
 mask(vcf, site = 1:5, sample = "N2")
+
+# TODO
+## export_mask(vcf)
+## remove_all_masks(vcf)
+## import_mask(vcf, my_mask)

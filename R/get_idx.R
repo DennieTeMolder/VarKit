@@ -15,10 +15,10 @@ get_idx.varkit_geno <- function(geno, site = NULL, sample = NULL) {
 
   # Single selection argument provided
   if (is.null(site))
-    return(varkit_geno(geno[sample, ]))
+    return(geno[sample, ])
   if (is.null(sample))
-    return(varkit_geno(geno[, site]))
+    return(geno[, site])
 
   # Both selection arguments provided
-  varkit_geno(geno[sample, site])
+  geno[sample, site]
 }

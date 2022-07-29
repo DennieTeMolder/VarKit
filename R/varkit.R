@@ -1,5 +1,6 @@
 ##' @export
 varkit <- function(df, header = NULL, spec = NULL) {
+  # Checks
   if (!is.data.frame(df))
     stopifnot(is.data.frame(df))
   if (!is.null(header)) {
@@ -9,6 +10,7 @@ varkit <- function(df, header = NULL, spec = NULL) {
   if (!is.null(spec))
     stopifnot(is.character(spec))
 
+  # Move fixed fields to a separate df
   fixed_idx <- na.omit(match(.fixed_columns(), colnames(df)))
 
   if (!ncol(df) > length(fixed_idx))
@@ -18,6 +20,10 @@ varkit <- function(df, header = NULL, spec = NULL) {
 
   fixed <- df[, fixed_idx]
   df[, fixed_idx] <- NULL
+
+  # The remaining fields are the genotype calls w/ sample name as column.
+  # These calls are stored as a transposed df w/ a custom class
+  samples <- colnames(df)
   geno <- varkit_geno(df)
   rm(df)
 
@@ -26,6 +32,7 @@ varkit <- function(df, header = NULL, spec = NULL) {
     header = header,
     fixed = fixed,
     geno = geno,
+    samples = samples,
     use_sites = 1:ncol(geno),
     use_samples = 1:nrow(geno)
   )
@@ -44,10 +51,11 @@ print.varkit <- function(x) {
   }
   cat("Fixed fields:\n")
   print(x$fixed)
-  cat("\n")
+  cat("Transposed genotype matrix:\n")
   print(x$geno)
   cat("\nSamples:\n")
-  print(samples(x$geno))
-  cat("\nCurrently selected", length(x$use_samples), "out of", nrow(x$geno), "samples.\n")
+  print(x$samples)
+  cat("\n")
+  cat("Currently selected", length(x$use_samples), "out of", nrow(x$geno), "samples.\n")
   cat("Currently selected", length(x$use_sites), "out of", ncol(x$geno), "sites.\n")
 }

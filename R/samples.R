@@ -4,11 +4,6 @@ samples <- function(x) {
 }
 
 ##' @export
-samples.varkit_geno <- function(x) {
-  rownames(x)
-}
-
-##' @export
 samples.varkit <- function(x) {
-  samples(x$geno)[x$use_samples]
+  x$samples[x$use_samples]
 }

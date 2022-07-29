@@ -1,23 +1,12 @@
-##' @export
 varkit_geno <- function(x) {
   UseMethod("varkit_geno", x)
 }
 
-##' @export
-varkit_geno.matrix <- function(x) {
-  class(x) <- c("varkit_geno", "matrix", "array")
-  x
-}
-
-##' @export
 varkit_geno.data.frame <- function(x) {
-  x <- t(as.matrix(x))
-  varkit_geno(x)
-}
-
-##' @export
-print.varkit_geno <- function(geno, n = 10) {
-  cat("Genotype matrix with", ncol(geno), "sites and", nrow(geno), "samples:\n")
-  table <- to_tibble(get_idx(geno, site = 1:n))
-  print(table, n = n)
+  x <- t(x)
+  # Tibbles require colnames, supply an arbitrary ones
+  colnames(x) <- paste0("V", 1:ncol(x))
+  x <- tibble::as_tibble(x, rownames = NULL, .name_repair = "minimal")
+  class(x) <- c("varkit_geno", "tbl_df", "tbl", "data.frame")
+  x
 }
