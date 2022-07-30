@@ -1,14 +1,8 @@
 ##' @export
-varkit <- function(df, header = NULL, spec = NULL) {
+varkit <- function(df, header = NULL) {
   # Checks
   if (!is.data.frame(df))
     stopifnot(is.data.frame(df))
-  if (!is.null(header)) {
-    if (!(tibble::is_tibble(header) && all(colnames(header) == c("name", "value"))))
-      stop("Header should be a tibble with columns 'name' and 'value'")
-  }
-  if (!is.null(spec))
-    stopifnot(is.character(spec))
 
   # Move fixed fields to a separate df
   fixed_idx <- na.omit(match(.fixed_columns(), colnames(df)))
@@ -28,8 +22,7 @@ varkit <- function(df, header = NULL, spec = NULL) {
   rm(df)
 
   vcf <- list(
-    spec = spec,
-    header = header,
+    header = header[names(header) != "col_names"],
     fixed = fixed,
     geno = geno,
     samples = samples,

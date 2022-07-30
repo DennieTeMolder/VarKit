@@ -30,9 +30,13 @@ read_vcf_header <- function(path) {
   colnames(header) <- c("name", "value")
   header <- tibble::as_tibble(header)
 
+  spec <- header$value[1]
+
+  header <- dplyr::filter(header, !name %in% c("fileformat"))
+
   list(
-    spec = header$value[1],
-    header = header[-1, ],
+    spec = spec,
+    other = header,
     col_names = col_names
   )
 }

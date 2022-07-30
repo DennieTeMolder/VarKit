@@ -24,12 +24,12 @@ read_vcf <- function(path, ploidy = 2, keep_info = FALSE, keep_filter = FALSE) {
   # TODO This only works if GT is the only format field
   na <- c(".", paste(rep(".", ploidy), collapse = "/"))
 
-  geno <- readr::read_tsv(path,
+  data <- readr::read_tsv(path,
     col_names = header$col_names,
     col_types = spec,
     comment = "#",
     na = na
   )
 
-  varkit(geno, header = header$header, spec = header$spec)
+  varkit(data, header)
 }
