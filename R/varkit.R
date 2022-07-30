@@ -33,8 +33,8 @@ varkit <- function(df, header = NULL, spec = NULL) {
     fixed = fixed,
     geno = geno,
     samples = samples,
-    use_sites = 1:ncol(geno),
-    use_samples = 1:nrow(geno)
+    use_site = rep(TRUE, ncol(geno)),
+    use_sample = rep(TRUE, nrow(geno))
   )
   class(vcf) <- "varkit"
 
@@ -56,6 +56,8 @@ print.varkit <- function(x) {
   cat("\nSamples:\n")
   print(x$samples)
   cat("\n")
-  cat("Currently selected", length(x$use_samples), "out of", nrow(x$geno), "samples.\n")
-  cat("Currently selected", length(x$use_sites), "out of", ncol(x$geno), "sites.\n")
+  cat("Currently selected", sum(x$use_sample),
+      "out of", length(x$use_sample), "samples.\n")
+  cat("Currently selected", sum(x$use_site),
+      "out of", length(x$use_site), "sites.\n")
 }

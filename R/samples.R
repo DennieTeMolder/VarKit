@@ -5,5 +5,5 @@ samples <- function(x) {
 
 ##' @export
 samples.varkit <- function(x) {
-  x$samples[x$use_samples]
+  x$samples[x$use_sample]
 }

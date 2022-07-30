@@ -4,7 +4,7 @@
 \alias{read_vcf}
 \title{Load A VCF File From Disk}
 \usage{
-read_vcf(path, keep_info = FALSE, keep_filter = FALSE)
+read_vcf(path, ploidy = 2, keep_info = FALSE, keep_filter = FALSE)
 }
 \arguments{
 \item{path}{String, path of vcf(.bgz) file to load}
@@ -19,7 +19,7 @@ Load A VCF File From Disk
 .. content for \details{} ..
 }
 \examples{
-path <- "./celegans.vcf.bgz"
+path <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
 vcf <- read_vcf(path)
 }
 \author{

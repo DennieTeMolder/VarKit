@@ -5,5 +5,5 @@ fixed <- function(x) {
 
 ##' @export
 fixed.varkit <- function(x) {
-  dplyr::slice(x$fixed, x$use_sites)
+  x$fixed[x$use_site, ]
 }

@@ -28,12 +28,16 @@ test <- data |>
 isTRUE(all.equal(geno, test, check.attributes = F))
 
 vcf <- read_vcf(path)
+print(vcf)
+
 sites(vcf)
 samples(vcf)
 fixed(vcf)
 geno(vcf)
 
-mask(vcf, site = 1:5, sample = "N2")
+hide_site <- rep(F, nrow(sites(vcf)))
+hide_site[1:5] <- T
+mask(vcf, site = hide_site, sample = "N2")
 
 # TODO
 ## export_mask(vcf)
