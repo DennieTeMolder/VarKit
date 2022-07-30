@@ -35,11 +35,11 @@ samples(vcf)
 fixed(vcf)
 geno(vcf)
 
-hide_site <- rep(F, nrow(sites(vcf)))
-hide_site[1:5] <- T
-mask(vcf, site = hide_site, sample = "N2")
+hide_site <- sites(vcf)$chrom == "I"
+vcf <- mask(vcf, site = hide_site, sample = "N2")
+sites(vcf)
 
-# TODO
-## export_mask(vcf)
-## remove_all_masks(vcf)
-## import_mask(vcf, my_mask)
+my_mask <- export_mask(vcf)
+vcf <- unmask_all(vcf)
+sites(vcf)
+import_mask(vcf, my_mask)
