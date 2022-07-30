@@ -34,7 +34,7 @@ varkit <- function(df, header = NULL, spec = NULL) {
     geno = geno,
     samples = samples,
     use_site = rep(TRUE, ncol(geno)),
-    use_sample = rep(TRUE, nrow(geno))
+    use_sample = rep(TRUE, length(samples))
   )
   class(vcf) <- "varkit"
 
@@ -60,4 +60,14 @@ print.varkit <- function(x) {
       "out of", length(x$use_sample), "samples.\n")
   cat("Currently selected", sum(x$use_site),
       "out of", length(x$use_site), "sites.\n")
+}
+
+##' @export
+summary.varkit <- function(x) {
+  tibble::tibble(
+    rowname = c("sites", "samples"),
+    used = c(sum(x$use_site), sum(x$use_sample)),
+    total = c(length(x$use_site), length(x$use_sample)),
+    fraction = c(mean(x$use_site), mean(x$use_sample))
+  )
 }

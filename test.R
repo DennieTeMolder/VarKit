@@ -30,6 +30,8 @@ isTRUE(all.equal(geno, test, check.attributes = F))
 vcf <- read_vcf(path)
 print(vcf)
 
+methods(class = class(vcf))
+
 sites(vcf)
 samples(vcf)
 fixed(vcf)
@@ -37,9 +39,13 @@ geno(vcf)
 
 hide_site <- sites(vcf)$chrom == "I"
 vcf <- mask(vcf, site = hide_site, sample = "N2")
-sites(vcf)
+summary(vcf)
 
 my_mask <- export_mask(vcf)
 vcf <- unmask_all(vcf)
-sites(vcf)
-import_mask(vcf, my_mask)
+summary(vcf)
+
+vcf <- import_mask(vcf, my_mask)
+summary(vcf)
+
+summary(solidify_mask(vcf))
