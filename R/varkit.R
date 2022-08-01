@@ -38,14 +38,21 @@ varkit <- function(df, header = NULL) {
 print.varkit <- function(x) {
   cat("*VarKit Variant Object*\n")
   if (!is.null(x$header)) {
-    cat("Header:\n")
-    print(x$header)
-    cat("\n")
+    if (!is.null(x$header$spec))
+      cat("header$spec: \"", x$header$spec, "\"\n\n", sep = "")
+    for (current in names(x$header)) {
+      df <- x$header[[current]]
+      if (tibble::is_tibble(df)) {
+        cat("header$", current, ":\n", sep = "")
+        print(df, n = 3)
+        cat("\n")
+      }
+    }
   }
   cat("Fixed fields:\n")
   print(x$fixed)
   cat("Transposed genotype matrix:\n")
-  print(x$geno)
+  print(x$geno, n = 10)
   cat("\nSamples (", length(x$samples), " total):\n", sep = "")
   print(x$samples)
   cat("\n")
