@@ -6,6 +6,7 @@ import_mask <- function(x, mask) {
 ##' @export
 import_mask.varkit <- function(x, mask) {
   # Checks
+  stopifnot(is.logical(mask))
   if (length(mask) != ncol(x$geno))
     stop("The number of sites in 'mask' doesn't match with 'x'!")
   # Apply mask

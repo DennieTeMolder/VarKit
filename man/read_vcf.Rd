@@ -8,6 +8,10 @@ read_vcf(path, ploidy = 2, skip_cols = c("info", "filter"))
 }
 \arguments{
 \item{path}{String, path of vcf(.bgz) file to load}
+
+\item{ploidy}{Integer, ploidy number of the organism in the vcf}
+
+\item{skip_cols}{Character vector, columns to skip loading. Should match names in read_vcf_header(path)$col_names.}
 }
 \value{
 A VarKit object
@@ -20,7 +24,7 @@ Load A VCF File From Disk
 }
 \examples{
 path <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
-vcf <- read_vcf(path)
+vcf <- read_vcf(path, ploidy = 2, skip_cols = c("info", "filter", "N2"))
 }
 \author{
 Dennie te Molder

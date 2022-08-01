@@ -4,10 +4,10 @@ read_vcf_header <- function(path) {
 
   # Check if the first line contains the VCF file spec
   if (!stringr::str_detect(header[1], "^##.*VCF"))
-    stop("No valid VCF header detected")
+    stop("No valid VCF header detected!")
 
   # We only read a limited number of lines, check if it contains the full header
-  if (stringr::str_starts(header[length(header)], "#"))
+  if (stringr::str_starts(tail(header, n = 1), "##"))
     stop("VCF header exceeds maximum line count!")
 
   # The last line of the header should be the only line with a single "#"
@@ -23,8 +23,11 @@ read_vcf_header <- function(path) {
   fixed_idx <- na.omit(match(fixed_names, tolower(col_names)))
   col_names[fixed_idx] <- fixed_names[seq_along(fixed_names) %in% fixed_idx]
 
+  if (!all(c("chrom", "pos") %in% col_names))
+    warning("The VCF header is missing the CHROM and/or POS column(s)!")
+
   # Parse the rest of the header
-  header <- header[seq(1, header_end - 1)]
+  header <- head(header, n = header_end - 1)
   header <- stringr::str_remove(header, "##")
   header <- stringr::str_split_fixed(header, "=", n = 2)
   colnames(header) <- c("name", "value")

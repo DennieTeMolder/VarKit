@@ -1,4 +1,6 @@
 get_site_idx <- function(site, current_sites) {
+  stopifnot(is.data.frame(current_sites))
+  stopifnot("idx" %in% colnames(current_sites))
   UseMethod("get_site_idx", site)
 }
 
@@ -11,6 +13,7 @@ get_site_idx.logical <- function(site, current_sites) {
 
 ##' @export
 get_site_idx.data.frame <- function(site, current_sites) {
+  stopifnot(c("chrom", "pos") %in% colnames(current_sites))
   if (any(colnames(site) != c("chrom", "pos")))
     stop("The 'site' data frame should consists of columns 'chrom' and 'pos'")
   current_sites <- dplyr::inner_join(

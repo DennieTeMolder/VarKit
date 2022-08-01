@@ -1,5 +1,6 @@
 ##' @export
 sites <- function(x, add_index = FALSE) {
+  stopifnot(is.logical(add_index))
   UseMethod("sites", x)
 }
 

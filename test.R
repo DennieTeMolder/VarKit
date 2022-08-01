@@ -1,6 +1,10 @@
+# Setup
 devtools::load_all()
 devtools::document()
-devtools::reload()
+
+# Reload
+devtools::unload()
+devtools::load_all()
 
 MemSize <- function(x) {
   format(object.size(x), units = "auto")
