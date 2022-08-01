@@ -56,4 +56,4 @@ summary(vcf)
 vcf <- import_mask(vcf, my_mask)
 summary(vcf)
 
-summary(harden_mask(vcf))
+summary(remove_masked(vcf))
