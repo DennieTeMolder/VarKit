@@ -3,8 +3,6 @@
 S3method(export_mask,varkit)
 S3method(fixed,varkit)
 S3method(geno,varkit)
-S3method(get_sample_idx,character)
-S3method(get_sample_idx,logical)
 S3method(get_site_idx,data.frame)
 S3method(get_site_idx,logical)
 S3method(import_mask,varkit)

@@ -38,7 +38,7 @@ fixed(vcf)
 geno(vcf)
 
 hide_site <- sites(vcf)$chrom == "I"
-vcf <- mask(vcf, site = hide_site, sample = "N2")
+vcf <- mask(vcf, site = hide_site)
 summary(vcf)
 
 my_mask <- export_mask(vcf)

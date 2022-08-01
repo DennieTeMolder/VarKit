@@ -9,6 +9,5 @@ solidify_mask.varkit <- function(x) {
   x$geno = geno(x)
   x$samples = samples(x)
   x$use_site = rep(TRUE, ncol(x$geno))
-  x$use_sample = rep(TRUE, length(x$samples))
   x
 }

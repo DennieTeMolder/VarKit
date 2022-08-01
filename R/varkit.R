@@ -1,8 +1,9 @@
 ##' @export
 varkit <- function(df, header = NULL) {
   # Checks
-  if (!is.data.frame(df))
-    stopifnot(is.data.frame(df))
+  stopifnot(is.data.frame(df))
+  if (!is.null(header))
+    stopifnot(is.list(header))
 
   # Move fixed fields to a separate df
   fixed_idx <- na.omit(match(.fixed_columns(), colnames(df)))
@@ -26,8 +27,7 @@ varkit <- function(df, header = NULL) {
     fixed = fixed,
     geno = geno,
     samples = samples,
-    use_site = rep(TRUE, ncol(geno)),
-    use_sample = rep(TRUE, length(samples))
+    use_site = rep(TRUE, ncol(geno))
   )
   class(vcf) <- "varkit"
 
@@ -46,11 +46,9 @@ print.varkit <- function(x) {
   print(x$fixed)
   cat("Transposed genotype matrix:\n")
   print(x$geno)
-  cat("\nSamples:\n")
+  cat("\nSamples (", length(x$samples), " total):\n", sep = "")
   print(x$samples)
   cat("\n")
-  cat("Currently selected", sum(x$use_sample),
-      "out of", length(x$use_sample), "samples.\n")
   cat("Currently selected", sum(x$use_site),
       "out of", length(x$use_site), "sites.\n")
 }
@@ -58,9 +56,9 @@ print.varkit <- function(x) {
 ##' @export
 summary.varkit <- function(x) {
   tibble::tibble(
-    rowname = c("sites", "samples"),
-    used = c(sum(x$use_site), sum(x$use_sample)),
-    total = c(length(x$use_site), length(x$use_sample)),
-    fraction = c(mean(x$use_site), mean(x$use_sample))
+    samples = length(x$samples),
+    sites_visible = sum(x$use_site),
+    sites_total = length(x$use_site),
+    sites_frac = mean(x$use_site)
   )
 }

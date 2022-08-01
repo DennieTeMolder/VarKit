@@ -5,5 +5,5 @@ geno <- function(x) {
 
 ##' @export
 geno.varkit <- function(x) {
-  varkit_filter(x$geno, site = x$use_site, sample = x$use_sample)
+  varkit_filter(x$geno, x$use_site)
 }

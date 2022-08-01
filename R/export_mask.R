@@ -5,5 +5,5 @@ export_mask <- function(x) {
 
 ##' @export
 export_mask.varkit <- function(x) {
-  list(use_site = x$use_site, use_sample = x$use_sample)
+  x$use_site
 }
