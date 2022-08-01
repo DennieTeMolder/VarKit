@@ -8,6 +8,7 @@ MemSize <- function(x) {
 
 path <- "./inst/extdata/celegans.vcf.bgz"
 
+## Geno tests ------
 header <- read_vcf_header(path)
 data <- readr::read_tsv(path,
   col_names = header$col_names,
@@ -27,7 +28,9 @@ test <- data |>
 
 isTRUE(all.equal(geno, test, check.attributes = F))
 
-vcf <- read_vcf(path)
+## Examples ------
+read_vcf_header(path)
+vcf <- read_vcf(path, skip_cols = c("info", "filter", "N2"))
 print(vcf)
 
 methods(class = class(vcf))
@@ -40,6 +43,7 @@ geno(vcf)
 hide_site <- sites(vcf)$chrom == "I"
 vcf <- mask(vcf, site = hide_site)
 summary(vcf)
+sites(vcf)
 
 my_mask <- export_mask(vcf)
 vcf <- unmask_all(vcf)

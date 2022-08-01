@@ -10,15 +10,24 @@
 ##' path <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
 ##' vcf <- read_vcf(path)
 
-read_vcf <- function(path, ploidy = 2, keep_info = FALSE, keep_filter = FALSE) {
+read_vcf <- function(path,
+                     ploidy = 2,
+                     skip_cols = c("info", "filter")) {
+  # Checks
+  if (!is.null(skip_cols))
+    stopifnot(is.character(skip_cols))
+
   header <- read_vcf_header(path)
 
-  # Load the entire file according to user specifications
-  spec <- readr::cols(chrom = "c", pos = "d", info = "_", filter = "_")
-  if (keep_info && "info" %in% col_names)
-    spec$cols$info <- NULL
-  if (keep_filter && "filter" %in% col_names)
-    spec$cols$filter <- NULL
+  if (!all(skip_cols %in% header$col_names))
+    warning("Not all columns provided for 'skip_cols' are in the VCF header!")
+
+  # Create a string of column types (see readr::cols())
+  types <- rep("?", length(header$col_names))
+  types[header$col_names %in% skip_cols] <- "_"
+  types[header$col_names == "chrom"] <- "c"
+  types[header$col_names == "pos"] <- "d"
+  types <- paste(types, collapse = "")
 
   # NAs are represented differently after the format field
   # TODO This only works if GT is the only format field
@@ -26,7 +35,7 @@ read_vcf <- function(path, ploidy = 2, keep_info = FALSE, keep_filter = FALSE) {
 
   data <- readr::read_tsv(path,
     col_names = header$col_names,
-    col_types = spec,
+    col_types = types,
     comment = "#",
     na = na
   )
