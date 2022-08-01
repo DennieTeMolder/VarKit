@@ -6,19 +6,30 @@ varkit_filter <- function(geno, site = NULL, sample = NULL) {
 ##' @export
 varkit_filter.varkit_geno <- function(geno, site = NULL, sample = NULL) {
   # Checks
-  if (is.null(site) && is.null(sample))
-    stop("Please provide the 'site' and/or 'sample' argument.")
-  if (!is.null(site))
-    stopifnot(is.logical(site) && length(site) == ncol(geno))
-  if (!is.null(sample))
-    stopifnot(is.logical(sample) && length(sample) == nrow(geno))
+  if (!is.null(site)) {
+    stopifnot(is.logical(site))
+    stopifnot(length(site) == ncol(geno))
+  }
+  if (!is.null(sample)) {
+    stopifnot(is.logical(sample) )
+    stopifnot(length(sample) == nrow(geno))
+  }
 
-  # Single selection argument provided
-  if (is.null(site))
-    return(geno[sample, ])
-  if (is.null(sample))
+  # Skip if all sites/samples are asked
+  if (all(site))
+    site <- NULL
+  if (all(sample))
+    sample <- NULL
+
+  # Return requested selection
+  if (!is.null(site) && !is.null(sample)) {
+    return(geno[sample, site])
+  } else if (!is.null(site)) {
     return(geno[, site])
+  } else if (!is.null(sample)) {
+    return(geno[sample, ])
+  }
 
-  # Both selection arguments provided
-  geno[sample, site]
+  # No selection, return full genotype matrix
+  geno
 }
