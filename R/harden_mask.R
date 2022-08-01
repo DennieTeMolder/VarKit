@@ -1,10 +1,10 @@
 ##' @export
-solidify_mask <- function(x) {
+harden_mask <- function(x) {
   UseMethod("solidify_mask", x)
 }
 
 ##' @export
-solidify_mask.varkit <- function(x) {
+harden_mask.varkit <- function(x) {
   x$fixed = fixed(x)
   x$geno = geno(x)
   x$samples = samples(x)

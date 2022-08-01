@@ -1,6 +1,6 @@
-devtools::document()
-devtools::unload()
 devtools::load_all()
+devtools::document()
+devtools::reload()
 
 MemSize <- function(x) {
   format(object.size(x), units = "auto")
@@ -52,4 +52,4 @@ summary(vcf)
 vcf <- import_mask(vcf, my_mask)
 summary(vcf)
 
-summary(solidify_mask(vcf))
+summary(harden_mask(vcf))
