@@ -20,12 +20,19 @@ varkit <- function(df, ploidy, header = NULL) {
   geno <- varkit_geno(df)
   rm(df)
 
+  # Apply initial mask based on FILTER column
+  use_site <- FALSE
+  if ("filter" %in% names(fixed))
+    use_site <- fixed$filter == "PASS"
+  if (!any(use_site))
+    use_site <- rep(TRUE, ncol(geno))
+
   vcf <- list(
     meta = header$meta,
     fixed = fixed,
     geno = geno,
     ploidy = ploidy,
-    use_site = rep(TRUE, ncol(geno))
+    use_site = use_site
   )
   class(vcf) <- c("varkit", "varkit_header")
 
