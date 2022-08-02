@@ -11,10 +11,6 @@ devtools::unload()
 devtools::load_all()
 
 # Setup
-MemSize <- function(x) {
-  format(object.size(x), units = "auto")
-}
-
 path <- "./inst/extdata/celegans.vcf.bgz"
 
 ## Geno tests ------
@@ -42,7 +38,7 @@ read_vcf_header(path)
 vcf <- read_vcf(path, skip_cols = c("info", "filter", "N2"))
 print(vcf)
 
-varkit_help(vcf)
+varkit_help(x = vcf)
 
 meta(vcf)
 sites(vcf)

@@ -20,6 +20,16 @@ mat <- as.matrix(test)
 tmat <- t(mat)
 geno <- tibble::as_tibble(tmat, rownames = NULL)
 
+# Memory usage
+pryr::object_size(test)
+## 92.89 MB
+pryr::object_size(geno)
+## 179.95 MB
+pryr::object_size(mat)
+## 92.88 MB
+pryr::object_size(tmat)
+## 92.88 MB
+
 # Selecting sites
 sample_sites <- purrr::map(1:1e3, ~sample(1:nrow(test), nrow(data), replace = F))
 system.time(for (i in sample_sites) test[i, ])
@@ -37,7 +47,6 @@ system.time(for (i in sample_sites) tmat[, i])
 system.time(for (i in sample_sites) dplyr::slice(test, i))
 ##  user  system elapsed
 ## 4.445   0.000   4.450
-
 
 # Selecting samples
 sample_samples <- purrr::map(1:1e3, ~sample(1:ncol(test), 10, replace = F))
