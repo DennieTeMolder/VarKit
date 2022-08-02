@@ -61,3 +61,22 @@ summary(remove_masked(vcf))
 
 write_vcf(vcf, "/tmp/test.vcf.bz2", replace_filter = TRUE)
 read_vcf("/tmp/test.vcf.bz2")
+
+## Linkage ------
+vcf$geno <- .bi_gt2dosage(vcf$geno)
+vcf <- unmask_all(vcf)
+hide_site <- apply(geno(vcf), 2, .not_variable)
+vcf <- mask(vcf, site = hide_site)
+
+devtools::unload()
+devtools::load_all()
+
+x <- geno(vcf)[,1]
+y <- geno(vcf)[,2]
+
+names <- 1:10
+ll <- link_list(names)
+ll <- link_entries(ll, 3, c(2, 7))
+lookup(ll , c(3, 6))
+ll <- link_entries(ll, 6, 3)
+lookup(ll, 6)
