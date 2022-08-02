@@ -9,11 +9,14 @@ varkit_meta <- function(x) {
 }
 
 ##' @export
-print.varkit_meta <- function(x, n = 10) {
+print.varkit_meta <- function(x, n = 10, verbose = TRUE) {
   cat("Meta header data (meta(x)):\n")
   print(tibble::tibble(x), n = n)
-  cat("\nMeta summary (summary(meta(x))):\n")
-  print(summary(x), n = n)
+  if (verbose) {
+    cat("\nMeta summary (summary(meta(x))):\n")
+    print(summary(x), n = n)
+  }
+  invisible(x)
 }
 
 ##' @export
