@@ -6,7 +6,7 @@ mask <- function(x, site) {
 ##' @export
 mask.varkit <- function(x, site) {
   # Mask
-  idx <- get_site_idx(site, current_sites = sites(x, add_index = TRUE))
+  idx <- get_site_idx(site, current_sites = fixed(x, add_index = TRUE, only_positions = TRUE))
   x$use_site[idx] <- FALSE
   x
 }

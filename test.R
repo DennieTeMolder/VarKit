@@ -38,7 +38,6 @@ print(vcf)
 varkit_help(x = vcf)
 
 meta(vcf)
-sites(vcf)
 fixed(vcf)
 geno(vcf)
 samples(vcf)
@@ -46,10 +45,10 @@ samples(vcf)
 parse_meta_type(vcf, "INFO")
 parse_meta_type(vcf, "contig")
 
-hide_site <- sites(vcf)$chrom == "I"
+hide_site <- fixed(vcf)$chrom == "I"
 vcf <- mask(vcf, site = hide_site)
 summary(vcf)
-sites(vcf)
+fixed(vcf)
 
 my_mask <- export_mask(vcf)
 vcf <- unmask_all(vcf)
