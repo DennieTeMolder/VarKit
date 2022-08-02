@@ -18,9 +18,13 @@ varkit_geno.matrix <- function(x) {
 
 ##' @export
 print.varkit_geno <- function(x, n_sites = 5, n_samples = 5) {
+  n_col <- ncol(x)
+  n_row <- nrow(x)
+  n_sites <- min(c(n_sites, n_col))
+  n_samples <- min(c(n_samples, n_row))
   cat("# A", class(x[[1,1]]), "matrix\n")
   print(x[1:n_samples, 1:n_sites])
-  cat("# with a total of", ncol(x), "sites x", nrow(x), "samples and",
+  cat("# with a total of", n_col, "sites x", n_row, "samples and",
        sum(is.na(x)), "missing values\n")
 }
 
