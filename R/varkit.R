@@ -1,9 +1,8 @@
 ##' @export
-varkit <- function(df, header = NULL) {
+varkit <- function(df, ploidy, header = NULL) {
   # Checks
   stopifnot(is.data.frame(df))
-  if (!is.null(header))
-    stopifnot(is.list(header))
+  stopifnot(is.numeric(ploidy))
 
   # Move fixed fields to a separate df
   fixed_idx <- na.omit(match(.fixed_columns(), colnames(df)))
@@ -23,40 +22,32 @@ varkit <- function(df, header = NULL) {
   rm(df)
 
   vcf <- list(
-    header = header[names(header) != "col_names"],
+    meta = header$meta,
     fixed = fixed,
     geno = geno,
+    ploidy = ploidy,
     samples = samples,
     use_site = rep(TRUE, ncol(geno))
   )
-  class(vcf) <- "varkit"
+  class(vcf) <- c("varkit", "varkit_header")
 
   vcf
 }
 
 ##' @export
-print.varkit <- function(x) {
+print.varkit <- function(x, n = 10) {
   cat("*VarKit Variant Object*\n")
-  if (!is.null(x$header)) {
-    if (!is.null(x$header$spec))
-      cat("header$spec: \"", x$header$spec, "\"\n\n", sep = "")
-    for (current in names(x$header)) {
-      df <- x$header[[current]]
-      if (tibble::is_tibble(df)) {
-        cat("header$", current, ":\n", sep = "")
-        print(df, n = 3)
-        cat("\n")
-      }
-    }
+  if (!is.null(x$meta)) {
+    print(x$meta, n = n)
+    cat("\n")
   }
-  cat("Fixed fields:\n")
-  print(x$fixed)
-  cat("Transposed genotype matrix:\n")
-  print(x$geno, n = 10)
-  cat("\nSamples (", length(x$samples), " total):\n", sep = "")
+  cat("Fixed fields (fixed(x)):\n")
+  print(x$fixed, n = n)
+  cat("\nTransposed genotype matrix (geno(x)):\n")
+  print(x$geno, n = n)
+  cat("\nWith", length(x$samples), "samples (samples(x)):\n")
   print(x$samples)
-  cat("\n")
-  cat("Currently selected", sum(x$use_site),
+  cat("\nCurrently selected", sum(x$use_site),
       "out of", length(x$use_site), "sites.\n")
 }
 

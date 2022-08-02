@@ -1,3 +1,4 @@
+##' @export
 varkit_geno <- function(x) {
   UseMethod("varkit_geno", x)
 }

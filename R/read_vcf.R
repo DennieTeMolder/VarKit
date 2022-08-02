@@ -42,5 +42,5 @@ read_vcf <- function(path,
     na = na
   )
 
-  varkit(data, header)
+  varkit(data, ploidy, header)
 }

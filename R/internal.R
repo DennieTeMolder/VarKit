@@ -20,39 +20,6 @@
   col_names
 }
 
-.parse_meta_lines <- function(x) {
-  x <- stringr::str_remove(x, "##")
-  x <- stringr::str_split_fixed(x, "=", n = 2)
-  colnames(x) <- c("name", "value")
-  tibble::as_tibble(x)
-}
-
-.parse_meta_type <- function(x, type) {
-  x <- dplyr::filter(x, name == type)
-
-  if (nrow(x) == 0)
-    return(NA)
-
-  # These types can be extended with quoted value pairs, handle them below
-  if (!type %in% c("INFO", "FORMAT", "FILTER", "ALT"))
-    return(.match_key_value(x$value, pattern = "<?([^=]+)=([^,]+)(?:,|>)"))
-
-  # Split line based on transition from unquoted to quoted values
-  x <- stringr::str_match(x$value, "<(.*[^\"]),([^=]+=\".*)>")
-
-  # Parse unquoted and quoted key-value pairs separately
-  unquoted <- .match_key_value(
-    x[, 2],
-    pattern = "([^=]+)=([^,]+)(?:,|$)"
-  )
-  quoted <- .match_key_value(
-    x[, 3],
-    pattern = "([^=]+)=\"(.+?)\"(?:,|$)"
-  )
-
-  dplyr::bind_cols(unquoted, quoted)
-}
-
 .match_key_value <- function(x, pattern) {
   # Match
   x <- stringr::str_match_all(x, pattern)

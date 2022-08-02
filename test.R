@@ -1,11 +1,16 @@
-# Setup
+# Load package
 devtools::load_all()
-devtools::document()
 
 # Reload
 devtools::unload()
 devtools::load_all()
 
+# Document
+devtools::document()
+devtools::unload()
+devtools::load_all()
+
+# Setup
 MemSize <- function(x) {
   format(object.size(x), units = "auto")
 }
@@ -37,12 +42,16 @@ read_vcf_header(path)
 vcf <- read_vcf(path, skip_cols = c("info", "filter", "N2"))
 print(vcf)
 
-methods(class = class(vcf))
+varkit_help(vcf)
 
+meta(vcf)
 sites(vcf)
-samples(vcf)
 fixed(vcf)
 geno(vcf)
+samples(vcf)
+
+parse_meta_type(vcf, "INFO")
+parse_meta_type(vcf, "contig")
 
 hide_site <- sites(vcf)$chrom == "I"
 vcf <- mask(vcf, site = hide_site)

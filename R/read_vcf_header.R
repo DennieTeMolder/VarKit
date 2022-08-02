@@ -21,28 +21,12 @@ read_vcf_header <- function(path) {
   header <- head(header, n = header_end - 1)
 
   # Parse the rest of the header
-  header <- .parse_meta_lines(header)
-  info <- .parse_meta_type(header, type = "INFO")
-  form <- .parse_meta_type(header, type = "FORMAT")
-  filter <- .parse_meta_type(header, type = "FILTER")
-  alt <- .parse_meta_type(header, type = "ALT")
-  contig <- .parse_meta_type(header, type = "contig")
+  meta <- varkit_meta(header)
 
-  # Split off filespec and skipped parsed types
-  spec <- header$value[1]
-  header <- dplyr::filter(
-    header[-1, ],
-    !name %in% c("INFO", "FORMAT", "FILTER", "ALT", "contig")
-  )
-
-  list(
-    spec = spec,
-    info = info,
-    format = form,
-    filter = filter,
-    alt = alt,
-    contig = contig,
-    other = header,
+  header <- list(
+    meta = meta,
     col_names = col_names
   )
+  class(header) <- "varkit_header"
+  header
 }
