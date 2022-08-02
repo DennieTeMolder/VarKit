@@ -7,7 +7,7 @@ get_site_idx <- function(site, current_sites) {
 ##' @export
 get_site_idx.logical <- function(site, current_sites) {
   if (length(site) != nrow(current_sites))
-    stop("Length of 'site' not equal to current number of unmasked sites")
+    stop("Length of 'site' not equal to current number of unmasked sites!")
   current_sites$idx[site]
 }
 
@@ -15,7 +15,7 @@ get_site_idx.logical <- function(site, current_sites) {
 get_site_idx.data.frame <- function(site, current_sites) {
   stopifnot(c("chrom", "pos") %in% colnames(current_sites))
   if (any(colnames(site) != c("chrom", "pos")))
-    stop("The 'site' data frame should consists of columns 'chrom' and 'pos'")
+    stop("The 'site' data frame should consists of columns 'chrom' and 'pos'!")
   current_sites <- dplyr::inner_join(
     current_sites, site,
     by = c("chrom", "pos")
