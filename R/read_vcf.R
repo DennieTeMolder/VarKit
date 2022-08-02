@@ -13,7 +13,7 @@
 ##' vcf <- read_vcf(path, ploidy = 2, skip_cols = c("info", "filter", "N2"))
 read_vcf <- function(path,
                      ploidy = 2,
-                     skip_cols = c("info", "filter")) {
+                     skip_cols = NULL) {
   # Checks
   stopifnot(is.numeric(ploidy))
   if (!is.null(skip_cols))
