@@ -23,3 +23,8 @@ print.varkit_geno <- function(x, n_sites = 5, n_samples = 5) {
   cat("# with a total of", ncol(x), "sites x", nrow(x), "samples and",
        sum(is.na(x)), "missing values\n")
 }
+
+##' @export
+as.data.frame.varkit_geno <- function(x) {
+  as.data.frame.matrix(t(x))
+}
