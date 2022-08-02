@@ -59,3 +59,6 @@ vcf <- import_mask(vcf, my_mask)
 summary(vcf)
 
 summary(remove_masked(vcf))
+
+write_vcf(vcf, "/tmp/test.vcf.bz2", replace_filter = TRUE)
+read_vcf("/tmp/test.vcf.bz2")
