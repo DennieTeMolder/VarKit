@@ -25,13 +25,10 @@ data[, .fixed_columns()] <- NULL
 
 geno <- varkit_geno(data)
 
-test <- data |>
-  dplyr::mutate(rowname = paste0("V", 1:nrow(data))) |>
-  tidyr::pivot_longer(-rowname) |>
-  tidyr::pivot_wider(names_from = rowname) |>
-  dplyr::select(-name)
+# Check if geno is a transposed version of data
+all(sapply(seq_along(data), \(i) all(geno[i,] == data[,i])))
+all(colnames(data) == rownames(geno))
 
-isTRUE(all.equal(geno, test, check.attributes = F))
 
 ## Examples ------
 read_vcf_header(path)

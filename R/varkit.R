@@ -15,9 +15,8 @@ varkit <- function(df, ploidy, header = NULL) {
   fixed <- df[, fixed_idx]
   df[, fixed_idx] <- NULL
 
-  # The remaining fields are the genotype calls w/ sample name as column.
-  # These calls are stored as a transposed df w/ a custom class
-  samples <- colnames(df)
+  # The remaining fields are the genotype calls, which are stored as a
+  # transposed matrix w/ a custom class
   geno <- varkit_geno(df)
   rm(df)
 
@@ -26,7 +25,6 @@ varkit <- function(df, ploidy, header = NULL) {
     fixed = fixed,
     geno = geno,
     ploidy = ploidy,
-    samples = samples,
     use_site = rep(TRUE, ncol(geno))
   )
   class(vcf) <- c("varkit", "varkit_header")
@@ -38,15 +36,15 @@ varkit <- function(df, ploidy, header = NULL) {
 print.varkit <- function(x, n = 10) {
   cat("*VarKit Variant Object*\n")
   if (!is.null(x$meta)) {
-    print(x$meta, n = n)
+    print(x$meta, n = n, verbose = FALSE)
     cat("\n")
   }
   cat("Fixed fields (fixed(x)):\n")
   print(x$fixed, n = n)
   cat("\nTransposed genotype matrix (geno(x)):\n")
-  print(x$geno, n = n)
-  cat("\nWith", length(x$samples), "samples (samples(x)):\n")
-  print(x$samples)
+  print(x$geno, n_samples = n)
+  cat("\nSample names (samples(x)):\n")
+  print(rownames(x$geno))
   cat("\nCurrently selected", sum(x$use_site),
       "out of", length(x$use_site), "sites.\n")
 }
@@ -54,7 +52,7 @@ print.varkit <- function(x, n = 10) {
 ##' @export
 summary.varkit <- function(x) {
   tibble::tibble(
-    samples = length(x$samples),
+    samples = length(samples(x)),
     sites_visible = sum(x$use_site),
     sites_total = length(x$use_site),
     sites_frac = mean(x$use_site)

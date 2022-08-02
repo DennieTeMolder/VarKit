@@ -5,5 +5,5 @@ samples <- function(x) {
 
 ##' @export
 samples.varkit <- function(x) {
-  x$samples
+  rownames(x$geno)
 }
