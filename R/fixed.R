@@ -18,11 +18,9 @@ fixed.varkit <- function(x,
     res <- dplyr::bind_cols(res, idx = which(x$use_site))
   if (by_chrom) {
     chrom <- unique(res$chrom)
-    if (length(chrom) > 1) {
-      my_fun <- function(chr)
-        res[res$chrom == chr, ]
-      res <- sapply(chrom, my_fun, simplify = FALSE)
-    }
+    my_fun <- function(chr)
+      res[res$chrom == chr, ]
+    res <- sapply(chrom, my_fun, simplify = FALSE)
   }
   res
 }
