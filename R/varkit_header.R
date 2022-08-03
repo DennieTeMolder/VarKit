@@ -28,3 +28,21 @@ print.varkit_header <- function(x, n = 10, verbose = TRUE) {
   cat("\nColumn names (for 'skip_cols'):\n")
   print(x$col_names)
 }
+
+.parse_col_names <- function(x) {
+  col_names <- stringr::str_remove(x, "#")
+  col_names <- stringr::str_split(col_names, "\t")[[1]]
+
+  if (length(col_names) < 5)
+    stop("The number of columns is too low, make sure the file is TAB delimited.")
+
+  # Standardise the names of fixed columns
+  fixed_names <- .fixed_columns()
+  fixed_idx <- na.omit(match(fixed_names, tolower(col_names)))
+  col_names[fixed_idx] <- fixed_names[seq_along(fixed_names) %in% fixed_idx]
+
+  if (!all(c("chrom", "pos") %in% col_names))
+    warning("The VCF header is missing the CHROM and/or POS column(s)!")
+
+  col_names
+}

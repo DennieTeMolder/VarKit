@@ -42,3 +42,16 @@ parse_meta_type.varkit_meta <- function(x, type) {
 
   dplyr::bind_cols(unquoted, quoted)
 }
+
+.match_key_value <- function(x, pattern) {
+  # Match
+  x <- stringr::str_match_all(x, pattern)
+  # Convert
+  x <- t(sapply(x, function(x) x[, -1]))
+  # First half == colnames; second half == values
+  i <- seq(1, ncol(x) / 2)
+  df <- as.data.frame(x[, -i])
+  colnames(df) <- x[1, i]
+  # Return as tibble
+  tibble::tibble(df)
+}
