@@ -3,6 +3,20 @@
   c("chrom", "pos", "id", "ref", "alt", "qual", "filter", "info", "format")
 }
 
+.collapse <- function(x, delim = ", ") {
+  paste(x, collapse = delim)
+}
+
+.linked_only <- function(x, allow_na = TRUE) {
+  if (allow_na) {
+    x <- na.omit(x)
+  } else {
+    if (any(is.na(x)))
+      stop("Removed indexes (idx) requested, this not allowed!")
+  }
+  x[as.logical(x)]
+}
+
 .cor_pair_silent <- function(x, y = NULL) {
   suppressWarnings(cor(x, y, use = "pairwise.complete.obs"))
 }

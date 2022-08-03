@@ -59,8 +59,24 @@ summary(vcf)
 
 summary(remove_masked(vcf))
 
-write_vcf(vcf, "/tmp/test.vcf.bz2", replace_filter = TRUE)
-read_vcf("/tmp/test.vcf.bz2")
+temp_file <- tempfile(fileext = ".vcf.bz2")
+write_vcf(vcf, temp_file, replace_filter = TRUE)
+read_vcf(temp_file)
+
+## Link list ------
+names <- LETTERS[1:10]
+ll <- link_list(names)
+ll <- link_entries(ll, 3, c(2, 7))
+print(ll, n = NULL)
+lookup(ll , c(3, 6))
+
+ll <- link_entries(ll, 6, 3)
+lookup(ll, 6)
+which_remove(ll)
+
+temp_file <- tempfile(fileext = ".json")
+write_link_list(ll, temp_file)
+read_link_list(temp_file)
 
 ## Linkage ------
 vcf$geno <- .bi_gt2dosage(vcf$geno)
@@ -73,10 +89,3 @@ devtools::load_all()
 
 x <- geno(vcf)[,1]
 y <- geno(vcf)[,2]
-
-names <- 1:10
-ll <- link_list(names)
-ll <- link_entries(ll, 3, c(2, 7))
-lookup(ll , c(3, 6))
-ll <- link_entries(ll, 6, 3)
-lookup(ll, 6)
