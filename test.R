@@ -1,5 +1,6 @@
-# Load package
+# Setup
 devtools::load_all()
+example <- "./inst/extdata/celegans.vcf.bgz"
 
 # Reload
 devtools::unload()
@@ -10,12 +11,10 @@ devtools::document()
 devtools::unload()
 devtools::load_all()
 
-# Setup
-path <- "./inst/extdata/celegans.vcf.bgz"
 
 ## Geno tests ------
-header <- read_vcf_header(path)
-data <- readr::read_tsv(path,
+header <- read_vcf_header(example)
+data <- readr::read_tsv(example,
   col_names = header$col_names,
   col_types = readr::cols(),
   comment = "#",
@@ -31,8 +30,8 @@ all(colnames(data) == rownames(geno))
 
 
 ## Examples ------
-read_vcf_header(path)
-vcf <- read_vcf(path, skip_cols = c("info", "filter", "N2"))
+read_vcf_header(example)
+vcf <- read_vcf(example, skip_cols = c("info", "filter", "N2"))
 print(vcf)
 
 varkit_help(x = vcf)
@@ -63,6 +62,7 @@ temp_file <- tempfile(fileext = ".vcf.bz2")
 write_vcf(vcf, temp_file, replace_filter = TRUE)
 read_vcf(temp_file)
 
+
 ## Link list ------
 names <- LETTERS[1:10]
 ll <- link_list(names)
@@ -78,14 +78,14 @@ temp_file <- tempfile(fileext = ".json")
 write_link_list(ll, temp_file)
 read_link_list(temp_file)
 
+
 ## Linkage ------
+vcf <- read_vcf(example, skip_cols = c("info", "filter"))
 vcf$geno <- .bi_gt2dosage(vcf$geno)
 vcf <- unmask_all(vcf)
 hide_site <- apply(geno(vcf), 2, .not_variable)
 vcf <- mask(vcf, site = hide_site)
+summary(vcf)
 
-devtools::unload()
-devtools::load_all()
-
-x <- geno(vcf)[,1]
-y <- geno(vcf)[,2]
+llist <- find_identical_sites(vcf)
+summary(llist)
