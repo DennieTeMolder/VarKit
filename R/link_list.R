@@ -20,7 +20,25 @@ print.link_list <- function(x, n = 5) {
   for (i in 1:n) {
     cat("[[", i, "]]: ", .collapse(x[[i]]), "\n", sep = "")
   }
+  if (len != n)
+    cat(" ...\n")
   cat("# Total length:", len, "\n")
   if (!is.null(trans))
     cat("\nWith a translation layer:\n", .collapse(trans[1:n]), "...\n")
+}
+
+##' @export
+summary.link_list <- function(x) {
+  tibble::tibble(
+    n_total = length(x),
+    n_node = sum(contains_link(x)),
+    n_unlinked = sum(is_unlinked(x)),
+    n_remove = n_total - n_node - n_unlinked,
+    frac_remove = n_remove / n_total
+  )
+}
+
+##' @export
+is_link_list <- function(x) {
+  inherits(x, "link_list")
 }
