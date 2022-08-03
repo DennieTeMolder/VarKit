@@ -3,6 +3,11 @@
   c("chrom", "pos", "id", "ref", "alt", "qual", "filter", "info", "format")
 }
 
+.cor_pair_silent <- function(x, y = NULL) {
+  suppressWarnings(cor(x, y, use = "pairwise.complete.obs"))
+}
+
+## Unused functions ------
 .bi_gt2dosage <- function(mat) {
   stopifnot(is.matrix(mat))
   stopifnot(inherits(mat[[1,1]], "character"))
@@ -19,13 +24,8 @@
   res
 }
 
-## Unused functions ------
 .not_variable <- function(x) {
   all(duplicated(na.omit(x))[-1])
-}
-
-.cor_pair_silent <- function(x, y = NULL) {
-  suppressWarnings(cor(x, y, use = "pairwise.complete.obs"))
 }
 
 ## .MissedCorrelations <- function(corMat, cutoff = .9, linkList = NULL) {
