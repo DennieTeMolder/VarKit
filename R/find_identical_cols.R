@@ -4,7 +4,7 @@ find_identical_cols <- function(x, tolerance = .01, llist = NULL) {
   n <- ncol(x)
 
   # Check arguments
-  stopifnot(is.numeric(tolerance))
+  stopifnot(is.numeric(tolerance) && tolerance >= 0)
   if (!is.null(llist)) {
     stopifnot(is_link_list(llist))
     if (length(llist) != ncol(x))

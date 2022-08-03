@@ -87,5 +87,7 @@ hide_site <- apply(geno(vcf), 2, .not_variable)
 vcf <- mask(vcf, site = hide_site)
 summary(vcf)
 
-llist <- find_identical_sites(vcf)
+llist <- find_identical_sites(vcf, cores = 1)
 summary(llist)
+
+# TODO llist as mask

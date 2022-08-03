@@ -12,11 +12,21 @@ find_identical_sites.varkit <- function(x,
                                         tolerance = .01,
                                         by_chrom = TRUE,
                                         cores = 1) {
+  # TODO clean-up this function
+  stopifnot(is.logical(by_chrom))
+
+  # Short-circuit
+  if (!by_chrom) {
+    llist <- link_list(fixed(vcf, add_index = TRUE)$idx)
+    return(find_identical_cols(geno(vcf), tolerance = tolerance, llist = llist))
+  }
+
+  stopifnot(is.numeric(tolerance) && tolerance >= 0)
+  stopifnot(is.numeric(cores) && cores >= 1)
+
   # Register cores for parallel computing if required
   parallel <- cores > 1
   if (parallel) {
-    if (verbose)
-      stop("The 'verbose' option only supports cores = 1!")
     log_file <- tempfile(fileext = ".log")
     message("Writing parallel worker logs to: ", log_file)
     cl <- snow::makeCluster(cores, outfile = log_file)
@@ -25,9 +35,9 @@ find_identical_sites.varkit <- function(x,
     foreach::registerDoSEQ()
   }
 
-  # Get required dat from varkit object
-  fix_chrom <- fixed(vcf, add_index = TRUE, by_chrom = TRUE, only_positions = TRUE)
-  gt_chrom <- geno(vcf, by_chrom = TRUE)
+  # Get required data from varkit object
+  fix_chrom <- fixed(x, add_index = TRUE, by_chrom = TRUE, only_positions = TRUE)
+  gt_chrom <- geno(x, by_chrom = TRUE)
 
   # Order contigs most to lest for efficiency
   idx <- order(sapply(fix_chrom, nrow), decreasing = TRUE)
@@ -44,10 +54,13 @@ find_identical_sites.varkit <- function(x,
     fix = fix_chrom,
     gt = gt_chrom,
     .options.snow = opts,
-    .export = c("link_list", "lookup", "link_entries", "find_identical_cols")
+    .packages = "varkit"
   ) %dopar% {
     llist <- link_list(fix$idx)
-    find_identical_cols(gt, tolerance = tolerance, llist = llist)
+    llist <- find_identical_cols(gt, tolerance = tolerance, llist = llist)
+    if (!parallel)
+      pb_set(getTxtProgressBar(pb) + 1)
+    llist
   }
 
   # Cleanup
@@ -55,5 +68,35 @@ find_identical_sites.varkit <- function(x,
   if (parallel)
     snow::stopCluster(cl)
 
-  # TODO Unpack the top level of the resulting list and translate
+  # Add names and revert order
+  names(llist_chrom) <- names(fix_chrom)
+  llist_chrom <- llist_chrom[idx]
+
+  # Prepare list of link_lists for merge
+  for (i in seq_along(llist_chrom)) {
+    current <- llist_chrom[[i]]
+    list_end <- length(current)
+
+    cur_trans <- attr(current, "translation")
+    if (is.null(cur_trans))
+      cur_trans <- 1:list_end
+
+    if (i == 1) {
+      trans <- cur_trans
+      next()
+    }
+
+    needs_adjust <- contains_link(current)
+    current[needs_adjust] <- lapply(current[needs_adjust], function(x) x + list_end)
+    llist_chrom[[i]] <- current
+
+    trans <- c(trans, cur_trans)
+  }
+
+  # Merge and adjust attributes
+  llist <- unlist(llist_chrom, recursive = FALSE)
+  if (!all(trans == seq_along(llist)))
+    attr(llist, "translation") <- trans
+  class(llist) <- "link_list"
+  llist
 }
