@@ -17,6 +17,56 @@
   x[as.logical(x)]
 }
 
+.register_workers <- function(cores) {
+  stopifnot(is.numeric(cores) && cores >= 1)
+  if (cores > 1) {
+    log_file <- tempfile(fileext = ".log")
+    message("Writing parallel worker logs to: ", log_file)
+    cl <- snow::makeCluster(cores, outfile = log_file)
+    doSNOW::registerDoSNOW(cl = cl)
+  } else {
+    foreach::registerDoSEQ()
+    cl <- NULL
+  }
+  cl
+}
+
+.unregister_workers <- function(cl) {
+  if (!is.null(cl))
+    snow::stopCluster(cl)
+}
+
+.merge_link_list <- function(llist_list) {
+  # Prepare list of link_lists for merge
+  for (i in seq_along(llist_list)) {
+    current <- llist_list[[i]]
+
+    cur_trans <- attr(current, "translation")
+    if (is.null(cur_trans))
+      cur_trans <- seq_along(current)
+
+    if (i == 1) {
+      trans <- cur_trans
+      list_end <- length(current)
+      next()
+    }
+
+    needs_adjust <- contains_link(current)
+    current[needs_adjust] <- lapply(current[needs_adjust], function(x) x + list_end)
+    llist_list[[i]] <- current
+
+    trans <- c(trans, cur_trans)
+    list_end <- list_end + length(current)
+  }
+
+  # Merge and adjust attributes
+  llist <- unlist(llist_list, recursive = FALSE)
+  if (!all(trans == seq_along(llist)))
+    attr(llist, "translation") <- trans
+  class(llist) <- "link_list"
+  llist
+}
+
 .cor_pair_silent <- function(x, y = NULL) {
   suppressWarnings(cor(x, y, use = "pairwise.complete.obs"))
 }
