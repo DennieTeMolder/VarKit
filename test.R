@@ -82,7 +82,6 @@ read_link_list(temp_file)
 ## Linkage ------
 vcf <- read_vcf(example, skip_cols = c("info", "filter"))
 vcf$geno <- .bi_gt2dosage(vcf$geno)
-vcf <- unmask_all(vcf)
 hide_site <- apply(geno(vcf), 2, .not_variable)
 vcf <- mask(vcf, site = hide_site)
 summary(vcf)
@@ -90,4 +89,4 @@ summary(vcf)
 llist <- find_identical_sites(vcf, cores = 1)
 summary(llist)
 
-# TODO llist as mask
+mask(vcf, llist)

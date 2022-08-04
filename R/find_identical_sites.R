@@ -75,14 +75,14 @@ find_identical_sites.varkit <- function(x,
   # Prepare list of link_lists for merge
   for (i in seq_along(llist_chrom)) {
     current <- llist_chrom[[i]]
-    list_end <- length(current)
 
     cur_trans <- attr(current, "translation")
     if (is.null(cur_trans))
-      cur_trans <- 1:list_end
+      cur_trans <- seq_along(current)
 
     if (i == 1) {
       trans <- cur_trans
+      list_end <- length(current)
       next()
     }
 
@@ -91,6 +91,7 @@ find_identical_sites.varkit <- function(x,
     llist_chrom[[i]] <- current
 
     trans <- c(trans, cur_trans)
+    list_end <- list_end + length(current)
   }
 
   # Merge and adjust attributes
