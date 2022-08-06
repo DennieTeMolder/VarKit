@@ -40,19 +40,10 @@ find_identical_cols <- function(x, tolerance = .01, llist = NULL) {
       next()
 
     # From all columns with the least number of NAs, select the middle column to be retained
-    llist <- .link_to_least_na_middle(llist, cols = c(i, identical), data = x)
-    skip[identical] <- TRUE
+    combined <- c(i, identical)
+    keep <- .which_least_na_middle(combined, data = x)
+    llist <- link_entries(llist, combined[keep], combined[-keep])
+    skip[combined[-keep]] <- TRUE
   }
   llist
-}
-
-.link_to_least_na_middle <- function(llist, cols, data) {
-  n_na <- colSums(is.na(data[, cols]))
-  least_na <- which(n_na == min(n_na))
-  if (length(least_na) > 1) {
-    middle <- least_na[floor(length(least_na) / 2)]
-  } else {
-    middle <- least_na
-  }
-  llist <- link_entries(llist, cols[middle], cols[-middle])
 }

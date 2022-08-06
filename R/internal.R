@@ -67,6 +67,15 @@
   llist
 }
 
+.which_least_na_middle <- function(cols, data) {
+  n_na <- colSums(is.na(data[, cols]))
+  least_na <- which(n_na == min(n_na))
+  # Take the middle value
+  if (length(least_na) > 1)
+    return(least_na[floor(length(least_na) / 2)])
+  least_na
+}
+
 ## Unused functions ------
 .bi_gt2dosage <- function(mat) {
   stopifnot(is.matrix(mat))
