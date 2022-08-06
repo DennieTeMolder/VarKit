@@ -33,7 +33,8 @@ summary.link_list <- function(x) {
     n_total = length(x),
     n_node = sum(contains_link(x)),
     n_unlinked = sum(is_unlinked(x)),
-    n_remove = n_total - n_node - n_unlinked,
+    n_keep = n_node + n_unlinked,
+    n_remove = n_total - n_keep,
     frac_remove = n_remove / n_total
   )
 }
