@@ -79,7 +79,7 @@ write_link_list(ll, temp_file)
 read_link_list(temp_file)
 
 
-## Linkage ------
+## Identical ------
 vcf <- read_vcf(example, skip_cols = c("info", "filter"))
 vcf$geno <- .bi_gt2dosage(vcf$geno)
 hide_site <- apply(geno(vcf), 2, .not_variable)
@@ -90,3 +90,14 @@ llist <- find_identical_sites(vcf, cores = 1)
 summary(llist)
 
 mask(vcf, llist)
+
+## Linked ------
+vcf <- read_vcf(example, skip_cols = c("info", "filter"))
+vcf$geno <- .bi_gt2dosage(vcf$geno)
+hide_site <- apply(geno(vcf), 2, .not_variable)
+vcf <- mask(vcf, site = hide_site)
+hide_site <- fixed(vcf)$chrom != "II"
+vcf <- mask(vcf, hide_site)
+summary(vcf)
+
+summary(find_linked_cols(geno(vcf), fixed(vcf)$pos))
