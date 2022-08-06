@@ -34,14 +34,25 @@ find_identical_cols <- function(x, tolerance = .01, llist = NULL) {
     diff <- x[, check, drop = FALSE] - x[, i]
     sums <- colMeans(abs(diff), na.rm = TRUE)
     identical <- check[sums <= tolerance]
+
+    identical <- identical[!is.na(identical)]
     if (length(identical) == 0)
       next()
 
-    # Keep the middle entry
-    combined <- c(i, identical)
-    middle <- floor(length(combined) / 2)
-    llist <- link_entries(llist, combined[middle], combined[-middle])
+    # From all columns with the least number of NAs, select the middle column to be retained
+    llist <- .link_to_least_na_middle(llist, cols = c(i, identical), data = x)
     skip[identical] <- TRUE
   }
   llist
+}
+
+.link_to_least_na_middle <- function(llist, cols, data) {
+  n_na <- colSums(is.na(data[, cols]))
+  least_na <- which(n_na == min(n_na))
+  if (length(least_na) > 1) {
+    middle <- least_na[floor(length(least_na) / 2)]
+  } else {
+    middle <- least_na
+  }
+  llist <- link_entries(llist, cols[middle], cols[-middle])
 }
