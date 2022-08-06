@@ -67,10 +67,6 @@
   llist
 }
 
-.cor_pair_silent <- function(x, y = NULL) {
-  suppressWarnings(cor(x, y, use = "pairwise.complete.obs"))
-}
-
 ## Unused functions ------
 .bi_gt2dosage <- function(mat) {
   stopifnot(is.matrix(mat))
