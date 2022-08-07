@@ -1,6 +1,7 @@
 ##' @export
 find_identical_sites <- function(x,
                                  tolerance = .01,
+                                 method = "fast",
                                  by_chrom = TRUE,
                                  cores = 1) {
   UseMethod("find_identical_sites", x)
@@ -10,6 +11,7 @@ find_identical_sites <- function(x,
 ##' @import foreach
 find_identical_sites.varkit <- function(x,
                                         tolerance = .01,
+                                        method = "fast",
                                         by_chrom = TRUE,
                                         cores = 1) {
   stopifnot(is.logical(by_chrom))
@@ -17,7 +19,9 @@ find_identical_sites.varkit <- function(x,
   # Short-circuit
   if (!by_chrom) {
     llist <- link_list(fixed(vcf, add_index = TRUE)$idx)
-    return(find_identical_cols(geno(vcf), tolerance = tolerance, llist = llist))
+    return(find_identical_cols(
+      geno(vcf), tolerance = tolerance, method = method, llist = llist
+    ))
   }
 
   # Register cores for parallel computing if required
@@ -45,7 +49,9 @@ find_identical_sites.varkit <- function(x,
     .packages = "varkit"
   ) %dopar% {
     llist <- link_list(fix$idx)
-    llist <- find_identical_cols(gt, tolerance = tolerance, llist = llist)
+    llist <- find_identical_cols(
+      gt, tolerance = tolerance, method = method, llist = llist
+    )
     if (is.null(cl))
       pb_set(getTxtProgressBar(pb) + 1)
     llist
