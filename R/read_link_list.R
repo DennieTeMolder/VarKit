@@ -1,10 +1,10 @@
 ##' @export
 read_link_list <- function(file) {
-  ll <- rjson::fromJSON(file = file)
-  class(ll) <- "link_list"
-  trans <- ll$translation
+  llist <- rjson::fromJSON(file = file)
+  class(llist) <- "link_list"
+  trans <- llist$translation
   if (!is.null(trans))
-    attr(ll, "translation") <- trans
-  ll$translation <- NULL
-  ll
+    attr(llist, "translation") <- trans
+  llist$translation <- NULL
+  llist
 }

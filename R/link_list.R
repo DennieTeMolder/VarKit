@@ -4,11 +4,11 @@ link_list <- function(names) {
   n <- length(names)
   if (n < 1)
     stop("The input is zero length!")
-  ll <- as.list(rep(0, n))
-  class(ll) <- "link_list"
+  llist <- as.list(rep(0, n))
+  class(llist) <- "link_list"
   if (!all(names == 1:n))
-    attr(ll, "translation") <- names
-  ll
+    attr(llist, "translation") <- names
+  llist
 }
 
 ##' @export
