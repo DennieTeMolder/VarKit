@@ -1,80 +1,76 @@
-FindLinkedColsContig <- function(
-  mat, loc, cutoff = .9, window = NULL, cores = 1, progress = T, debug = F
-) {
-  require(foreach)
+##' @export
+find_linked_sites <- function(x,
+                              cutoff = .9,
+                              window = NULL,
+                              method = "recursive",
+                              by_chrom = TRUE,
+                              cores = 1) {
+  UseMethod("find_linked_sites", x)
+}
 
-  # Checks
-  stopifnot(is.matrix(mat) && is.numeric(mat))
-  stopifnot(is.data.frame(loc))
-  stopifnot(ncol(loc) >= 2)
-  stopifnot(nrow(loc) == ncol(mat))
+##' @export
+##' @import foreach
+find_linked_sites.varkit <- function(x,
+                                     cutoff = .9,
+                                     window = NULL,
+                                     method = "recursive",
+                                     by_chrom = TRUE,
+                                     cores = 1) {
+  stopifnot(is.logical(by_chrom))
 
-  parallel <- cores > 1
+  # Missing arguments
+  if (is.null(window))
+    window <- .window_default(use_bp = TRUE)
 
-  if (debug) {
-    if (parallel)
-      stop("Debugging only supported when cores = 1")
-    progress <- F
+  # Short-circuit
+  if (!by_chrom) {
+    llist <- link_list(fixed(vcf, add_index = TRUE)$idx)
+    return(find_linked_cols(
+      geno(vcf), pos = fixed(vcf)$pos, cutoff = cutoff, window = window, method = method
+    ))
   }
-
-  # Unpack the loc dataframe (1st column = contig, 2nd = position bp/cM)
-  contigs <- loc[[1]]
-  pos <- loc[[2]]
 
   # Register cores for parallel computing if required
-  if (parallel) {
-    logFile <- tempfile()
-    message("Writing parallel worker logs to: ", logFile)
-    cl <- snow::makeCluster(cores, outfile = logFile)
-    doSNOW::registerDoSNOW(cl = cl)
-  } else {
-    foreach::registerDoSEQ()
-  }
+  cl <- .register_workers(cores)
 
-  # Find unique contigs, order from most to least positions for efficiency
-  table <- table(contigs)
-  order <- names(sort(table[table > 0], decreasing = T))
+  # Get required data from varkit object
+  fix_chrom <- fixed(x, add_index = TRUE, by_chrom = TRUE, only_positions = TRUE)
+  gt_chrom <- geno(x, by_chrom = TRUE)
 
-  # Initiate the progress barr
-  if (progress) {
-    pb <- txtProgressBar(max = length(order), style = 3)
-    PbSet <- function(n) setTxtProgressBar(pb, n)
-    opts <- list(progress = PbSet)
-  } else {
-    opts <- NULL
-  }
+  # Order contigs most to least sites for efficiency
+  idx <- order(sapply(fix_chrom, nrow), decreasing = TRUE)
+  fix_chrom <- fix_chrom[idx]
+  gt_chrom <- gt_chrom[idx]
 
-  # Compute linkage within each contig in parallel
-  linkList <- foreach::foreach(
-    contig = order,
+  # Add progress bar to foreach
+  pb <- txtProgressBar(max = length(fix_chrom), style = 3)
+  pb_set <- function(n) setTxtProgressBar(pb, n)
+  opts <- list(progress = pb_set)
+
+  # Compute identical sites within each contig in parallel
+  llist_chrom <- foreach::foreach(
+    fix = fix_chrom,
+    gt = gt_chrom,
     .options.snow = opts,
-    .export = c(
-      "CreateNaList", "GetEntries", "LinkEntries", "CorPairwiseSilent",
-      "FindLinkedCols", ".ResolveLinkedCols", ".IndexLinkedCols",
-      ".IndexGet"
-    )
+    .packages = "varkit"
   ) %dopar% {
-    if (debug)
-      message(sprintf("\nAnalyzing contig %s", contig))
-
-    idx <- which(contigs == contig)
-    linkList <- FindLinkedCols(
-      mat = mat, pos = pos, cutoff = cutoff, window = window, idx = idx
+    llist <- link_list(fix$idx)
+    llist <- find_linked_cols(
+      gt, pos = fix$pos, cutoff = cutoff, window = window, method = method
     )
-
-    if (progress & !parallel)
-      PbSet(getTxtProgressBar(pb) + 1)
-
-    return(linkList)
+    if (is.null(cl))
+      pb_set(getTxtProgressBar(pb) + 1)
+    llist
   }
 
   # Cleanup
-  if (parallel)
-    snow::stopCluster(cl)
-  if (progress)
-    close(pb)
+  close(pb)
+  .unregister_workers(cl)
 
-  # Unpack the top level of the resulting list
-  linkList <- unlist(linkList, recursive = F)
-  return(linkList)
+  # Add names and revert order
+  names(llist_chrom) <- names(fix_chrom)
+  llist_chrom <- llist_chrom[idx]
+
+  # Merge the per chromosome link_lists into one
+  .merge_link_list(llist_chrom)
 }

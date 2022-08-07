@@ -31,7 +31,7 @@ find_identical_sites.varkit <- function(x,
   fix_chrom <- fixed(x, add_index = TRUE, by_chrom = TRUE, only_positions = TRUE)
   gt_chrom <- geno(x, by_chrom = TRUE)
 
-  # Order contigs most to lest for efficiency
+  # Order contigs most to least sites for efficiency
   idx <- order(sapply(fix_chrom, nrow), decreasing = TRUE)
   fix_chrom <- fix_chrom[idx]
   gt_chrom <- gt_chrom[idx]
