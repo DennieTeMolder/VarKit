@@ -24,15 +24,8 @@ find_linked_cols <- function(x,
   }
 
   # Missing arguments
-  if (is.null(window)) {
-    if (is.null(pos)) {
-      window <- 100
-      message("Setting window size to ", window," sites.")
-    } else {
-      window <- 5e4
-      message("Setting window size to ", window," bp.")
-    }
-  }
+  if (is.null(window))
+    window <- .window_default(use_bp = !is.null(pos))
   if (is.null(llist))
     llist <- link_list(1:ncol(x))
 
@@ -116,6 +109,17 @@ find_linked_cols <- function(x,
   }
 
   .resolve_linked_cols(linked_cols, data = x, llist = llist)
+}
+
+.window_default <- function(use_bp = FALSE) {
+  if (use_bp) {
+    window <- 5e4
+    message("Setting window size to ", window," bp.")
+    return(window)
+  }
+  window <- 100
+  message("Setting window size to ", window," sites.")
+  window
 }
 
 .cor_pair_silent <- function(x, y = NULL) {
