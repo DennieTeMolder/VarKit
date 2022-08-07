@@ -9,7 +9,7 @@
 
 .linked_only <- function(x, allow_na = TRUE) {
   if (allow_na) {
-    x <- na.omit(x)
+    x <- x[!is.na(x)]
   } else {
     if (any(is.na(x)))
       stop("Removed indexes (idx) requested, this not allowed!")
@@ -72,8 +72,16 @@
   least_na <- which(n_na == min(n_na))
   # Take the middle value
   if (length(least_na) > 1)
-    return(least_na[floor(length(least_na) / 2)])
+    return(least_na[ceiling(length(least_na) / 2)])
   least_na
+}
+
+.all_null <- function(x) {
+  for (i in seq_along(x)) {
+    if (!is.null(x[[i]]))
+      return(FALSE)
+  }
+  return(TRUE)
 }
 
 ## Unused functions ------
