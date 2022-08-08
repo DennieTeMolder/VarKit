@@ -21,6 +21,10 @@ For large VCF files (> 1 Gb) it is often beneficial (in terms of speed and
 memory usage) to subset the VCF by chromosome/scaffold before loading it into R
 using the aforementioned Bcftools.
 
+Reading a VCF file uses **~5.5x** the **uncompressed** VCF file size of memory
+(RAM) and the resulting varkit object occupies **~2.5x** the uncompressed VCF
+file size of memory. However, specifying `skip_cols` will reduce this footprint.
+
 ## Installation
 Download `varkit_0.1.0.tar.gz` from the releases tab ([link](https://git.wur.nl/molde006/varkit/uploads/ec2b654c670285f91ae25af7202bd01b/varkit_0.1.0.tar.gz)).
 
