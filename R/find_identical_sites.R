@@ -18,9 +18,9 @@ find_identical_sites.varkit <- function(x,
 
   # Short-circuit
   if (!by_chrom) {
-    llist <- link_list(fixed(vcf, add_index = TRUE)$idx)
+    llist <- link_list(fixed(x, add_index = TRUE)$idx)
     return(find_identical_cols(
-      geno(vcf), tolerance = tolerance, method = method, llist = llist
+      geno(x), tolerance = tolerance, method = method, llist = llist
     ))
   }
 
@@ -37,8 +37,8 @@ find_identical_sites.varkit <- function(x,
   gt_chrom <- gt_chrom[idx]
 
   # Add progress bar to foreach
-  pb <- txtProgressBar(max = length(fix_chrom), style = 3)
-  pb_set <- function(n) setTxtProgressBar(pb, n)
+  pb <- utils::txtProgressBar(max = length(fix_chrom), style = 3)
+  pb_set <- function(n) utils::setTxtProgressBar(pb, n)
   opts <- list(progress = pb_set)
 
   # Compute identical sites within each contig in parallel
@@ -53,7 +53,7 @@ find_identical_sites.varkit <- function(x,
       gt, tolerance = tolerance, method = method, llist = llist
     )
     if (is.null(cl))
-      pb_set(getTxtProgressBar(pb) + 1)
+      .pb_increment(pb)
     llist
   }
 

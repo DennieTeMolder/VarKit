@@ -45,7 +45,7 @@ write_vcf.varkit <- function(x, path, replace_filter = FALSE) {
   colnames(df) <- toupper(colnames(df))
 
   gt <- x$geno
-  if (class(gt[[1, 1]]) == "character")
+  if (inherits(gt[[1, 1]], "character"))
     gt[is.na(gt)] <- paste(rep(".", x$ploidy), collapse = "/")
   gt <- as.data.frame(gt)
 

@@ -1,6 +1,6 @@
 ##' Load A VCF File From Disk
 ##'
-##' .. content for \details{} ..
+##' Load a VCF file into R as a 'varkit' object.
 ##' @title Load A VCF File From Disk
 ##' @param path String, path of vcf(.bgz) file to load
 ##' @param ploidy Integer, ploidy number of the organism in the vcf

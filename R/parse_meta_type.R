@@ -13,7 +13,7 @@ parse_meta_type.varkit_meta <- function(x, type) {
   # Checks
   stopifnot(all(c("name", "value") %in% names(x)))
 
-  x <- dplyr::filter(x, name == type)
+  x <- x[x$name == type,]
 
   if (nrow(x) == 0)
     stop(paste0("The type '", type, "' could not be found in meta()$name!"))

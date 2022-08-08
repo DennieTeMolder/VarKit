@@ -12,7 +12,7 @@ link_list <- function(names) {
 }
 
 ##' @export
-print.link_list <- function(x, n = 5) {
+print.link_list <- function(x, ..., n = 5) {
   len <- length(x)
   n <- min(n, len)
   trans <- attr(x, "translation")
@@ -28,14 +28,15 @@ print.link_list <- function(x, n = 5) {
 }
 
 ##' @export
-summary.link_list <- function(x) {
+##' @importFrom rlang .data
+summary.link_list <- function(object, ...) {
   tibble::tibble(
-    n_total = length(x),
-    n_node = sum(contains_link(x)),
-    n_unlinked = sum(is_unlinked(x)),
-    n_keep = n_node + n_unlinked,
-    n_remove = n_total - n_keep,
-    frac_remove = n_remove / n_total
+    n_total = length(object),
+    n_node = sum(contains_link(object)),
+    n_unlinked = sum(is_unlinked(object)),
+    n_keep = .data$n_node + .data$n_unlinked,
+    n_remove = .data$n_total - .data$n_keep,
+    frac_remove = .data$n_remove / .data$n_total
   )
 }
 

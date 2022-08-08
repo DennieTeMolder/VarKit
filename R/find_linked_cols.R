@@ -123,6 +123,6 @@ find_linked_cols <- function(x,
 }
 
 .cor_pair_silent <- function(x, y = NULL) {
-  suppressWarnings(cor(x, y, use = "pairwise.complete.obs"))
+  suppressWarnings(stats::cor(x, y, use = "pairwise.complete.obs"))
 }
 

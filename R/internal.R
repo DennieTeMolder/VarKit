@@ -36,6 +36,11 @@
     snow::stopCluster(cl)
 }
 
+.pb_increment <- function(pb, n = 1) {
+  val <- utils::getTxtProgressBar(pb)
+  utils::setTxtProgressBar(pb, value = val + n)
+}
+
 .merge_link_list <- function(llist_list) {
   # Prepare list of link_lists for merge
   for (i in seq_along(llist_list)) {
@@ -102,7 +107,7 @@
 }
 
 .not_variable <- function(x) {
-  x <- na.omit(x)
+  x <- stats::na.omit(x)
   if (length(x) < 2)
     return(TRUE)
   all(duplicated(x)[-1])

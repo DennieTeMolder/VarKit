@@ -20,7 +20,7 @@ A VarKit object
 Load A VCF File From Disk
 }
 \details{
-.. content for \details{} ..
+Load a VCF file into R as a 'varkit' object.
 }
 \examples{
 path <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")

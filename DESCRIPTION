@@ -15,6 +15,7 @@ Imports:
     foreach,
     readr,
     rjson,
+    rlang,
     snow,
     stringr,
     tibble,

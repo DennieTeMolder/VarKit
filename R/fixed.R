@@ -13,7 +13,7 @@ fixed.varkit <- function(x,
                          only_positions = FALSE) {
   res <- x$fixed[x$use_site, ]
   if (only_positions)
-    res <- dplyr::select(res, chrom, pos)
+    res <- res[, c("chrom", "pos")]
   if (add_index)
     res <- dplyr::bind_cols(res, idx = which(x$use_site))
   if (by_chrom) {

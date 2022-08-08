@@ -9,19 +9,19 @@ varkit_meta <- function(x) {
 }
 
 ##' @export
-print.varkit_meta <- function(x, n = 10, verbose = TRUE) {
-  cat("Meta header data (meta(x)):\n")
-  print(tibble::tibble(x), n = n)
+print.varkit_meta <- function(x, ..., n = 10, verbose = TRUE) {
+  print(tibble::tibble(x), ..., n = n)
   if (verbose) {
-    cat("\nMeta summary (summary(meta(x))):\n")
-    print(summary(x), n = n)
+    cat("\nMeta summary (summary(x)):\n")
+    print(summary(x), ..., n = n)
   }
   invisible(x)
 }
 
 ##' @export
-summary.varkit_meta <- function(x) {
-  x <- dplyr::summarise(dplyr::group_by(x, name), lines = dplyr::n())
-  colnames(x)[1] <- "type"
-  x
+##' @importFrom rlang .data
+summary.varkit_meta <- function(object, ...) {
+  object <- dplyr::summarise(dplyr::group_by(object, .data$name), lines = dplyr::n())
+  colnames(object)[1] <- "type"
+  object
 }

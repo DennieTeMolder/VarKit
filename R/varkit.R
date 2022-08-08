@@ -5,7 +5,7 @@ varkit <- function(df, ploidy, header = NULL) {
   stopifnot(is.numeric(ploidy))
 
   # Move fixed fields to a separate df
-  fixed_idx <- na.omit(match(.fixed_columns(), colnames(df)))
+  fixed_idx <- stats::na.omit(match(.fixed_columns(), colnames(df)))
 
   if (!ncol(df) > length(fixed_idx))
     stop("Only fixed columns detected in df, missing genotypes!")
@@ -40,28 +40,29 @@ varkit <- function(df, ploidy, header = NULL) {
 }
 
 ##' @export
-print.varkit <- function(x, n = 10) {
+print.varkit <- function(x, ..., n = 10) {
   cat("*VarKit Variant Object*\n")
   if (!is.null(x$meta)) {
-    print(x$meta, n = n, verbose = FALSE)
+    cat("Meta header data (meta(x)):\n")
+    print(x$meta, ..., n = n, verbose = FALSE)
     cat("\n")
   }
   cat("Fixed fields (fixed(x)):\n")
-  print(x$fixed, n = n)
+  print(x$fixed, ..., n = n)
   cat("\nTransposed genotype matrix (geno(x)):\n")
-  print(x$geno, n_samples = n)
+  print(x$geno, ..., n_samples = n)
   cat("\nSample names (samples(x)):\n")
-  print(rownames(x$geno))
+  print(rownames(x$geno), ...)
   cat("\nCurrently selected", sum(x$use_site),
       "out of", length(x$use_site), "sites.\n")
 }
 
 ##' @export
-summary.varkit <- function(x) {
+summary.varkit <- function(object, ...) {
   tibble::tibble(
-    samples = length(samples(x)),
-    sites_visible = sum(x$use_site),
-    sites_total = length(x$use_site),
-    sites_frac = mean(x$use_site)
+    samples = length(samples(object)),
+    sites_visible = sum(object$use_site),
+    sites_total = length(object$use_site),
+    sites_frac = mean(object$use_site)
   )
 }
