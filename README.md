@@ -16,4 +16,6 @@ For many of such operations the user is better off using [Bcftools](https://samt
 GPL-3
 
 ## Project status
-Alpha, under active development.
+Beta, under active development. 
+
+Nearly all functionality is implemented, but documentation is still sorely lacking.
