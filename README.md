@@ -23,7 +23,11 @@ And load the package using:
 library(varkit)
 ```
 
-## Authors and acknowledgment
+## Examples
+Coming soon…
+
+## Authors and acknowledgements
+Dennie te Molder: Creator and main developer.
 
 ## License
 GPL-3
