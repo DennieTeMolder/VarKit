@@ -40,7 +40,7 @@ read_vcf <- function(path,
 
   # NAs are represented differently after the format field
   # TODO This only works if GT is the only format field
-  na <- c(".", paste(rep(".", ploidy), collapse = "/"))
+  na <- c("NA", ".", paste(rep(".", ploidy), collapse = "/"))
 
   data <- readr::read_tsv(path,
     col_names = header$col_names,
