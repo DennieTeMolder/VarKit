@@ -82,9 +82,6 @@ read_link_list(temp_file)
 ## Linked sites ------
 vcf <- read_vcf(example, skip_cols = c("info", "filter"))
 vcf$geno <- .bi_gt2dosage(vcf$geno)
-hide_site <- apply(geno(vcf), 2, .not_variable)
-vcf <- mask(vcf, site = hide_site)
-summary(vcf)
 
 llist <- find_identical_sites(vcf, cores = 1)
 summary(llist)
