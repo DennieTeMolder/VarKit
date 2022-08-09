@@ -29,7 +29,8 @@ print.link_list <- function(x, ..., n = 5) {
     cat(" ...\n")
   cat("# Total length:", len, "\n")
   if (!is.null(trans))
-    cat("\nWith a translation layer:\n", .collapse(trans[1:n]), "...\n")
+    cat("\nWith a", class(trans), "translation layer:\n",
+        .collapse(trans[1:n]), "...\n")
 }
 
 ##' @export
