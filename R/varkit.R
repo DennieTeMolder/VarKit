@@ -45,7 +45,6 @@ varkit <- function(vcf, ploidy, meta = NULL) {
 print.varkit <- function(x, ..., n = 10) {
   cat("*VarKit Variant Object*\n")
   if (!is.null(x$meta)) {
-    cat("Meta header data (meta(x)):\n")
     print(x$meta, ..., n = n, verbose = FALSE)
     cat("\n")
   }

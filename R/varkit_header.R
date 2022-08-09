@@ -32,6 +32,7 @@ varkit_header <- function(x) {
 
 ##'@export
 print.varkit_header <- function(x, ..., n = 10, verbose = TRUE) {
+  cat("Meta header data (meta(x)):\n")
   print(x$meta, ..., n = n, verbose = verbose)
   cat("\nColumn names (for 'skip_cols'):\n")
   print(x$col_names, ...)
