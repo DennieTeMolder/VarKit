@@ -22,12 +22,8 @@ read_vcf <- function(path,
   header <- read_vcf_header(path)
 
   # Header checks
-  if (length(header$col_names) < 4)
+  if (length(header$col_names) < 2)
     stop("The number of columns is too low, make sure the file is TAB delimited!")
-  if (!all(c("chrom", "pos") %in% header$col_names))
-    stop("The VCF header is missing the CHROM and/or POS column(s)!")
-  if (all(header$col_names %in% .fixed_columns()))
-    stop("The VCF file is missing genotype calls!")
   if (!all(skip_cols %in% header$col_names))
     stop("Not all column names provided for 'skip_cols' are in the VCF header!")
 

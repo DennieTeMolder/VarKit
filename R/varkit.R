@@ -1,24 +1,26 @@
 ##' @export
-varkit <- function(df, ploidy, header = NULL) {
+varkit <- function(vcf, ploidy, meta = NULL) {
   # Checks
-  stopifnot(is.data.frame(df))
+  stopifnot(is.data.frame(vcf))
   stopifnot(is.numeric(ploidy))
 
   # Move fixed fields to a separate df
-  fixed_idx <- stats::na.omit(match(.fixed_columns(), colnames(df)))
+  fixed_idx <- stats::na.omit(match(.fixed_columns(), colnames(vcf)))
 
-  if (!ncol(df) > length(fixed_idx))
-    stop("Only fixed columns detected in df, missing genotypes!")
-  if (!all(c("chrom", "pos") %in% colnames(df)[fixed_idx]))
-    stop("Missing 'chrom' and 'pos' columns in df")
+  if (length(fixed_idx) == 0)
+    stop("No fixed columns detected in VCF, ensure fixed column names are lower case!")
+  if (ncol(vcf) <= length(fixed_idx))
+    stop("Only fixed columns detected in VCF, missing genotypes!")
+  if (!all(c("chrom", "pos") %in% colnames(vcf)[fixed_idx]))
+    stop("Missing 'chrom' and 'pos' columns in VCF!")
 
-  fixed <- df[, fixed_idx]
-  df[, fixed_idx] <- NULL
+  fixed <- vcf[, fixed_idx]
+  vcf[, fixed_idx] <- NULL
 
   # The remaining fields are the genotype calls, which are stored as a
   # transposed matrix w/ a custom class
-  geno <- varkit_geno(df)
-  rm(df)
+  geno <- varkit_geno(vcf)
+  rm(vcf)
 
   # Apply initial mask based on FILTER column
   use_site <- FALSE
