@@ -60,6 +60,8 @@ summary(vcf)
 llist <- find_linked_sites(vcf, cutoff = 0.7)
 summary(llist)
 
+mask(vcf, llist)
+
 temp_file <- tempfile(fileext = ".json")
 write_link_list(llist, temp_file)
 summary(read_link_list(temp_file))

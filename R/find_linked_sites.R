@@ -57,7 +57,7 @@ find_linked_sites.varkit <- function(x,
   ) %dopar% {
     llist <- link_list(fix$idx)
     llist <- find_linked_cols(
-      gt, pos = fix$pos, cutoff = cutoff, window = window, method = method
+      gt, pos = fix$pos, cutoff = cutoff, window = window, method = method, llist = llist
     )
     if (is.null(cl))
       .pb_increment(pb)
