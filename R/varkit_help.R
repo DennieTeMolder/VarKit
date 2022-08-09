@@ -13,5 +13,6 @@ varkit_help <- function(x) {
   # Print
   cat("Available methods:\n")
   print(x)
+  cat("Use `?function_name` for more info (e.g. ?samples).\n")
   invisible(x)
 }
