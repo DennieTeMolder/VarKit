@@ -2,8 +2,8 @@
 link_list <- function(names) {
   stopifnot(is.vector(names))
   n <- length(names)
-  if (n < 1)
-    stop("The input is zero length!")
+  if (n < 2)
+    stop("'names' should have a minimum length of 2!")
   llist <- as.list(rep(0, n))
   class(llist) <- "link_list"
   if (!all(names == 1:n))

@@ -1,5 +1,7 @@
 ##' @export
 varkit_header <- function(x) {
+  stopifnot(is.character(x))
+
   # The last line of the header should be the only line with a single "#"
   header_end <- stringr::str_detect(x, "^#[^#\n]")
   if (!any(header_end)) {

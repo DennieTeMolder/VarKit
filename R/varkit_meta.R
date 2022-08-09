@@ -1,5 +1,6 @@
 ##' @export
 varkit_meta <- function(x) {
+  stopifnot(is.character(x))
   x <- stringr::str_remove(x, "##")
   x <- stringr::str_split_fixed(x, "=", n = 2)
   colnames(x) <- c("name", "value")

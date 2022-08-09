@@ -3,6 +3,8 @@ varkit <- function(vcf, ploidy, meta = NULL) {
   # Checks
   stopifnot(is.data.frame(vcf))
   stopifnot(is.numeric(ploidy))
+  if (!is.null(meta))
+    stopifnot(is_varkit_meta(meta))
 
   # Move fixed fields to a separate df
   fixed_idx <- stats::na.omit(match(.fixed_columns(), colnames(vcf)))
