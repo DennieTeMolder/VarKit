@@ -18,7 +18,7 @@ read_vcf_header(example)
 vcf <- read_vcf(example, skip_cols = c("info", "filter", "N2"))
 print(vcf)
 
-varkit_help(x = vcf)
+varkit_help(vcf)
 
 meta(vcf)
 fixed(vcf)
@@ -60,21 +60,32 @@ summary(vcf)
 llist <- find_linked_sites(vcf, cutoff = 0.7)
 summary(llist)
 
+temp_file <- tempfile(fileext = ".json")
+write_link_list(llist, temp_file)
+summary(read_link_list(temp_file))
+
 
 ## Link list ------
 names <- LETTERS[1:10]
 llist <- link_list(names)
+
+# Link entries by their index
 llist <- link_entries(llist, 3, c(2, 7))
 print(llist, n = NULL)
-lookup(llist , c(3, 6))
-
 llist <- link_entries(llist, 6, 3)
-lookup(llist, 6)
-which_remove(llist)
+print(llist, n = NULL)
 
-temp_file <- tempfile(fileext = ".json")
-write_link_list(llist, temp_file)
-read_link_list(temp_file)
+# Lookup by name
+lookup(llist, "F")
+# Lookup by name to index
+lookup(llist, "F", translate = "in")
+# Lookup by index to name
+lookup(llist, 6, translate = "out")
+# Lookup by index to index
+lookup(llist, 6, translate = "none")
+
+# Request entries to be removed to make data unlinked
+which_remove(llist, translate_out = TRUE)
 
 
 ### Tests ------

@@ -30,7 +30,7 @@ get_site_idx.data.frame <- function(x, current_sites) {
 get_site_idx.link_list <- function(x, current_sites) {
   if (length(x) != nrow(current_sites))
     stop("Length of 'x' not equal to current number of unmasked sites!")
-  idx <- which_remove(x)
+  idx <- which_remove(x, translate_out = TRUE)
   if (!all(idx %in% current_sites$idx))
     stop("Indexes of 'link_list' don't align with the current mask!")
   idx
