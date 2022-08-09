@@ -4,7 +4,7 @@
 \alias{read_vcf}
 \title{Load A VCF File From Disk}
 \usage{
-read_vcf(path, ploidy = 2, skip_cols = NULL)
+read_vcf(path, ploidy = 2, skip_cols = NULL, na = "auto-generate", ...)
 }
 \arguments{
 \item{path}{String, path of vcf(.bgz) file to load}

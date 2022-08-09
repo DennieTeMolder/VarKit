@@ -13,11 +13,14 @@
 ##' vcf <- read_vcf(path, ploidy = 2, skip_cols = c("info", "filter", "N2"))
 read_vcf <- function(path,
                      ploidy = 2,
-                     skip_cols = NULL) {
+                     skip_cols = NULL,
+                     na = "auto-generate",
+                     ...) {
   # Argument checks
   stopifnot(is.numeric(ploidy))
   if (!is.null(skip_cols))
     stopifnot(is.character(skip_cols))
+  stopifnot(is.character(na))
 
   header <- read_vcf_header(path)
 
@@ -36,13 +39,15 @@ read_vcf <- function(path,
 
   # NAs are represented differently after the format field
   # TODO This only works if GT is the only format field
-  na <- c("NA", ".", paste(rep(".", ploidy), collapse = "/"))
+  if (na == "auto-generate")
+    na <- c(".", paste(rep(".", ploidy), collapse = "/"))
 
   data <- readr::read_tsv(path,
     col_names = header$col_names,
     col_types = types,
     comment = "#",
-    na = na
+    na = na,
+    ...
   )
 
   varkit(data, ploidy, header)

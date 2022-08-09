@@ -33,8 +33,8 @@ varkit <- function(vcf, ploidy, meta = NULL) {
     meta = header$meta,
     fixed = fixed,
     geno = geno,
-    ploidy = ploidy,
-    use_site = use_site
+    use_site = use_site,
+    ploidy = ploidy
   )
   class(vcf) <- c("varkit", "varkit_header")
 

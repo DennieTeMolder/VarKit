@@ -1,6 +1,6 @@
 ##' @export
-read_vcf_header <- function(path) {
-  header <- readr::read_lines(path, n_max = 1e4)
+read_vcf_header <- function(path, n_max = 1e4, ...) {
+  header <- readr::read_lines(path, n_max = n_max, ...)
 
   # Check if the first line contains the VCF file spec
   if (!stringr::str_detect(header[1], "^##fileformat=VCF"))
