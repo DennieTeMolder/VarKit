@@ -30,6 +30,11 @@ varkit_header <- function(x) {
   header
 }
 
+##' @export
+is_varkit_header <- function(x) {
+  inherits(x, "varkit_header")
+}
+
 ##'@export
 print.varkit_header <- function(x, ..., n = 10, verbose = TRUE) {
   cat("Meta header data (meta(x)):\n")

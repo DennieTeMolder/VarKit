@@ -17,6 +17,11 @@ varkit_geno.matrix <- function(x) {
 }
 
 ##' @export
+is_varkit_geno <- function(x) {
+  inherits(x, "varkit_geno")
+}
+
+##' @export
 print.varkit_geno <- function(x, ..., n_sites = 5, n_samples = 5) {
   n_col <- ncol(x)
   n_row <- nrow(x)

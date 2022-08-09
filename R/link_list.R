@@ -12,6 +12,11 @@ link_list <- function(names) {
 }
 
 ##' @export
+is_link_list <- function(x) {
+  inherits(x, "link_list")
+}
+
+##' @export
 print.link_list <- function(x, ..., n = 5) {
   len <- length(x)
   n <- min(n, len)
@@ -38,9 +43,4 @@ summary.link_list <- function(object, ...) {
     n_remove = .data$n_total - .data$n_keep,
     frac_remove = .data$n_remove / .data$n_total
   )
-}
-
-##' @export
-is_link_list <- function(x) {
-  inherits(x, "link_list")
 }

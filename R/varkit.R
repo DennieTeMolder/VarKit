@@ -42,6 +42,11 @@ varkit <- function(vcf, ploidy, meta = NULL) {
 }
 
 ##' @export
+is_varkit <- function(x) {
+  inherits(x, "varkit")
+}
+
+##' @export
 print.varkit <- function(x, ..., n = 10) {
   cat("*VarKit Variant Object*\n")
   if (!is.null(x$meta)) {

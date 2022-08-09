@@ -9,6 +9,11 @@ varkit_meta <- function(x) {
 }
 
 ##' @export
+is_varkit_meta <- function(x) {
+  inherits(x, "varkit_meta")
+}
+
+##' @export
 print.varkit_meta <- function(x, ..., n = 10, verbose = TRUE) {
   print(tibble::tibble(x), ..., n = n)
   if (verbose) {
