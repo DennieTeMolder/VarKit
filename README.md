@@ -26,12 +26,12 @@ Reading a VCF file uses **~5.5x** the **uncompressed** VCF file size of memory
 file size of memory. However, specifying `skip_cols` will reduce this footprint.
 
 ## Installation
-Download `varkit_0.1.1.tar.gz` from the releases tab ([link](https://git.wur.nl/molde006/varkit/uploads/80b68602b4157d2a32c8346994abe80e/varkit_0.1.1.tar.gz)).
+Download `varkit_0.2.1.tar.gz` from the releases tab ([link](https://git.wur.nl/molde006/varkit/uploads/ab637b06653f77188037c640abeadf81/varkit_0.2.1.tar.gz)).
 
 Run the following command (adjust the path first!):
 
 ``` R
-install.packages("/path/to/downloads/varkit_0.1.1.tar.gz")
+install.packages("/path/to/downloads/varkit_0.2.1.tar.gz")
 ```
 
 And load the package using:
