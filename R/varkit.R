@@ -30,7 +30,7 @@ varkit <- function(vcf, ploidy, meta = NULL) {
     use_site <- rep(TRUE, ncol(geno))
 
   vcf <- list(
-    meta = header$meta,
+    meta = meta,
     fixed = fixed,
     geno = geno,
     use_site = use_site,
