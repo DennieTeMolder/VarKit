@@ -7,14 +7,18 @@
 read_vcf(path, ploidy = 2, skip_cols = NULL, na = "auto-generate", ...)
 }
 \arguments{
-\item{path}{String, path of vcf(.bgz) file to load}
+\item{path}{String, path to the vcf(.bgz) file to load}
 
-\item{ploidy}{Integer, ploidy number of the organism in the vcf}
+\item{ploidy}{Integer, ploidy number of the organism in the VCF}
 
-\item{skip_cols}{Character vector, columns to skip loading. Should match names in read_vcf_header(path)$col_names.}
+\item{skip_cols}{Character vector, columns to skip loading. Should match names in \code{read_vcf_header(path)$col_names}.}
+
+\item{na}{Character vector, what strings to recognise as NA when reading}
+
+\item{...}{Arguments passed to \code{\link[readr:read_delim]{readr::read_tsv()}}}
 }
 \value{
-A VarKit object
+VarKit object
 }
 \description{
 Load A VCF File From Disk
