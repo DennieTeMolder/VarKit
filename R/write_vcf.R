@@ -22,27 +22,27 @@ write_vcf.varkit <- function(x, path, replace_filter = FALSE) {
     header <- '##fileformat=VCFv4.2'
   }
 
-  ## Data
-  df <- x$fixed
+  ## Fixed fields
+  fxd <- x$fixed
 
   if (replace_filter)
-    df$filter <- ifelse(x$use_site, "PASS", "MASKED")
+    fxd$filter <- ifelse(x$use_site, "PASS", "MASKED")
 
   # Add missing columns
   fixed_names <- .fixed_columns()
-  missing <- fixed_names[!fixed_names %in% tolower(colnames(df))]
+  missing <- fixed_names[!fixed_names %in% tolower(colnames(fxd))]
 
   if ("format" %in% missing)
     warning("The FORMAT column is missing!")
 
   if (length(missing) > 0) {
     message("Creating missing columns: ", paste(missing, collapse = ", "))
-    df[missing] <- rep(NA, nrow(df))
+    fxd[missing] <- rep(NA, nrow(fxd))
   }
 
-  # Fix ordering and convert
-  df <- dplyr::relocate(df, tidyselect::all_of(fixed_names))
-  colnames(df) <- toupper(colnames(df))
+  # Fxd ordering and convert
+  fxd <- dplyr::relocate(fxd, tidyselect::all_of(fixed_names))
+  colnames(fxd) <- toupper(colnames(fxd))
 
   gt <- x$geno
   if (is.character(gt))
@@ -50,7 +50,7 @@ write_vcf.varkit <- function(x, path, replace_filter = FALSE) {
   gt <- as.data.frame(gt)
 
   # Combine
-  gt <- cbind(df, gt)
+  gt <- cbind(fxd, gt)
 
   ## Writing
   # Header
