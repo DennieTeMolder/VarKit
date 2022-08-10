@@ -122,30 +122,32 @@
   res
 }
 
+.wmpp2gt <- function(x, ploidy, cutoffs = c(.5, 1.5)) {
+  stopifnot(is.numeric(x))
+  if (ploidy != 2)
+    stop("This function only supports a 'ploidy' of 2")
+  stopifnot(length(cutoffs) == ploidy)
+  gt <- rep("0/1", length(x))
+  gt[is.na(x)] <- "./."
+  gt[x < cutoffs[1]] <- "0/0"
+  gt[x >= cutoffs[2]] <- "1/1"
+  return(gt)
 }
 
-## .MissedCorrelations <- function(corMat, cutoff = .9, linkList = NULL) {
-##   stopifnot(is.matrix(corMat))
-##   dims <- dim(corMat)
-##   stopifnot(dims[1] == dims[2])
+.missed_correlations <- function(cor_mat, cutoff = .9, llist = NULL) {
+  stopifnot(is.matrix(cor_mat))
+  stopifnot(nrow(cor_mat) == ncol(cor_mat))
+  if (!is.null(llist)) {
+    stopifnot(is_link_list(llist))
+    stopifnot(length(llist) == ncol(cor_mat))
 
-##   # Ensure matrix is truly symmetric
-##   checkMax <- 1000
-##   if (dims[1] > checkMax) {
-##     testMat <- corMat[1:checkMax, 1:checkMax]
-##     stopifnot(all.equal(testMat, t(testMat)))
-##   } else {
-##     stopifnot(all.equal(corMat, t(corMat)))
-##   }
+    rm <- which_remove(llist)
+    cor_mat <- cor_mat[-rm, -rm]
+  }
 
-##   if (!is.null(linkList)) {
-##     rm <- RemoveWhich(linkList)
-##     corMat <- corMat[-rm, -rm]
-##   }
-
-##   corMat[lower.tri(corMat, diag = T)] <- NA
-##   miss <- apply(corMat, 1, function(row) {
-##     any(row >= cutoff, na.rm = T)
-##   })
-##   return(sum(miss))
-## }
+  cor_mat[lower.tri(cor_mat, diag = T)] <- NA
+  missed <- apply(cor_mat, 2, function(col) {
+    any(col >= cutoff, na.rm = TRUE)
+  })
+  missed
+}
