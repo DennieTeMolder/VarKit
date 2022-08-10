@@ -122,16 +122,18 @@
   res
 }
 
-.wmpp2gt <- function(x, ploidy, cutoffs = c(.5, 1.5)) {
-  stopifnot(is.numeric(x))
+.dosage2gt <- function(mat, ploidy, cutoffs = c(.5, 1.5)) {
+  stopifnot(is.matrix(mat))
+  stopifnot(is.numeric(mat))
   if (ploidy != 2)
     stop("This function only supports a 'ploidy' of 2")
   stopifnot(length(cutoffs) == ploidy)
-  gt <- rep("0/1", length(x))
-  gt[is.na(x)] <- "./."
-  gt[x < cutoffs[1]] <- "0/0"
-  gt[x >= cutoffs[2]] <- "1/1"
-  return(gt)
+  gt <- matrix("0/1", nrow = nrow(mat), ncol = ncol(mat), dimnames = dimnames(mat))
+  gt[is.na(mat)] <- "./."
+  gt[mat < cutoffs[1]] <- "0/0"
+  gt[mat >= cutoffs[2]] <- "1/1"
+  class(gt) <- class(mat)
+  gt
 }
 
 .missed_correlations <- function(cor_mat, cutoff = .9, llist = NULL) {
