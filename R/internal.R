@@ -108,7 +108,7 @@
 ## Unused functions ------
 .bi_gt2dosage <- function(mat) {
   stopifnot(is.matrix(mat))
-  stopifnot(inherits(mat[[1,1]], "character"))
+  stopifnot(is.character(mat))
   dims <- dim(mat)
   res <- matrix(NA, dims[1], dims[2], dimnames = dimnames(mat))
   for (j in 1:dims[2]) {
