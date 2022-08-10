@@ -27,7 +27,7 @@ varkit <- function(vcf, ploidy, meta = NULL) {
   # Apply initial mask based on FILTER column
   use_site <- FALSE
   if ("filter" %in% names(fixed))
-    use_site <- fixed$filter == "PASS"
+    use_site <- fixed$filter == "PASS" | is.na(fixed$filter)
   if (!any(use_site))
     use_site <- rep(TRUE, ncol(geno))
 

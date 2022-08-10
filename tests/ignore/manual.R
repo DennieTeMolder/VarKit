@@ -40,11 +40,11 @@ summary(vcf)
 vcf <- import_mask(vcf, my_mask)
 summary(vcf)
 
-summary(remove_masked(vcf))
-
 temp_file <- tempfile(fileext = ".vcf.bz2")
 write_vcf(vcf, temp_file, replace_filter = TRUE)
 read_vcf(temp_file)
+
+summary(remove_masked(vcf))
 
 
 ## Linked sites ------

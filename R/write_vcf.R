@@ -25,9 +25,6 @@ write_vcf.varkit <- function(x, path, replace_filter = FALSE) {
   ## Fixed fields
   fxd <- x$fixed
 
-  if (replace_filter)
-    fxd$filter <- ifelse(x$use_site, "PASS", "MASKED")
-
   # Add missing columns
   fixed_names <- .fixed_columns()
   missing <- fixed_names[!fixed_names %in% tolower(colnames(fxd))]
@@ -40,11 +37,16 @@ write_vcf.varkit <- function(x, path, replace_filter = FALSE) {
     fxd[missing] <- rep(NA, nrow(fxd))
   }
 
+  if (replace_filter || all(is.na(fxd$filter)))
+    fxd$filter <- ifelse(x$use_site, "PASS", "MASKED")
+
   # Fxd ordering and convert
   fxd <- dplyr::relocate(fxd, tidyselect::all_of(fixed_names))
   colnames(fxd) <- toupper(colnames(fxd))
 
+  ## Genotype fields
   gt <- x$geno
+
   if (is.character(gt))
     gt[is.na(gt)] <- paste(rep(".", x$ploidy), collapse = "/")
   gt <- as.data.frame(gt)
