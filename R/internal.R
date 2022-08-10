@@ -122,11 +122,6 @@
   res
 }
 
-.not_variable <- function(x) {
-  x <- stats::na.omit(x)
-  if (length(x) < 2)
-    return(TRUE)
-  all(duplicated(x)[-1])
 }
 
 ## .MissedCorrelations <- function(corMat, cutoff = .9, linkList = NULL) {
