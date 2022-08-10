@@ -71,6 +71,6 @@ summary.varkit <- function(object, ...) {
     samples = length(samples(object)),
     sites_visible = sum(object$use_site),
     sites_total = length(object$use_site),
-    sites_frac = mean(object$use_site)
+    visible_frac = mean(object$use_site)
   )
 }
