@@ -1,15 +1,14 @@
 ##' Load A VCF File From Disk
 ##'
-##' Load a VCF file into R as a 'varkit' object.
 ##' @title Load A VCF File From Disk
 ##' @param path String, path to the vcf(.bgz) file to load
 ##' @param ploidy Integer, ploidy number of the organism in the VCF
 ##' @param skip_cols Character vector, columns to skip loading. Should match names in `read_vcf_header(path)$col_names`.
 ##' @param na Character vector, what strings to recognise as NA when reading
 ##' @param ... Arguments passed to [readr::read_tsv()]
-##' @return VarKit object
-##' @author Dennie te Molder
+##' @return A VarKit object
 ##' @export
+##' @author Dennie te Molder
 ##' @examples
 ##' path <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
 ##' vcf <- read_vcf(path, ploidy = 2, skip_cols = c("info", "filter", "N2"))

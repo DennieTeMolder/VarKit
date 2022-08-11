@@ -18,13 +18,10 @@ read_vcf(path, ploidy = 2, skip_cols = NULL, na = "auto-generate", ...)
 \item{...}{Arguments passed to \code{\link[readr:read_delim]{readr::read_tsv()}}}
 }
 \value{
-VarKit object
+A VarKit object
 }
 \description{
 Load A VCF File From Disk
-}
-\details{
-Load a VCF file into R as a 'varkit' object.
 }
 \examples{
 path <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
