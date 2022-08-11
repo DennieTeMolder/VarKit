@@ -20,3 +20,6 @@ Imports:
     stringr,
     tibble,
     tidyselect
+Suggests: 
+    knitr,
+    rmarkdown
