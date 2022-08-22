@@ -42,12 +42,8 @@ Run the following commands and select the downloaded file in window that
 pops up:
 
 ``` r
-install.packages(file.choose(), repos = NULL, type =  "source")
+install.packages(file.choose(), type =  "source")
 ```
-
-> If you run into an error that the ‘doSNOW’ dependancy is not
-> available, you can install it manually before installing varkit:
-> `install.packages("doSNOW").`
 
 And load the package using:
 
