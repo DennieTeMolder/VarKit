@@ -22,6 +22,8 @@ find_linked_sites.varkit <- function(x,
   if (!by_chrom) {
     loc <- fixed(x, add_index = TRUE)
     llist <- link_list(loc$idx)
+    if (cores > 1)
+      warning("The 'cores' option only has effect when  `by_chrom = TRUE`.")
     if (window > 0)
       warning("The window option is only supported when `by_chrom = TRUE`, disabling window...")
     return(find_linked_cols(

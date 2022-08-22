@@ -19,6 +19,8 @@ find_identical_sites.varkit <- function(x,
   # Short-circuit
   if (!by_chrom) {
     llist <- link_list(fixed(x, add_index = TRUE)$idx)
+    if (cores > 1)
+      warning("The 'cores' option only has effect when  `by_chrom = TRUE`.")
     return(find_identical_cols(
       geno(x), tolerance = tolerance, method = method, llist = llist
     ))
