@@ -1,0 +1,329 @@
+---
+title: "Introduction into VarKit"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+description: >
+  This vignette will showcase all of the basic functionality found in the
+  `varkit` package.
+vignette: >
+  %\VignetteIndexEntry{Introduction into VarKit}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r knitr, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This vignette will showcase all of the basic functionality found in the `varkit` package.
+
+## Setup
+
+We start off by loading the package and defining the path to the VCF file we
+wish to load. The file can be either compressed or uncompressed, but for this
+example we will use a block-gzipped VCF.
+
+```{r setup}
+library(varkit)
+
+# This might need to be increased for large VCFs
+Sys.setenv("VROOM_CONNECTION_SIZE" = 1e6)
+
+path <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
+```
+
+> NOTE: if you want to use `tidyverse` or more specifically `stringr`, it is
+> recommended to load that library first.
+
+## Loading a VCF into R
+
+In it's simplest form you would load a VCF file into memory like so:
+
+```{r read_simple, eval = FALSE}
+vcf <- read_vcf(path, ploidy = 2)
+```
+
+However, it is good practice to first validate if the VCF header is parsed correctly:
+
+```{r header}
+header <- read_vcf_header(path)
+print(header)
+```
+
+The most important information here is printed last (located under
+`header$col_names`), the column names. If the VCF file is recognised correctly
+it should list all of the fixed fields and samples present in your VCF.
+
+If you want to exclude specific samples, or if you know you are not going to
+use certain fixed fields and want to save memory, column names listed in the
+header can be provided to the read vcf function in order to exclude them. 
+
+For example here we exclude the INFO and FILTER fixed fields and the sample N2:
+
+
+```{r read}
+vcf <- read_vcf(path, ploidy = 2, skip_cols = c("info", "filter", "N2"))
+print(vcf)
+```
+
+## Accessing specific fields
+
+The `read_vcf()` function returns a special "varkit" object that holds all of
+the information parsed from the VCF. This information should be accessed trough
+designated functions, the most important of which are:
+
+```{r access}
+samples(vcf)
+
+fixed(vcf)
+
+geno(vcf)
+```
+
+> This syntax is similar to for example accessing the column names of a data
+> frame `colnames(df)`.
+
+## Getting help
+
+Functions like `read_vcf()`, `read_vcf_header()`, and `geno()` return objects
+with special classes, giving them access to an array of build in functions. To
+check which functions are available for ANY given object use the `vakit_help()`
+function:
+
+```{r help}
+varkit_help(vcf)
+```
+
+## Accessing header metadata
+
+In this example header metadata can be accessed both from the `vcf` and `header`
+objects, like so:
+
+```{r metdata}
+metadata <- meta(vcf)
+print(metadata, verbose = FALSE)
+```
+
+However, you might notice that although the returned object is a data frame,
+most of the information is stored in the `$value` column and cannot be easily
+accessed. VarKit provides a function to parse these values, but this requires
+you to select the type of field to be parsed. You can get an overview of the
+available fields using:
+
+```{r meta_summary}
+summary(metadata)
+```
+
+Using this information we can then use the `parse_meta_type()` function to
+parse the metadata of a specific type. For example we can lookup what the
+different values in the INFO fields mean, or we can access the size of the
+contigs:
+
+```{r meta_parse}
+parse_meta_type(vcf, "INFO")
+
+parse_meta_type(vcf, "contig")
+```
+
+## Masking
+
+A common operation when working with VCF is removing specific sites, based on
+various criteria. In VarKit this is achieved trough the `mask()` function, which
+either requires you to input a logical vector (TRUE if the site should be
+masked) or a data frame with columns "chorm" and "pos" containing the sites to
+be masked. For this example we will use a logical vector to mask/hide all sites on
+chromosome I:
+
+```{r mask}
+# This is a logical vector
+mask_site <- fixed(vcf)$chrom == "I"
+
+# Be sure to reassign the returned object to `vcf` otherwise the mask will not take effect
+vcf <- mask(vcf, site = mask_site)
+
+# Use the summary function to check the number of visible sites
+summary(vcf)
+```
+
+Now if we access data inside of the VCF the masked sites will no longer be
+returned. For example if we retrieve the fixed fields we can see that the sites
+with CHROM = "I" are missing (if you look back, you can see that they were
+previously on top):
+
+```{r mask_check}
+fixed(vcf)
+```
+
+Masking can be performed multiple times in sequence:
+
+```{r mask_seq}
+# Let's use a data frame this time around
+sites_to_mask <- dplyr::filter(fixed(vcf), qual < 1000)
+vcf <- mask(vcf, site = sites_to_mask)
+summary(vcf)
+```
+
+### Using multiple masks
+
+This process is called 'masking' not 'removing', because the sites are not
+actually removed from memory, they are just skipped by the VarKit functions.
+This allows you to quickly unmask sites or restore an exported set of masked sites.
+
+In this example we will fist export the mask we just created (which masks sites
+on CHROM = "I" or sites with a QUAL < 1000) and assign it to the `my_mask`
+variable, then we will remove the mask from the vcf object which can verify
+trough the `summary()` function:
+
+```{r mask_export}
+my_mask <- export_mask(vcf)
+vcf <- unmask_all(vcf)
+summary(vcf)
+```
+
+If we later decide that we need the mask again, we can import it:
+
+```{r mask_import}
+vcf <- import_mask(vcf, my_mask)
+summary(vcf)
+```
+
+In this way you could use different masks for different parts of your
+analysis/script.
+
+### Removing sites
+
+In some cases, e.g. when you need to free memory or when you need maximum
+retrieval speed, it is possible to entirely remove sites (meaning they cannot be
+retrieved by unmasking):
+
+```{r mask_remove}
+reduced_vcf <- remove_masked(vcf)
+summary(reduced_vcf)
+```
+
+## Writing VCF files
+
+Varkit also has the ability to write VCF files. This is useful for example when
+you have removed specific sites or samples and want to write the reduced file.
+
+Moreover, masks are also stored in the FILTER column of the resulting VCF file
+if `replace_filter = TRUE`, allowing you to save and load a masked VCF:
+
+```{r mask_save}
+temp_file <- tempfile(fileext = ".vcf.bz2")
+write_vcf(vcf, path = temp_file, replace_filter = TRUE)
+
+read_vcf(temp_file, ploidy = 2)
+```
+
+> NOTE: the `readr` library (which is used internally) does not support writing
+> in the block-gzipped format that is expected by many other tools. To achieve
+> this you can export to plain ".vcf" and convert the file using the "bcftools"
+> CLI.
+
+## Detecting linkage between sites
+
+Lastly, the VarKit package provides functions to detect linkage between sites.
+These functions use the `stats::cor(..., method = "pearson", use =
+"pairwise.complete.obs")` internally, thus you can lookup its documentation for
+more information.
+
+In order for this to work `geno(vcf)` should contain only **numeric** values (or
+NA). Most likely you genotype fields will be in the string format and thus need
+to be converted. How to achieve this is highly circumstantial and will require
+manual parsing/conversion. For tips take a look at the "Notes for advanced
+users" section at the bottom.
+
+As you might have noticed, the example file contains genotype calls (GT, e.g.
+"0/1"), which will first convert to numeric dosages using a hidden function:
+
+```{r convert_geno}
+# The function below is not exported as it is not very robust, use it with caution!
+vcf$geno <- varkit:::.bi_gt2dosage(vcf$geno)
+```
+
+Although you could use the `find_linked_sites()` function directly, one larger
+VCF files you can speed up the process by first check for identical columns
+(i.e. R^2 = 1):
+
+```{r identical_sites, results = 'hide'}
+llist <- find_identical_sites(vcf, cores = 1)
+```
+
+```{r identical_sites_summary}
+summary(llist)
+```
+
+This will return a "link_list" object that tracks which sites (by their index)
+are linked to each other and contains information on which sites to mask to
+remove linkage (see also `varkit_help(llist)`). Thus, this object can then be
+removed to mask sites (This will mask all but the centre most site out of sets
+of identical/linked sites):
+
+```{r mask_identical}
+vcf <- mask(vcf, site = llist)
+summary(vcf)
+```
+
+Now that identical sites are masked we can check for linkage on the reduced set
+of sites. Here we will use an cutoff of R^2 = 0.7:
+
+```{r linked_sites, results = 'hide'}
+llist <- find_linked_sites(vcf, cutoff = 0.7, cores = 1)
+vcf <- mask(vcf, site = llist)
+```
+
+```{r linked_sites_summary}
+summary(vcf)
+```
+
+It is important to know that `find_indentical_sites()` checks entire
+chromosomes/scaffolds, whereas `find_linked_sites()` only checks for linkage
+within a specified window (by default this is 50,000 bp). To check entire
+chromosomes in the latter case set the "window" option to 0 or -1.
+
+> Both of these function support multi-threading trough the "cores" option and
+> only look for identical/linked columns within chromosomes/scaffolds. This
+> latter can be disabled trough the "by_chrom" option, but this will greatly
+> increase computational load.
+
+### Reading/writing link_list objects to file
+
+It might be interesting to store the information about linked sites to consult
+later on:
+
+```{r llist_wirte}
+temp_file <- tempfile(fileext = ".json")
+write_link_list(llist, path = temp_file)
+```
+
+Which can then be read back into memory like so:
+
+```{r llist_read}
+llist2 <- read_link_list(temp_file)
+summary(llist2)
+```
+
+## Notes for advanced users
+
+It is safe to directly modify the varkit object using the `$` operator as long
+as `nrow(vcf$fixed) == ncol(vcf$geno) == length(vcf$use_sites)`, the
+`vcf$fixed$chrom` & `vcf$fixed$pos` columns are retained, and `vcf$geno` keeps
+the 'varkit_geno' class (the latter may be violated when extracting, e.g.
+`geno(vcf)[, 1]`, which will remove the class).
+
+The attentive reader might have noticed that we have already made use of this before:
+
+```{r advanced_example, eval = FALSE}
+vcf$geno <- varkit:::.bi_gt2dosage(vcf$geno)
+```
+
+To retain the "varkit_geno" class use the `varkit_geno()` function, e.g.:
+
+```{r advanced_geno, eval = FALSE}
+vcf$geno <- varkit_geno(my_matrix)
+```
