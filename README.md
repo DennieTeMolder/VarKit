@@ -28,21 +28,26 @@ For large VCF files (\> 1 Gb) it is often beneficial (in terms of speed
 and memory usage) to subset the VCF by chromosome/scaffold before
 loading it into R using the aforementioned Bcftools.
 
-Reading a VCF file uses **\~5.5x** the **uncompressed** VCF file size of
-memory (RAM) and the resulting varkit object occupies **\~2.5x** the
-uncompressed VCF file size of memory. However, specifying `skip_cols`
-will reduce this footprint.
+> Reading a VCF file uses **\~5.5x** the **uncompressed** VCF file size
+> of memory (RAM) and the resulting varkit object occupies **\~2.5x**
+> the uncompressed VCF file size of memory. However, specifying
+> `skip_cols` will reduce this footprint.
 
 ## Installation
 
 Download `varkit_0.2.4.tar.gz` from the releases tab
 ([link](https://git.wur.nl/molde006/varkit/uploads/3a4c38de5eb22e6411096cc34658581b/varkit_0.2.4.tar.gz)).
 
-Run the following command (adjust the path first\!):
+Run the following commands and select the downloaded file in window that
+pops up:
 
 ``` r
-install.packages("/path/to/downloads/varkit_0.2.4.tar.gz")
+install.packages(file.choose(), repos = NULL, type =  "source")
 ```
+
+> If you run into an error that the ‘doSNOW’ dependancy is not
+> available, you can install it manually before installing varkit:
+> `install.packages("doSNOW").`
 
 And load the package using:
 
