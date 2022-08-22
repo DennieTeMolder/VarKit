@@ -23,11 +23,11 @@ varkit_filter.varkit_geno <- function(geno, site = NULL, sample = NULL) {
 
   # Return requested selection
   if (!is.null(site) && !is.null(sample)) {
-    return(varkit_geno(geno[sample, site]))
+    return(varkit_geno(geno[sample, site, drop = FALSE]))
   } else if (!is.null(site)) {
-    return(varkit_geno(geno[, site]))
+    return(varkit_geno(geno[, site, drop = FALSE]))
   } else if (!is.null(sample)) {
-    return(varkit_geno(geno[sample, ]))
+    return(varkit_geno(geno[sample, , drop = FALSE]))
   }
 
   # No selection, return full genotype matrix
