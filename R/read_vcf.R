@@ -2,9 +2,11 @@
 ##'
 ##' @title Load A VCF File From Disk
 ##' @param path String, path to the vcf(.bgz) file to load
+##' @param header Varkit_header
 ##' @param ploidy Integer, ploidy number of the organism in the VCF
 ##' @param skip_cols Character vector, columns to skip loading. Should match names in `read_vcf_header(path)$col_names`.
 ##' @param na Character vector, what strings to recognise as NA when reading
+##' @param header_max_lines Interer, max number of lines to check for the header
 ##' @param ... Arguments passed to [readr::read_tsv()]
 ##' @return A VarKit object
 ##' @export
@@ -13,17 +15,22 @@
 ##' path <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
 ##' vcf <- read_vcf(path, ploidy = 2, skip_cols = c("info", "filter", "N2"))
 read_vcf <- function(path,
-                     ploidy = 2,
+                     header = NULL,
+                     ploidy,
                      skip_cols = NULL,
                      na = "auto-generate",
+                     header_max_lines = 1e5,
                      ...) {
   # Argument checks
+  if (!is.null(header))
+    stopifnot(is_varkit_header(header))
   stopifnot(is.numeric(ploidy))
   if (!is.null(skip_cols))
     stopifnot(is.character(skip_cols))
   stopifnot(is.character(na))
 
-  header <- read_vcf_header(path)
+  if (is.null(header))
+    header <- read_vcf_header(path, n_max = header_max_lines)
 
   # Header checks
   if (length(header$col_names) < 2)

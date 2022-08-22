@@ -4,16 +4,28 @@
 \alias{read_vcf}
 \title{Load A VCF File From Disk}
 \usage{
-read_vcf(path, ploidy = 2, skip_cols = NULL, na = "auto-generate", ...)
+read_vcf(
+  path,
+  header = NULL,
+  ploidy,
+  skip_cols = NULL,
+  na = "auto-generate",
+  header_max_lines = 1e+05,
+  ...
+)
 }
 \arguments{
 \item{path}{String, path to the vcf(.bgz) file to load}
+
+\item{header}{Varkit_header}
 
 \item{ploidy}{Integer, ploidy number of the organism in the VCF}
 
 \item{skip_cols}{Character vector, columns to skip loading. Should match names in \code{read_vcf_header(path)$col_names}.}
 
 \item{na}{Character vector, what strings to recognise as NA when reading}
+
+\item{header_max_lines}{Interer, max number of lines to check for the header}
 
 \item{...}{Arguments passed to \code{\link[readr:read_delim]{readr::read_tsv()}}}
 }
