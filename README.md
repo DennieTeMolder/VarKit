@@ -57,7 +57,13 @@ library(varkit)
 
 ## Examples
 
-Coming soon…
+Check out the introduction
+[vignette](https://git.wur.nl/molde006/varkit/-/blob/main/vignettes/varkit.Rmd),
+or run:
+
+``` r
+browseVignettes("varkit")
+```
 
 ## Authors and acknowledgements
 
