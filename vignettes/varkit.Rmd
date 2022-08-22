@@ -25,7 +25,7 @@ This vignette will showcase all of the basic functionality found in the `varkit`
 
 We start off by loading the package and defining the path to the VCF file we
 wish to load. The file can be either compressed or uncompressed, but for this
-example we will use a block-gzipped VCF.
+example we will use a block-gzipped VCF:
 
 ```{r setup}
 library(varkit)
@@ -37,7 +37,8 @@ path <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
 ```
 
 > NOTE: if you want to use `tidyverse` or more specifically `stringr`, it is
-> recommended to load that library first.
+> recommended to load that library first. Due to the collision with the
+> `fixed()` function.
 
 ## Loading a VCF into R
 
@@ -54,16 +55,16 @@ header <- read_vcf_header(path)
 print(header)
 ```
 
-The most important information here is printed last (located under
-`header$col_names`), the column names. If the VCF file is recognised correctly
-it should list all of the fixed fields and samples present in your VCF.
+The most important information here are the column names which are printed last
+(located under `header$col_names`). If the VCF file is recognised correctly it
+should list all of the fixed fields and samples present in your VCF.
 
-If you want to exclude specific samples, or if you know you are not going to
-use certain fixed fields and want to save memory, column names listed in the
-header can be provided to the read vcf function in order to exclude them. 
+The column names listed in the header can be provided to the read vcf function
+in order to exclude them. This is useful if you want to exclude specific
+samples, or if you know you are not going to use certain fixed fields and want
+to save memory.
 
-For example here we exclude the INFO and FILTER fixed fields and the sample N2:
-
+For example here we exclude the "INFO" and "FILTER" fixed fields and the sample "N2":
 
 ```{r read}
 vcf <- read_vcf(path, ploidy = 2, skip_cols = c("info", "filter", "N2"))
@@ -90,8 +91,8 @@ geno(vcf)
 ## Getting help
 
 Functions like `read_vcf()`, `read_vcf_header()`, and `geno()` return objects
-with special classes, giving them access to an array of build in functions. To
-check which functions are available for ANY given object use the `vakit_help()`
+with special classes, giving them access to an array of build-in functions. To
+check which functions are available for any given object use the `vakit_help()`
 function:
 
 ```{r help}
@@ -109,10 +110,10 @@ print(metadata, verbose = FALSE)
 ```
 
 However, you might notice that although the returned object is a data frame,
-most of the information is stored in the `$value` column and cannot be easily
+most of the information stored in the `$value` column and cannot be easily
 accessed. VarKit provides a function to parse these values, but this requires
-you to select the type of field to be parsed. You can get an overview of the
-available fields using:
+you to select the type of field that should be parsed. You can get an overview
+of the available fields using:
 
 ```{r meta_summary}
 summary(metadata)
@@ -149,7 +150,7 @@ vcf <- mask(vcf, site = mask_site)
 summary(vcf)
 ```
 
-Now if we access data inside of the VCF the masked sites will no longer be
+Now if we fetch data from the VCF object the masked sites will no longer be
 returned. For example if we retrieve the fixed fields we can see that the sites
 with CHROM = "I" are missing (if you look back, you can see that they were
 previously on top):
@@ -158,7 +159,8 @@ previously on top):
 fixed(vcf)
 ```
 
-Masking can be performed multiple times in sequence:
+It is important to note that masking can be performed multiple times in
+sequence, which will cause sites in **either** mask to be excluded:
 
 ```{r mask_seq}
 # Let's use a data frame this time around
@@ -167,16 +169,18 @@ vcf <- mask(vcf, site = sites_to_mask)
 summary(vcf)
 ```
 
+You can see that this filter masked an additional 11 sites.
+
 ### Using multiple masks
 
-This process is called 'masking' not 'removing', because the sites are not
+This process is called 'masking' not 'removing' sites, because the sites are not
 actually removed from memory, they are just skipped by the VarKit functions.
 This allows you to quickly unmask sites or restore an exported set of masked sites.
 
 In this example we will fist export the mask we just created (which masks sites
 on CHROM = "I" or sites with a QUAL < 1000) and assign it to the `my_mask`
-variable, then we will remove the mask from the vcf object which can verify
-trough the `summary()` function:
+variable, then we will remove the mask from the vcf object which verify trough
+the `summary()` function:
 
 ```{r mask_export}
 my_mask <- export_mask(vcf)
@@ -184,7 +188,7 @@ vcf <- unmask_all(vcf)
 summary(vcf)
 ```
 
-If we later decide that we need the mask again, we can import it:
+Then if we later decide that we need the mask again, we can import it:
 
 ```{r mask_import}
 vcf <- import_mask(vcf, my_mask)
@@ -197,7 +201,7 @@ analysis/script.
 ### Removing sites
 
 In some cases, e.g. when you need to free memory or when you need maximum
-retrieval speed, it is possible to entirely remove sites (meaning they cannot be
+lookup speed, it is possible to entirely remove sites (meaning they cannot be
 retrieved by unmasking):
 
 ```{r mask_remove}
@@ -246,9 +250,9 @@ As you might have noticed, the example file contains genotype calls (GT, e.g.
 vcf$geno <- varkit:::.bi_gt2dosage(vcf$geno)
 ```
 
-Although you could use the `find_linked_sites()` function directly, one larger
-VCF files you can speed up the process by first check for identical columns
-(i.e. R^2 = 1):
+Although you could use the `find_linked_sites()` function directly, on larger
+VCF files you can speed up the process by first checking for identical columns
+(i.e. R^2^ = 1):
 
 ```{r identical_sites, results = 'hide'}
 llist <- find_identical_sites(vcf, cores = 1)
@@ -258,11 +262,11 @@ llist <- find_identical_sites(vcf, cores = 1)
 summary(llist)
 ```
 
-This will return a "link_list" object that tracks which sites (by their index)
-are linked to each other and contains information on which sites to mask to
-remove linkage (see also `varkit_help(llist)`). Thus, this object can then be
-removed to mask sites (This will mask all but the centre most site out of sets
-of identical/linked sites):
+This will return a "link_list" object that tracks which sites (using their
+index) are linked to each other and contains information on which sites to mask
+to remove linkage (see also `varkit_help(llist)`). Therefore, we can use this
+object to mask sites in order to remove the linkage (this will mask all but the
+centre most site out of sets of identical/linked sites):
 
 ```{r mask_identical}
 vcf <- mask(vcf, site = llist)
@@ -270,10 +274,10 @@ summary(vcf)
 ```
 
 Now that identical sites are masked we can check for linkage on the reduced set
-of sites. Here we will use an cutoff of R^2 = 0.7:
+of sites. Here we will use an cutoff of R^2^ = 0.7:
 
 ```{r linked_sites, results = 'hide'}
-llist <- find_linked_sites(vcf, cutoff = 0.7, cores = 1)
+llist <- find_linked_sites(vcf, cutoff = 0.7, window = 5e4, cores = 1)
 vcf <- mask(vcf, site = llist)
 ```
 
@@ -283,18 +287,18 @@ summary(vcf)
 
 It is important to know that `find_indentical_sites()` checks entire
 chromosomes/scaffolds, whereas `find_linked_sites()` only checks for linkage
-within a specified window (by default this is 50,000 bp). To check entire
+within a specified window (here we use the default of 50,000 bp). To check entire
 chromosomes in the latter case set the "window" option to 0 or -1.
 
 > Both of these function support multi-threading trough the "cores" option and
-> only look for identical/linked columns within chromosomes/scaffolds. This
-> latter can be disabled trough the "by_chrom" option, but this will greatly
-> increase computational load.
+> only look for identical/linked columns within chromosomes/scaffolds. To check
+> for linkage between all chromosomes set `by_chrom = FALSE`. However, this will
+> greatly increase computational load.
 
 ### Reading/writing link_list objects to file
 
-It might be interesting to store the information about linked sites to consult
-later on:
+It might be interesting to store the information about linked sites as it will
+tell you the extend of linkage and which sites are a "proxy" of others:
 
 ```{r llist_wirte}
 temp_file <- tempfile(fileext = ".json")
@@ -309,6 +313,7 @@ summary(llist2)
 ```
 
 ## Notes for advanced users
+### Modifying the varkit object directly
 
 It is safe to directly modify the varkit object using the `$` operator as long
 as `nrow(vcf$fixed) == ncol(vcf$geno) == length(vcf$use_sites)`, the
@@ -325,5 +330,29 @@ vcf$geno <- varkit:::.bi_gt2dosage(vcf$geno)
 To retain the "varkit_geno" class use the `varkit_geno()` function, e.g.:
 
 ```{r advanced_geno, eval = FALSE}
-vcf$geno <- varkit_geno(my_matrix)
+vcf$geno <- varkit_geno(my_matrix) # this is an example, my_matrix is not defined here
 ```
+
+### A closer look into the link_list object
+
+Link_list objects are lists that contain a 0 if the site at the matching index
+is not linked to any other site. If it contains any other number (or multiple
+numbers) the site at that index is linked to sites at the index of the listed
+numbers and this site is to be retained when removing linkage. If it contains
+NA the site is linked to at least one other sited and this site should be
+excluded to remove the linkage.
+
+Armed with this knowledge let's take a look at the link_list we generated previously:
+
+```{r advanced_llist}
+print(llist, n = 10)
+```
+
+Here you can see that the 1st site in the **masked** vcf (which is actually site
+1024 in the original vcf, according to the translation layer) is linked to the
+8th site in the masked vcf. In order to remove this link, the `mask(vcf, llist)`
+function will mask the 8th site and keep the 1st. Moving on, the 2nd site is
+linked to some other site (if we look further down we can see it is linked to
+the 9th site) and the `mask()` function will mask this site in order to remove
+this link. Finally, the 3rd site in the masked vcf is not linked to any other
+site and thus will not be masked when using the `mask()` function.
