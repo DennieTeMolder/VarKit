@@ -15,7 +15,9 @@ devtools::load_all()
 ### Examples ------
 ## Varkit object ------
 read_vcf_header(example)
-vcf <- read_vcf(example, skip_cols = c("info", "filter", "N2"))
+
+Sys.setenv("VROOM_CONNECTION_SIZE" = 1e6)
+vcf <- read_vcf(example, skip_cols = c("info", "filter"))
 print(vcf)
 
 varkit_help(vcf)
