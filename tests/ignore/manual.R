@@ -17,7 +17,7 @@ devtools::load_all()
 read_vcf_header(example)
 
 Sys.setenv("VROOM_CONNECTION_SIZE" = 1e6)
-vcf <- read_vcf(example, skip_cols = c("info", "filter"))
+vcf <- read_vcf(example, ploidy = 2, skip_cols = c("info", "filter"))
 print(vcf)
 
 varkit_help(vcf)
@@ -50,7 +50,7 @@ summary(remove_masked(vcf))
 
 
 ## Linked sites ------
-vcf <- read_vcf(example, skip_cols = c("info", "filter"))
+vcf <- read_vcf(example, ploidy = 2, skip_cols = c("info", "filter"))
 vcf$geno <- .bi_gt2dosage(vcf$geno)
 
 llist <- find_identical_sites(vcf, cores = 1)
