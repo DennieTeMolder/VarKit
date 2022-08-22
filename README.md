@@ -20,8 +20,8 @@ analysis, and identify linkage between sites.
 
 Due to the limitations of R this package does not aim to be a
 comprehensive tool for manipulating VCF files. For many of the missing
-operations the user is better off using
-[Bcftools](https://samtools.github.io/bcftools/) CLI (e.g. the “query”
+operations the user is better off using the
+[Bcftools](https://samtools.github.io/bcftools/) CLI (e.g. the “query”
 subcommand for subsetting sites/samples or selecting specific fields).
 
 For large VCF files (\> 1 Gb) it is often beneficial (in terms of speed
@@ -38,8 +38,8 @@ loading it into R using the aforementioned Bcftools.
 Download `varkit_0.2.5.tar.gz` from the releases tab
 ([link](https://git.wur.nl/molde006/varkit/uploads/bebe8bf7b09f0003e4abfc6984f35579/varkit_0.2.5.tar.gz)).
 
-Run the following commands and select the downloaded file in window that
-pops up:
+Run the following commands and select the downloaded file in the window
+that pops up:
 
 ``` r
 install.packages(file.choose(), type =  "source")
@@ -53,13 +53,15 @@ library(varkit)
 
 ## Examples
 
-Check out the introduction
-[vignette](https://git.wur.nl/molde006/varkit/-/blob/main/vignettes/varkit.Rmd),
-or run:
+For examples please run the following after installation:
 
 ``` r
 browseVignettes("varkit")
 ```
+
+Or check out the introduction
+[vignette](https://git.wur.nl/molde006/varkit/-/blob/main/vignettes/varkit.Rmd)
+on GitLab.
 
 ## Authors and acknowledgements
 
