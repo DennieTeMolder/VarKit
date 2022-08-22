@@ -1,8 +1,8 @@
 ##' @export
-link_list <- function(names) {
+link_list <- function(names, check = TRUE) {
   stopifnot(is.vector(names))
   n <- length(names)
-  if (n < 2)
+  if (check && n < 2)
     stop("'names' should have a minimum length of 2!")
   llist <- as.list(rep(0, n))
   class(llist) <- "link_list"

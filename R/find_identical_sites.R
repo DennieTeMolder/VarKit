@@ -48,10 +48,12 @@ find_identical_sites.varkit <- function(x,
     .options.snow = opts,
     .packages = "varkit"
   ) %dopar% {
-    llist <- link_list(fix$idx)
-    llist <- find_identical_cols(
-      gt, tolerance = tolerance, method = method, llist = llist
-    )
+    llist <- link_list(fix$idx, check = FALSE)
+    if (length(llist) > 1) {
+      llist <- find_identical_cols(
+        gt, tolerance = tolerance, method = method, llist = llist
+      )
+    }
     if (is.null(cl))
       .pb_increment(pb)
     llist
