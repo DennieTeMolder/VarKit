@@ -1,7 +1,7 @@
 ##' @export
 find_linked_sites <- function(x,
                               cutoff = .9,
-                              window = NULL,
+                              window = 5e4,
                               method = "recursive",
                               by_chrom = TRUE,
                               cores = 1) {
@@ -12,22 +12,20 @@ find_linked_sites <- function(x,
 ##' @import foreach
 find_linked_sites.varkit <- function(x,
                                      cutoff = .9,
-                                     window = NULL,
+                                     window = 5e4,
                                      method = "recursive",
                                      by_chrom = TRUE,
                                      cores = 1) {
   stopifnot(is.logical(by_chrom))
 
-  # Missing arguments
-  if (is.null(window))
-    window <- .window_default(use_bp = TRUE)
-
   # Short-circuit
   if (!by_chrom) {
-    loc <- fixed(x, add_index = TRUE, only_positions = TRUE)
+    loc <- fixed(x, add_index = TRUE)
     llist <- link_list(loc$idx)
+    if (window > 0)
+      warning("The window option is only supported when `by_chrom = TRUE`, disabling window...")
     return(find_linked_cols(
-      geno(x), pos = loc$pos, cutoff = cutoff, window = window, method = method
+      geno(x), pos = loc$pos, cutoff = cutoff, window = -1, method = method
     ))
   }
 
