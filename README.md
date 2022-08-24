@@ -59,9 +59,9 @@ For examples please run the following after installation:
 browseVignettes("varkit")
 ```
 
-Or check out the introduction
-[vignette](https://git.wur.nl/molde006/varkit/-/blob/main/vignettes/varkit.Rmd)
-on GitLab.
+Or download the [introduction
+vignette](https://git.wur.nl/molde006/varkit/-/raw/main/doc/varkit.html?inline=false)
+and open it in your browser.
 
 ## Authors and acknowledgements
 
