@@ -333,6 +333,18 @@ To retain the "varkit_geno" class use the `varkit_geno()` function, e.g.:
 vcf$geno <- varkit_geno(my_matrix) # this is an example, my_matrix is not defined here
 ```
 
+Or use one of the the provided apply wrappers:
+
+```{r}
+# Below `x` contains all geno() values for a single site (length == # samples)
+vcf$geno <- apply_sites(vcf, function(x) x + 1)
+# Below `x` contains all geno() values for a sample (length == # sites)
+vcf$geno <- apply_samples(vcf, function(x) x - 1)
+```
+
+> NOTE: the `apply` wrappers will only retain the "varkit_geno" class if the
+> function returns a vector of the same length as the input.
+
 ### A closer look into the link_list object
 
 Link_list objects are lists that contain a 0 if the site at the matching index
