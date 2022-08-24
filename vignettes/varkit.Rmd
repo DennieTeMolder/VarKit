@@ -335,12 +335,15 @@ vcf$geno <- varkit_geno(my_matrix) # this is an example, my_matrix is not define
 
 Or use one of the the provided apply wrappers:
 
-```{r}
-# Below `x` contains all geno() values for a single site (length == # samples)
-vcf$geno <- apply_sites(vcf, function(x) x + 1)
-# Below `x` contains all geno() values for a sample (length == # sites)
-vcf$geno <- apply_samples(vcf, function(x) x - 1)
+```{r apply}
+# Here `x` contains all genotypes for a single site (length == # samples)
+vcf$geno <- apply_sites(vcf$geno, function(x) x + 1)
+
+# Here `x` contains all genotypes for a sample (length == # sites)
+vcf$geno <- apply_samples(vcf$geno, function(x) x - 1)
 ```
+
+Above we do not use `geno(vcf)` as that function only returns the non-masked sites.
 
 > NOTE: the `apply` wrappers will only retain the "varkit_geno" class if the
 > function returns a vector of the same length as the input.
