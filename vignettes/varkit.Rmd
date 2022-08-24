@@ -171,6 +171,17 @@ summary(vcf)
 
 You can see that this filter masked an additional 11 sites.
 
+### Masking sites without variation
+
+A common task after subsetting or converting VCF files is removing/masking sites
+that no longer contain variation. VarKit provides a convient function to achieve
+this:
+
+```{r mask_variation}
+vcf <- mask_sites_without_variation(vcf)
+summary(vcf) # In this case only 1 site is masked
+```
+
 ### Using multiple masks
 
 This process is called 'masking' not 'removing' sites, because the sites are not
