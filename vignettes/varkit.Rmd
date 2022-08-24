@@ -101,11 +101,11 @@ varkit_help(vcf)
 
 ## Accessing header metadata
 
-In this example header metadata can be accessed both from the `vcf` and `header`
-objects, like so:
+In this example, the header metadata can be accessed both from the `vcf` and
+`header` objects, like so:
 
 ```{r metdata}
-metadata <- meta(vcf)
+metadata <- meta(vcf) # OR meta(header)
 print(metadata, verbose = FALSE)
 ```
 
@@ -164,23 +164,27 @@ sequence, which will cause sites in **either** mask to be excluded:
 
 ```{r mask_seq}
 # Let's use a data frame this time around
-sites_to_mask <- dplyr::filter(fixed(vcf), qual < 1000)
+sites_to_mask <- dplyr::filter(fixed(vcf), qual < 3000)
+nrow(sites_to_mask)
 vcf <- mask(vcf, site = sites_to_mask)
 summary(vcf)
 ```
 
-You can see that this filter masked an additional 11 sites.
+You can see that this filter masked an additional 3 sites.
 
 ### Masking sites without variation
 
 A common task after subsetting or converting VCF files is removing/masking sites
-that no longer contain variation. VarKit provides a convient function to achieve
+that no longer contain variation. VarKit provides a convenient function to achieve
 this:
 
 ```{r mask_variation}
 vcf <- mask_sites_without_variation(vcf)
-summary(vcf) # In this case only 1 site is masked
+summary(vcf)
 ```
+
+If you compare with the previous `summary()` you can see that 1 additional site was
+masked because it lacked variation.
 
 ### Using multiple masks
 
