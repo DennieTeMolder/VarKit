@@ -1,3 +1,4 @@
 inst/doc
-/doc/
+/doc/*.Rmd
+/doc/*.R
 /Meta/
