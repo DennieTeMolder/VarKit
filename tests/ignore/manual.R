@@ -1,25 +1,15 @@
 # Setup
+Sys.setenv("VROOM_CONNECTION_SIZE" = 1e6)
 library(devtools)
 load_all()
 example <- "./inst/extdata/celegans.vcf.bgz"
-
-Sys.setenv("VROOM_CONNECTION_SIZE" = 1e6)
-
-# Reload
-unload()
-load_all()
-
-# Document
-document()
-unload()
-load_all()
 
 
 ### Examples ------
 ## Varkit object ------
 read_vcf_header(example)
 
-vcf <- read_vcf(example, ploidy = 2, skip_cols = c("info", "filter"))
+vcf <- read_vcf(example, ploidy = 2, skip_cols = c("info", "filter", "N2"))
 print(vcf)
 
 varkit_help(vcf)
