@@ -1,4 +1,4 @@
-.resolve_linked_cols <- function(linked_cols, data, llist) {
+resolve_linked_cols <- function(linked_cols, data, llist) {
   if (.all_null(linked_cols))
     return(llist)
 

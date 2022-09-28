@@ -108,7 +108,7 @@ find_linked_cols <- function(x,
     linked_cols[[i]] <- c(i, above)
   }
 
-  .resolve_linked_cols(linked_cols, data = x, llist = llist)
+  resolve_linked_cols(linked_cols, data = x, llist = llist)
 }
 
 .window_default <- function(use_bp = FALSE) {

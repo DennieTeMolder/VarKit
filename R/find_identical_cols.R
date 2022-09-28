@@ -79,5 +79,5 @@ find_identical_cols <- function(x,
     identical_cols[[i]] <- c(i, identical)
   }
 
-  .resolve_linked_cols(identical_cols, data = x, llist = llist)
+  resolve_linked_cols(identical_cols, data = x, llist = llist)
 }
