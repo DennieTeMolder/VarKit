@@ -11,42 +11,39 @@ data <- readr::read_tsv(path,
 data[, .fixed_columns()] <- NULL
 
 # Create test dataset
-test <- NULL
-for (i in 1:100) {
-  test <- dplyr::bind_rows(test, data)
-}
+test <- do.call(rbind, lapply(1:2500, function(i) data))
 
 mat <- as.matrix(test)
 tmat <- t(mat)
-geno <- tibble::as_tibble(tmat, rownames = NULL)
+geno <- tibble::as_tibble(tmat, rownames = NULL, .name_repair = "minimal")
 
 # Memory usage
 pryr::object_size(test)
-## 92.89 MB
+## 91.21 MB
 pryr::object_size(geno)
-## 179.95 MB
+## 136.80 MB
 pryr::object_size(mat)
-## 92.88 MB
+## 91.21 MB
 pryr::object_size(tmat)
-## 92.88 MB
+## 91.21 MB
 
 # Selecting sites
-sample_sites <- purrr::map(1:1e3, ~sample(1:nrow(test), nrow(data), replace = F))
+sample_sites <- purrr::map(1:500, ~sample(1:nrow(test), 0.1 * nrow(test)))
 system.time(for (i in sample_sites) test[i, ])
-##  user  system elapsed
-## 3.075   0.009   3.087
+##   user  system elapsed
+## 18.010   0.011  18.023
 system.time(for (i in sample_sites) geno[, i])
 ##  user  system elapsed
-## 0.918   0.000   0.919
+## 8.919   0.036   8.955
 system.time(for (i in sample_sites) mat[i, ])
-##  user  system elapsed
-## 3.483   0.000   3.486
+##   user  system elapsed
+## 18.209   0.712  18.923
 system.time(for (i in sample_sites) tmat[, i])
 ##  user  system elapsed
-## 1.187   0.004   1.192
+## 8.841   0.712   9.555
 system.time(for (i in sample_sites) dplyr::slice(test, i))
-##  user  system elapsed
-## 4.445   0.000   4.450
+##   user  system elapsed
+## 20.817   0.003  20.820
 
 # Selecting samples
 sample_samples <- purrr::map(1:1e3, ~sample(1:ncol(test), 10, replace = F))
