@@ -1,10 +1,12 @@
 ##' @export
-write_vcf <- function(x, path, replace_filter = FALSE) {
+write_vcf <- function(x, path, na_gt = ".", replace_filter = FALSE) {
   UseMethod("write_vcf", x)
 }
 
 ##' @export
-write_vcf.varkit <- function(x, path, replace_filter = FALSE) {
+write_vcf.varkit <- function(x, path, na_gt = ".", replace_filter = FALSE) {
+  stopifnot(is.character(na_gt), length(na_gt) == 1)
+
   ## Header
   if (!is.null(x$meta)) {
     header <- x$meta
@@ -46,20 +48,18 @@ write_vcf.varkit <- function(x, path, replace_filter = FALSE) {
 
   ## Genotype fields
   gt <- x$geno
-
-  if (is.character(gt))
-    gt[is.na(gt)] <- paste(rep(".", x$ploidy), collapse = "/")
-  gt <- as.data.frame(gt)
+  gt[is.na(gt)] <- na_gt
 
   # Combine
-  gt <- cbind(fxd, gt)
+  body <- cbind(fxd, gt)
+  rm(fxd, gt)
 
   ## Writing
   # Header
   readr::write_lines(header, path)
-  col_names <- paste0("#", paste(colnames(gt), collapse = "\t"))
+  col_names <- paste0("#", paste(colnames(body), collapse = "\t"))
   readr::write_lines(col_names, path, append = TRUE)
 
   # data
-  readr::write_tsv(gt, path, append = TRUE, col_names = FALSE, na = ".")
+  readr::write_tsv(body, path, append = TRUE, col_names = FALSE, na = ".")
 }
