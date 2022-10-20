@@ -4,7 +4,8 @@ find_linked_sites <- function(x,
                               window = 5e4,
                               method = "recursive",
                               by_chrom = TRUE,
-                              cores = 1) {
+                              cores = 1,
+                              debug = FALSE) {
   UseMethod("find_linked_sites", x)
 }
 
@@ -15,7 +16,8 @@ find_linked_sites.varkit <- function(x,
                                      window = 5e4,
                                      method = "recursive",
                                      by_chrom = TRUE,
-                                     cores = 1) {
+                                     cores = 1,
+                                     debug = FALSE) {
   stopifnot(is.logical(by_chrom))
 
   # Short-circuit
@@ -31,6 +33,9 @@ find_linked_sites.varkit <- function(x,
     ))
   }
 
+  if (debug)
+    cores <- 1
+
   # Register cores for parallel computing if required
   cl <- .register_workers(cores)
 
@@ -44,9 +49,13 @@ find_linked_sites.varkit <- function(x,
   gt_chrom <- gt_chrom[idx]
 
   # Add progress bar to foreach
-  pb <- utils::txtProgressBar(max = length(fix_chrom), style = 3)
-  pb_set <- function(n) utils::setTxtProgressBar(pb, n)
-  opts <- list(progress = pb_set)
+  if (debug) {
+    opts <- NULL
+  } else {
+    pb <- utils::txtProgressBar(max = length(fix_chrom), style = 3)
+    pb_set <- function(n) utils::setTxtProgressBar(pb, n)
+    opts <- list(progress = pb_set)
+  }
 
   # Compute identical sites within each contig in parallel
   llist_chrom <- foreach::foreach(
@@ -55,19 +64,22 @@ find_linked_sites.varkit <- function(x,
     .options.snow = opts,
     .packages = "varkit"
   ) %dopar% {
+    if (debug)
+      message("Processing CHROM:", fix$chrom[1])
     llist <- link_list(fix$idx, check = FALSE)
     if (length(llist) > 1) {
       llist <- find_linked_cols(
         gt, pos = fix$pos, cutoff = cutoff, window = window, method = method, llist = llist
       )
     }
-    if (is.null(cl))
+    if (is.null(cl) && !debug)
       .pb_increment(pb)
     llist
   }
 
   # Cleanup
-  close(pb)
+  if (!debug)
+    close(pb)
   .unregister_workers(cl)
 
   # Add names and revert order
