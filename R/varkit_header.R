@@ -28,7 +28,7 @@ varkit_header <- function(x) {
     meta = meta,
     col_names = col_names
   )
-  class(header) <- "varkit_header"
+  class(header) <- c("varkit_header", "list")
   header
 }
 

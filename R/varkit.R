@@ -38,7 +38,7 @@ varkit <- function(vcf, ploidy, meta = NULL) {
     use_site = use_site,
     ploidy = ploidy
   )
-  class(vcf) <- c("varkit", "varkit_header")
+  class(vcf) <- c("varkit", "varkit_header", "list")
 
   vcf
 }
