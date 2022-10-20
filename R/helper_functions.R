@@ -105,6 +105,10 @@
   return(TRUE)
 }
 
+.str_split_fixed_idx <- function(string, pattern, n, idx) {
+  stringr::str_split_fixed(string, pattern = pattern, n = n)[, idx]
+}
+
 ## Unused functions ------
 .bi_gt2dosage <- function(mat) {
   stopifnot(is.matrix(mat))
