@@ -21,6 +21,6 @@ fixed.varkit <- function(x,
   if (add_index)
     res$idx <- which(x$use_site)
   if (by_chrom)
-    return(split(res, ~chrom))
+    return(split(res, ~chrom, drop = TRUE))
   res
 }
