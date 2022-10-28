@@ -42,11 +42,6 @@ Run the following commands and select the downloaded file in the window
 that pops up:
 
 ``` r
-install.packages(file.choose(), type =  "source")
-```
-
-``` r
-# If the above doesn't work, try installing using the "remotes" package:
 install.packages("remotes")
 remotes::install_local(file.choose(), build_vignettes = TRUE)
 ```
