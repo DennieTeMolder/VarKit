@@ -36,7 +36,7 @@ summary(vcf)
 
 temp_file <- tempfile(fileext = ".vcf.bz2")
 write_vcf(vcf, temp_file, replace_filter = TRUE)
-read_vcf(temp_file)
+read_vcf(temp_file, ploidy = 2)
 
 summary(remove_masked(vcf))
 

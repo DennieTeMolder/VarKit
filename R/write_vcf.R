@@ -1,11 +1,15 @@
 ##' @export
-write_vcf <- function(x, path, na_gt = ".", replace_filter = FALSE) {
+write_vcf <- function(x, path, replace_filter = FALSE, na_gt = NULL) {
   UseMethod("write_vcf", x)
 }
 
 ##' @export
-write_vcf.varkit <- function(x, path, na_gt = ".", replace_filter = FALSE) {
-  stopifnot(is.character(na_gt), length(na_gt) == 1)
+write_vcf.varkit <- function(x, path, replace_filter = FALSE, na_gt = NULL) {
+  if (!is.null(na_gt))
+    stopifnot(is.character(na_gt), length(na_gt) == 1)
+
+  if (all(is.na(x$geno)))
+    stop("All genotype fields are NA!")
 
   ## Header
   if (!is.null(x$meta)) {
@@ -39,8 +43,11 @@ write_vcf.varkit <- function(x, path, na_gt = ".", replace_filter = FALSE) {
     fxd[missing] <- rep(NA, nrow(fxd))
   }
 
-  if (replace_filter || all(is.na(fxd$filter)))
+  if (replace_filter || all(is.na(fxd$filter))) {
     fxd$filter <- ifelse(x$use_site, "PASS", "MASKED")
+  } else if (!all(x$use_site)) {
+    warning("Not storing masked sites in VCF! Use `replace_filter = TRUE` if this is desired.")
+  }
 
   # Fxd ordering and convert
   fxd <- dplyr::relocate(fxd, tidyselect::all_of(fixed_names))
@@ -48,6 +55,11 @@ write_vcf.varkit <- function(x, path, na_gt = ".", replace_filter = FALSE) {
 
   ## Genotype fields
   gt <- x$geno
+  if (is.null(na_gt)) {
+    non_na <- as.character(gt[which(!is.na(gt))[1]])
+    na_gt <- stringr::str_replace_all(non_na, "[^|/:]+", ".")
+    message("Representing missing genotypes as: '", na_gt, "'")
+  }
   gt[is.na(gt)] <- na_gt
 
   # Combine
