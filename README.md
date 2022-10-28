@@ -45,6 +45,12 @@ that pops up:
 install.packages(file.choose(), type =  "source")
 ```
 
+``` r
+# If the above doesn't work, try installing using the "remotes" package:
+install.packages("remotes")
+remotes::install_local(file.choose(), build_vignettes = TRUE)
+```
+
 And load the package using:
 
 ``` r

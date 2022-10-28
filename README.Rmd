@@ -51,6 +51,12 @@ Run the following commands and select the downloaded file in the window that pop
 install.packages(file.choose(), type =  "source")
 ```
 
+``` r
+# If the above doesn't work, try installing using the "remotes" package:
+install.packages("remotes")
+remotes::install_local(file.choose(), build_vignettes = TRUE)
+```
+
 And load the package using:
 
 ``` r
