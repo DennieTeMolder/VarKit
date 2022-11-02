@@ -45,3 +45,20 @@ res
 apply_samples.varkit <- function(x, FUN, ..., simplify = TRUE) {
   apply_samples(geno(x), FUN = FUN, ... , simplify = simplify)
 }
+
+##' @export
+apply_each <- function(x, FUN, ...) {
+  UseMethod("apply_each", x)
+}
+
+##' @export
+apply_each.varkit_geno <- function(x, FUN, ...) {
+  len <- length(x)
+  nrows <- nrow(x)
+  dnames <- dimnames(x)
+  x <- do.call(FUN, list(x, ...))
+  if (length(x) != len)
+    stop("FUN should return a vector with the same length as x!")
+  x <- matrix(x, nrow = nrows, dimnames = dnames)
+  varkit_geno(x)
+}
