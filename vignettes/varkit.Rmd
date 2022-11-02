@@ -74,7 +74,7 @@ print(vcf)
 ## Accessing specific fields
 
 The `read_vcf()` function returns a special "varkit" object that holds all of
-the information parsed from the VCF. This information should be accessed trough
+the information parsed from the VCF. This information should be accessed through
 designated functions, the most important of which are:
 
 ```{r access}
@@ -133,7 +133,7 @@ parse_meta_type(vcf, "contig")
 ## Masking
 
 A common operation when working with VCF is removing specific sites, based on
-various criteria. In VarKit this is achieved trough the `mask()` function, which
+various criteria. In VarKit this is achieved through the `mask()` function, which
 either requires you to input a logical vector (TRUE if the site should be
 masked) or a data frame with columns "chorm" and "pos" containing the sites to
 be masked. For this example we will use a logical vector to mask/hide all sites on
@@ -193,8 +193,8 @@ actually removed from memory, they are just skipped by the VarKit functions.
 This allows you to quickly unmask sites or restore an exported set of masked sites.
 
 In this example we will fist export the mask we just created (which masks sites
-on CHROM = "I" or sites with a QUAL < 1000) and assign it to the `my_mask`
-variable, then we will remove the mask from the vcf object which verify trough
+on CHROM = "I" or sites with a QUAL < 3000) and assign it to the `my_mask`
+variable, then we will remove the mask from the vcf object which verify through
 the `summary()` function:
 
 ```{r mask_export}
@@ -241,8 +241,8 @@ read_vcf(temp_file, ploidy = 2)
 
 > NOTE: the `readr` library (which is used internally) does not support writing
 > in the block-gzipped format that is expected by many other tools. To achieve
-> this you can export to plain ".vcf" and convert the file using the "bcftools"
-> CLI.
+> this you can export to plain ".vcf" and convert the file using the "bgzip"
+> CLI (and "tabix" for indexing).
 
 ## Detecting linkage between sites
 
@@ -279,9 +279,9 @@ summary(llist)
 
 This will return a "link_list" object that tracks which sites (using their
 index) are linked to each other and contains information on which sites to mask
-to remove linkage (see also `varkit_help(llist)`). Therefore, we can use this
-object to mask sites in order to remove the linkage (this will mask all but the
-centre most site out of sets of identical/linked sites):
+in order to remove linkage (see also `varkit_help(llist)`). Therefore, we can
+use this object to mask sites in order to remove the linkage (this will mask all
+but the centre most site out of sets of identical/linked sites):
 
 ```{r mask_identical}
 vcf <- mask(vcf, site = llist)
@@ -305,7 +305,7 @@ chromosomes/scaffolds, whereas `find_linked_sites()` only checks for linkage
 within a specified window (here we use the default of 50,000 bp). To check entire
 chromosomes in the latter case set the "window" option to 0 or -1.
 
-> Both of these function support multi-threading trough the "cores" option and
+> Both of these function support multi-threading through the "cores" option and
 > only look for identical/linked columns within chromosomes/scaffolds. To check
 > for linkage between all chromosomes set `by_chrom = FALSE`. However, this will
 > greatly increase computational load.
