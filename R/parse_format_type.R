@@ -1,19 +1,30 @@
 ##' @export
-parse_format_type <- function(x, type) {
+parse_format_type <- function(x, type, allow_missing = FALSE) {
   UseMethod("parse_format_type", x)
 }
 
 ##' @export
-parse_format_type.varkit <- function(x, type) {
+parse_format_type.varkit <- function(x, type, allow_missing = FALSE) {
+  stopifnot(is.character(type) && length(type) == 1)
+
   # Check te FORMAT field for index of type
-  frmt <- get_format_types.varkit(x, check_consistent = TRUE)
-  idx <- which(frmt == type)
-  if (length(idx) != 1)
-    stop("No matching value for `type` found in FORMAT!")
+  frmt <- .index_format(x, type)
+  if (!allow_missing && any(is.na(frmt)))
+    stop("`type` not found in all FORMAT fields!")
 
   # Parse type from genotype fields
-  len <- length(frmt)
-  res <- apply_each(geno(x), .str_split_fixed_idx, pattern = ":", n = len, idx = idx)
+  if (length(frmt) == 1) {
+    idx <- frmt[[1]][[type]]
+    res <- apply_each(geno(x), .str_split_get_idx, char = ":", idx = idx)
+  } else {
+    gt <- geno(x)
+    idxs <- frmt[fixed(x)$format]
+    res <- sapply(seq_along(idxs), function(i) {
+      .str_split_get_idx(gt[, i], char = ":", idx = idxs[[i]])
+    })
+    dimnames(res) <- dimnames(gt)
+    res <- varkit_geno(res)
+  }
 
   # Convert NA values
   is_na <- stringr::str_detect(res , pattern ="^[.,|/]+$")
@@ -25,5 +36,20 @@ parse_format_type.varkit <- function(x, type) {
     res <- apply_each(res, as.numeric)
 
   res
+}
+
+.index_format <- function(x, type) {
+  if (any(is.na(x$fixed$format)))
+    stop("The FORMAT column contains missing values!")
+
+  uniq <- levels(x$fixed$format)
+  # Some values might be dropped when masking, so we recompute the unique here
+  if (length(uniq) != 1)
+    uniq <- as.character(unique(fixed(x)$format))
+
+  splits <- stringr::str_split(uniq, ":")
+  names(splits) <- uniq
+
+  lapply(splits, function(y) match(type, y))
 }
 
