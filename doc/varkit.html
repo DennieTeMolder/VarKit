@@ -552,19 +552,18 @@ functions. To check which functions are available for any given object
 use the <code>vakit_help()</code> function:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">varkit_help</span>(vcf)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Available methods:</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [1] &quot;apply_samples(vcf)&quot;                &quot;apply_sites(vcf)&quot;                 </span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [3] &quot;export_mask(vcf)&quot;                  &quot;find_identical_sites(vcf)&quot;        </span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [5] &quot;find_linked_sites(vcf)&quot;            &quot;fixed(vcf)&quot;                       </span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [7] &quot;geno(vcf)&quot;                         &quot;get_format_types(vcf)&quot;            </span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [9] &quot;import_mask(vcf)&quot;                  &quot;mask(vcf)&quot;                        </span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [11] &quot;mask_sites_without_variation(vcf)&quot; &quot;meta(vcf)&quot;                        </span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [13] &quot;parse_format_type(vcf)&quot;            &quot;parse_info(vcf)&quot;                  </span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [15] &quot;parse_meta_type(vcf)&quot;              &quot;print(vcf)&quot;                       </span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [17] &quot;remove_masked(vcf)&quot;                &quot;samples(vcf)&quot;                     </span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [19] &quot;summary(vcf)&quot;                      &quot;unmask_all(vcf)&quot;                  </span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [21] &quot;write_bcftools_regions(vcf)&quot;       &quot;write_bcftools_samples(vcf)&quot;      </span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [23] &quot;write_vcf(vcf)&quot;                   </span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Use `?function_name` for more info (e.g. ?samples).</span></span></code></pre></div>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [1] &quot;export_mask(vcf)&quot;                  &quot;find_identical_sites(vcf)&quot;        </span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [3] &quot;find_linked_sites(vcf)&quot;            &quot;fixed(vcf)&quot;                       </span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [5] &quot;format_type_summary(vcf)&quot;          &quot;geno(vcf)&quot;                        </span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [7] &quot;import_mask(vcf)&quot;                  &quot;mask(vcf)&quot;                        </span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [9] &quot;mask_sites_without_variation(vcf)&quot; &quot;meta(vcf)&quot;                        </span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [11] &quot;parse_format_type(vcf)&quot;            &quot;parse_info(vcf)&quot;                  </span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [13] &quot;parse_meta_type(vcf)&quot;              &quot;print(vcf)&quot;                       </span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [15] &quot;remove_masked(vcf)&quot;                &quot;samples(vcf)&quot;                     </span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [17] &quot;summary(vcf)&quot;                      &quot;unmask_all(vcf)&quot;                  </span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [19] &quot;write_bcftools_regions(vcf)&quot;       &quot;write_bcftools_samples(vcf)&quot;      </span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [21] &quot;write_vcf(vcf)&quot;                   </span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Use `?function_name` for more info (e.g. ?samples).</span></span></code></pre></div>
 </div>
 <div id="accessing-header-metadata" class="section level2">
 <h2>Accessing header metadata</h2>

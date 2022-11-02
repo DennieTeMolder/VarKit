@@ -7,6 +7,40 @@
   paste(x, collapse = delim)
 }
 
+.not_variable <- function(x, na_rm = TRUE) {
+  stopifnot(is.vector(x))
+  if (na_rm)
+    x <- x[!is.na(x)]
+  if (length(x) <= 1)
+    return(TRUE)
+  all(duplicated(x)[-1])
+}
+
+.str_split_get_idx <- function(string, char, idx) {
+  stopifnot(is.character(string))
+  if (is.na(idx))
+    return(rep(NA, length(string)))
+  stopifnot(is.character(char) && length(char) == 1)
+  stopifnot(is.numeric(idx) && length(idx) == 1)
+
+  if (idx > 1) {
+    match_before <- paste0("([^", char, "]+", char, "){", idx - 1, "}")
+    string <- stringr::str_remove(string, pattern = match_before)
+  }
+
+  match_after <- paste0(char, ".*")
+  stringr::str_remove(string, pattern = match_after)
+}
+
+.which_least_na_middle <- function(cols, data) {
+  n_na <- colSums(is.na(data[, cols]))
+  least_na <- which(n_na == min(n_na))
+  # Take the middle value
+  if (length(least_na) > 1)
+    return(least_na[ceiling(length(least_na) / 2)])
+  least_na
+}
+
 .linked_only <- function(x, allow_na = TRUE) {
   if (allow_na) {
     x <- x[!is.na(x)]
@@ -40,75 +74,6 @@
   val <- utils::getTxtProgressBar(pb)
   utils::setTxtProgressBar(pb, value = val + n)
 }
-
-.concat_link_lists <- function(llist_list) {
-  # Collect all translations and prepare llist_list for concatenating
-  n <- NULL
-  trans_list <- vector(mode = "list", length = length(llist_list))
-  for (i in seq_along(llist_list)) {
-    cur_len <- length(llist_list[[i]])
-
-    # Store translations
-    cur_trans <- attr(llist_list[[i]], "translation")
-    if (is.null(cur_trans)) {
-      trans_list[[i]] <- 1:cur_len
-    } else {
-      trans_list[[i]] <- cur_trans
-    }
-
-    # First llist does not need to be adjusted
-    if (i == 1) {
-      n <- cur_len
-      next()
-    }
-
-    # Adjust entries that contain links
-    needs_adjust <- contains_link(llist_list[[i]])
-    for (j in which(needs_adjust)) {
-      llist_list[[i]][[j]] <- llist_list[[i]][[j]] + n
-    }
-
-    n <- n + cur_len
-  }
-
-  # Perform the concatenation
-  llist <- unlist(llist_list, recursive = FALSE, use.names = FALSE)
-  rm(llist_list)
-  trans <- unlist(trans_list)
-  rm(trans_list)
-
-  if (any(duplicated(trans)))
-    stop("Duplicated translations detected, cannot concat!")
-
-  # Add attributes
-  if (!all(trans == seq_along(llist)))
-    attr(llist, "translation") <- trans
-  class(llist) <- "link_list"
-
-  llist
-}
-
-.which_least_na_middle <- function(cols, data) {
-  n_na <- colSums(is.na(data[, cols]))
-  least_na <- which(n_na == min(n_na))
-  # Take the middle value
-  if (length(least_na) > 1)
-    return(least_na[ceiling(length(least_na) / 2)])
-  least_na
-}
-
-.all_null <- function(x) {
-  for (i in seq_along(x)) {
-    if (!is.null(x[[i]]))
-      return(FALSE)
-  }
-  return(TRUE)
-}
-
-.str_split_fixed_idx <- function(string, pattern, n, idx) {
-  stringr::str_split_fixed(string, pattern = pattern, n = n)[, idx]
-}
-
 ## Unused functions ------
 .bi_gt2dosage <- function(mat) {
   stopifnot(is.matrix(mat))

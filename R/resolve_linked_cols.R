@@ -1,5 +1,5 @@
 resolve_linked_cols <- function(linked_cols, data, llist) {
-  if (.all_null(linked_cols))
+  if (all(is.null(linked_cols)))
     return(llist)
 
   n <- length(linked_cols)

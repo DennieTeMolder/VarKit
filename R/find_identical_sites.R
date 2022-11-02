@@ -82,5 +82,5 @@ find_identical_sites.varkit <- function(x,
   llist_chrom <- llist_chrom[idx]
 
   # Concatenate the per chromosome link_lists
-  .concat_link_lists(llist_chrom)
+  concat_link_lists(llist_chrom)
 }
