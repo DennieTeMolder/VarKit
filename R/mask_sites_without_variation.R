@@ -5,7 +5,7 @@ mask_sites_without_variation <- function(x) {
 
 ##' @export
 mask_sites_without_variation.varkit <- function(x) {
-  is_not_variable <- apply_sites(x, .not_variable)
+  is_not_variable <- apply_sites(geno(x), .not_variable)
   mask(x, site = is_not_variable)
 }
 

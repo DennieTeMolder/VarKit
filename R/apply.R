@@ -17,11 +17,6 @@ apply_sites.varkit_geno <- function(x, FUN, ..., simplify = TRUE) {
 }
 
 ##' @export
-apply_sites.varkit <- function(x, FUN, ..., simplify = TRUE) {
-  apply_sites(geno(x), FUN = FUN, ... , simplify = simplify)
-}
-
-##' @export
 apply_samples <- function(x, FUN, ..., simplify = TRUE) {
   UseMethod("apply_samples", x)
 }
@@ -39,11 +34,6 @@ apply_samples.varkit_geno <- function(x, FUN, ..., simplify = TRUE) {
     return(varkit_geno(res))
   }
 res
-}
-
-##' @export
-apply_samples.varkit <- function(x, FUN, ..., simplify = TRUE) {
-  apply_samples(geno(x), FUN = FUN, ... , simplify = simplify)
 }
 
 ##' @export
