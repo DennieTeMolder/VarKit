@@ -9,6 +9,7 @@ parse_info.varkit <- function(x) {
   res <- stringr::str_split(x$fixed$info[x$use_site], ";")
   res <- lapply(res, .split_key_value)
   res <- .bind_rows_list(res)
+
   # Use INFO metadata to convert specific columns to numeric
   if ("INFO" %in% x$meta$name) {
     types <- parse_meta_type(x, "INFO")
@@ -20,15 +21,18 @@ parse_info.varkit <- function(x) {
         res[[idx]] <- as.numeric(res[[idx]])
     }
   }
+
   res
 }
 
 .split_key_value <- function(x) {
   if (all(is.na(x)))
     return(NA)
+
   x <- stringr::str_split_fixed(x, pattern = "=", n = 2)
   res <- x[, 2]
   names(res) <- x[, 1]
+
   res
 }
 
@@ -38,8 +42,10 @@ parse_info.varkit <- function(x) {
   if (any(is_na)) {
     non_na_idx <- which(!is_na)[1]
     valid_name <- names(lst[[non_na_idx]])[1]
+
     for (idx in which(is_na))
       names(lst[[idx]]) <- valid_name
   }
+
   do.call("bind_rows", lst)
 }
