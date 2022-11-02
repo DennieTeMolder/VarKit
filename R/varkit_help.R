@@ -1,18 +1,22 @@
 ##' @export
 varkit_help <- function(x) {
+  # Strip non-varkit classes
+  classes <- class(x)
+  is_varkit_class <- stringr::str_starts(classes, "varkit(_|$)")
+  if (any(is_varkit_class))
+    classes <- classes[is_varkit_class]
   # Retrieve and format
-  x <- sapply(class(x), function(class, name) {
-    methods <- methods(class = class)
-    methods <- stringr::str_remove(
-      methods,
+  methods <- sapply(classes, function(class) {
+    stringr::str_remove(
+      methods(class = class),
       pattern = paste0("\\.", class, "$")
     )
-    paste0(methods, "(", name, ")")
-  }, name = substitute(x))
-  x <- sort(unique(unlist(x, use.names = FALSE)))
+  })
+  methods <- sort(unique(unlist(methods, use.names = FALSE)))
+  methods <- paste0(methods, "(", substitute(x), ")")
   # Print
   cat("Available methods:\n")
-  print(x)
+  print(methods)
   cat("Use `?function_name` for more info (e.g. ?samples).\n")
-  invisible(x)
+  invisible(methods)
 }

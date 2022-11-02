@@ -16,7 +16,7 @@ parse_meta_type.varkit_meta <- function(x, type) {
   x <- x[x$name == type,]
 
   if (nrow(x) == 0)
-    stop(paste0("The type '", type, "' could not be found in meta()$name!"))
+    stop(paste0("The type '", type, "' could not be found in meta(x)$name!"))
 
   # We assume here that the values of the key-value pairs in a header line are
   # either all unquoted, or that it it starts off with one ore more unquoted
