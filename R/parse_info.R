@@ -6,12 +6,12 @@ parse_info <- function(x) {
 ##' @export
 parse_info.varkit <- function(x) {
   # Convert to dataframe assuming ";" and "=" can only be used as delimiters
-  res <- stringr::str_split(x$fixed$info[x$use_site], ";")
+  res <- stringr::str_split(fixed(x)$info, ";")
   res <- lapply(res, .split_key_value)
   res <- .bind_rows_list(res)
 
   # Use INFO metadata to convert specific columns to numeric
-  if ("INFO" %in% x$meta$name) {
+  if ("INFO" %in% meta(x)$name) {
     types <- parse_meta_type(x, "INFO")
     types <- dplyr::left_join(data.frame(ID = colnames(res)), types, by = "ID")
     which_numeric <- which(tolower(types$Type) %in% c("integer", "float"))

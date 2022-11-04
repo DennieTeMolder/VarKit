@@ -5,13 +5,14 @@ format_summary <- function(x) {
 
 ##' @export
 format_summary.varkit <- function(x) {
-  if (any(is.na(x$fixed$format)))
+  frmt <- fixed(x)$format
+  if (any(is.na(frmt)))
     stop("The FORMAT column contains missing values!")
 
-  uniq <- levels(x$fixed$format)
+  uniq <- levels(frmt)
   # Some values might be dropped when masking, so we recompute the unique here
   if (length(uniq) != 1)
-    uniq <- unique(fixed(x)$format)
+    uniq <- as.character(unique(frmt))
 
   if (length(uniq) > 1)
     message("!FORMAT column is variable, number of combinations found: ", length(uniq))
