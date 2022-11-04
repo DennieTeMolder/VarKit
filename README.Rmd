@@ -42,8 +42,8 @@ using the aforementioned Bcftools.
 > file size of memory. However, specifying `skip_cols` will reduce this footprint.
 
 ## Installation
-Download `varkit_0.2.7.tar.gz` from the releases tab
-([link](https://git.wur.nl/molde006/varkit/uploads/4fc55b3751f13616a1171bbc779dacc6/varkit_0.2.7.tar.gz)).
+Download `varkit_0.3.0.tar.gz` from the releases tab
+([link](https://git.wur.nl/molde006/varkit/uploads/c4ca9b424d49872a3a4cac94e16d5205/varkit_0.3.0.tar.gz)).
 
 Run the following commands and select the downloaded file in the window that pops up:
 
