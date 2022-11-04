@@ -15,7 +15,7 @@ is_varkit_meta <- function(x) {
 }
 
 ##' @export
-print.varkit_meta <- function(x, ..., n = 10, verbose = TRUE) {
+print.varkit_meta <- function(x, ..., n = NULL, verbose = TRUE) {
   print(tibble::tibble(x), ..., n = n)
   if (verbose) {
     cat("\nMeta summary (summary(x)):\n")

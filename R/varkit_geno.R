@@ -28,18 +28,56 @@ is_varkit_geno <- function(x) {
 }
 
 ##' @export
-print.varkit_geno <- function(x, ..., n_sites = 5, n_samples = 5) {
+print.varkit_geno <- function(x, ..., n = NULL) {
   n_col <- ncol(x)
-  n_row <- nrow(x)
-  n_sites <- min(c(n_sites, n_col))
-  n_samples <- min(c(n_samples, n_row))
-  cat("# A", class(x[[1,1]]), "matrix\n")
-  print(x[1:n_samples, 1:n_sites], ...)
-  cat("# with a total of", n_col, "sites x", n_row, "samples and",
+  cat("# A", class(x[1]), "matrix\n")
+
+  if (is.null(n)) {
+    print_subset <- x[, seq_len(min(c(100, n_col)))]
+    col_widths <- .get_print_width(print_subset)
+    which_fit <- which(col_widths <= getOption("width"))
+    idx <- ifelse(length(which_fit) == 0, 1, max(which_fit))
+    print(print_subset[, seq_len(idx)], ...)
+  } else {
+    print(x[, seq_len(min(c(n, n_col)))], ...)
+  }
+
+  cat("# With a total of", n_col, "sites x", nrow(x), "samples and",
        sum(is.na(x)), "missing values\n")
+
+  if (is.null(n) && idx < n_col)
+    cat("# Use `print(geno(vcf), n = ...)` to see more sites\n")
+
+  invisible(x)
 }
 
-##' @export
-as.data.frame.varkit_geno <- function(x, row.names = NULL, optional = FALSE, ...) {
-  as.data.frame.matrix(t(x), row.names = row.names, optional = optional, ...)
+.maxnchar <- function(x) {
+  max(nchar(x), na.rm = TRUE)
+}
+
+.get_print_width <- function(x) {
+  stopifnot(is.matrix(x))
+
+  if (is.null(rownames(x))) {
+    rname_len <- nchar(nrow(x)) + 3
+  } else {
+    rname_len <- .maxnchar(rownames(x))
+  }
+
+  if (is.null(colnames(x))) {
+    # We add 3 for the [,] and for the space before the column
+    cname_len <- nchar(seq_len(ncol(x))) + 4
+  } else {
+    # We add 2 here for the potential `` around var names
+    cname_len <- nchar(colnames(x)) + 3
+  }
+
+  col_len <- apply(x, 2, .maxnchar) + 1
+  if (is.character(x[1]))
+    col_len <- col_len + 2
+
+  # Check if col name or col value is widest, add row name width to first element
+  col_widths <- pmax.int(cname_len, col_len)
+  col_widths[1] <- col_widths[1] + rname_len
+  cumsum(col_widths)
 }
