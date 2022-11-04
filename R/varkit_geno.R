@@ -33,7 +33,7 @@ print.varkit_geno <- function(x, ..., n = NULL) {
   cat("# A", class(x[1]), "matrix\n")
 
   if (is.null(n)) {
-    print_subset <- x[, seq_len(min(c(100, n_col)))]
+    print_subset <- x[, seq_len(min(c(100, n_col))), drop = FALSE]
     col_widths <- .get_print_width(print_subset)
     which_fit <- which(col_widths < getOption("width"))
     idx <- ifelse(length(which_fit) == 0, 1, max(which_fit))
