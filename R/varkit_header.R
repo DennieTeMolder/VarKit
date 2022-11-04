@@ -32,19 +32,6 @@ varkit_header <- function(x) {
   header
 }
 
-##' @export
-is_varkit_header <- function(x) {
-  inherits(x, "varkit_header")
-}
-
-##'@export
-print.varkit_header <- function(x, ..., n = 10, verbose = TRUE) {
-  cat("Meta header data (meta(x)):\n")
-  print(x$meta, ..., n = n, verbose = verbose)
-  cat("\nColumn names (for 'skip_cols'):\n")
-  print(x$col_names, ...)
-}
-
 .parse_col_names <- function(x) {
   col_names <- stringr::str_remove(x, "#")
   col_names <- stringr::str_split(col_names, "\t")[[1]]
@@ -54,4 +41,18 @@ print.varkit_header <- function(x, ..., n = 10, verbose = TRUE) {
   fixed_idx <- stats::na.omit(match(fixed_names, tolower(col_names)))
   col_names[fixed_idx] <- fixed_names[seq_along(fixed_names) %in% fixed_idx]
   col_names
+}
+
+##' @export
+is_varkit_header <- function(x) {
+  inherits(x, "varkit_header")
+}
+
+##'@export
+print.varkit_header <- function(x, ..., n = NULL) {
+  cat("*VarKit Header Object*\n")
+  cat("Header metadata, `meta(header)`:\n")
+  print(meta(x), ..., n = n, verbose = verbose)
+  cat("\nColumn names (for 'skip_cols'), `header$col_names`:\n")
+  print(x$col_names, ...)
 }
