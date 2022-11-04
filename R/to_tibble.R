@@ -4,6 +4,6 @@ to_tibble <- function(x) {
 }
 
 ##' @export
-to_tibble.varkit_geno <- function(x) {
-  tibble::as_tibble(as.data.frame(x))
+to_tibble.varkit_geno <- function(x, ...) {
+  tibble::as_tibble(as.data.frame(t(x), ...))
 }

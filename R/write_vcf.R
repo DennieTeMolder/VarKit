@@ -54,7 +54,7 @@ write_vcf.varkit <- function(x, path, replace_filter = FALSE, na_gt = NULL) {
   colnames(fxd) <- toupper(colnames(fxd))
 
   ## Genotype fields
-  gt <- x$geno
+  gt <- t(x$geno)
   if (is.null(na_gt)) {
     non_na <- as.character(gt[which(!is.na(gt))[1]])
     na_gt <- stringr::str_replace_all(non_na, "[^|/:]+", ".")
