@@ -35,7 +35,7 @@ print.varkit_geno <- function(x, ..., n = NULL) {
   if (is.null(n)) {
     print_subset <- x[, seq_len(min(c(100, n_col)))]
     col_widths <- .get_print_width(print_subset)
-    which_fit <- which(col_widths <= getOption("width"))
+    which_fit <- which(col_widths < getOption("width"))
     idx <- ifelse(length(which_fit) == 0, 1, max(which_fit))
     print(print_subset[, seq_len(idx)], ...)
   } else {
@@ -46,7 +46,7 @@ print.varkit_geno <- function(x, ..., n = NULL) {
        sum(is.na(x)), "missing values\n")
 
   if (is.null(n) && idx < n_col)
-    cat("# Use `print(geno(vcf), n = ...)` to see more sites\n")
+    cat("# Use `print(n = ...)` to see more sites\n")
 
   invisible(x)
 }
