@@ -13,7 +13,7 @@ parse_format_type.varkit <- function(x, type, allow_missing = FALSE) {
     stop("`type` not found in all FORMAT fields!")
 
   # Parse type from genotype fields
-  if (length(frmt) == 1) {
+  if (length(unique(frmt)) == 1) {
     idx <- frmt[[1]]
     res <- apply_each(geno(x), .str_split_get_idx, char = ":", idx = idx)
   } else {
