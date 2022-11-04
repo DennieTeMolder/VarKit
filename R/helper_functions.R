@@ -32,6 +32,46 @@
   stringr::str_remove(string, pattern = match_after)
 }
 
+.maxnchar <- function(x) {
+  max(nchar(x), na.rm = TRUE)
+}
+
+.max_print_col <- function(mat, width = getOption("width")) {
+  stopifnot(is.matrix(mat))
+
+  # Reduce size of matrix to a reasonable size
+  check_ncol <- min(c(300, ncol(mat)))
+  mat <- mat[, seq_len(check_ncol), drop = FALSE]
+
+  if (is.null(rownames(mat))) {
+    rname_len <- nchar(nrow(mat)) + 3
+  } else {
+    rname_len <- .maxnchar(rownames(mat))
+  }
+
+  if (is.null(colnames(mat))) {
+    # We add 3 for the [,] and for the space before the column
+    cname_len <- nchar(seq_len(ncol(mat))) + 4
+  } else {
+    # We add 2 here for the potential `` around var names
+    cname_len <- nchar(colnames(mat)) + 3
+  }
+
+  col_len <- apply(mat, 2, .maxnchar) + 1
+  if (is.character(mat[1]))
+    col_len <- col_len + 2
+
+  # Check if col name or col value is widest, add row name width to first element
+  col_widths <- pmax.int(cname_len, col_len)
+  col_widths[1] <- col_widths[1] + rname_len
+
+  # Return the index of the last column that fits within width
+  which_fit <- which(cumsum(col_widths) < width)
+  if (length(which_fit) == 0)
+      return(1)
+  max(which_fit)
+}
+
 .which_least_na_middle <- function(cols, data) {
   n_na <- colSums(is.na(data[, cols]))
   least_na <- which(n_na == min(n_na))

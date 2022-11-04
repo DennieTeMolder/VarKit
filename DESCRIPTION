@@ -13,6 +13,7 @@ Imports:
     doSNOW,
     dplyr,
     foreach,
+    pillar,
     readr,
     rjson,
     rlang,

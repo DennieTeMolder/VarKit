@@ -15,12 +15,9 @@ is_varkit_meta <- function(x) {
 }
 
 ##' @export
-print.varkit_meta <- function(x, ..., n = NULL, verbose = TRUE) {
-  print(tibble::tibble(x), ..., n = n)
-  if (verbose) {
-    cat("\nMeta summary (summary(x)):\n")
-    print(summary(x), ..., n = n)
-  }
+print.varkit_meta <- function(x, ..., n = NULL) {
+  pillar:::print.tbl(x, ..., n = n)
+  cat("# Use `summary(...)` to get an overview of available types/names.\n")
   invisible(x)
 }
 
