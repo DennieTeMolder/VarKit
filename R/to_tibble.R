@@ -1,9 +1,14 @@
 ##' @export
-to_tibble <- function(x) {
+to_tibble <- function(x, ...) {
   UseMethod("to_tibble", x)
 }
 
 ##' @export
 to_tibble.varkit_geno <- function(x, ...) {
   tibble::as_tibble(as.data.frame(t(x), ...))
+}
+
+##' @export
+to_tibble.varkit <- function(x, ...) {
+  dplyr::bind_cols(fixed(x), to_tibble(geno(x)))
 }
