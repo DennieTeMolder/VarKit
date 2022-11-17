@@ -2,7 +2,7 @@
 varkit <- function(vcf, ploidy, meta = NULL) {
   # Checks
   stopifnot(is.data.frame(vcf))
-  stopifnot(is.numeric(ploidy))
+  stopifnot(is.numeric(ploidy), length(ploidy) == 1)
   if (!is.null(meta))
     stopifnot(is_varkit_meta(meta))
 
