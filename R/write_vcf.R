@@ -16,21 +16,19 @@ write_vcf.varkit <- function(x, path, replace_filter = FALSE, na_gt = NULL) {
     stopifnot(is.character(na_gt), length(na_gt) == 1)
 
   ## Header
-  if (!is.null(x$meta)) {
-    header <- x$meta
-    # Replace fileformat and timestamp
-    header <- rbind(
-      data.frame(name = "fileformat", value = "VCFv4.2"),
-      header[header$name != "fileformat", ],
-      data.frame(
-        name = "VarKit",
-        value = paste0("Modified and written to file by 'write_vcf';Date=", date())
-      )
+  header <- x$meta
+  if (!is.null(header))
+    header <- header[header$name != "fileformat", ]
+  # Replace fileformat and add info
+  header <- rbind(
+    data.frame(name = "fileformat", value = "VCFv4.2"),
+    header,
+    data.frame(
+      name = "VarKit",
+      value = paste0("Modified and written to file by 'write_vcf';Date=", date())
     )
-    header <- paste0("##", header$name, "=", header$value)
-  } else {
-    header <- '##fileformat=VCFv4.2'
-  }
+  )
+  header <- paste0("##", header$name, "=", header$value)
 
   ## Fixed fields
   fxd <- x$fixed
