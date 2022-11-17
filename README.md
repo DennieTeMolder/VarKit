@@ -35,6 +35,11 @@ loading it into R using the aforementioned Bcftools.
 
 ## Installation
 
+VarKit depends on
+([Rtools](https://cran.r-project.org/bin/windows/Rtools/)) to be
+installed on your system (not as a package), make sure your Rtools
+installation supports your current version of R.
+
 Download `varkit_0.3.0.tar.gz` from the releases tab
 ([link](https://git.wur.nl/molde006/varkit/uploads/c4ca9b424d49872a3a4cac94e16d5205/varkit_0.3.0.tar.gz)).
 
