@@ -7,7 +7,8 @@ write_vcf <- function(x, path, replace_filter = FALSE, na_gt = NULL) {
 write_vcf.varkit <- function(x, path, replace_filter = FALSE, na_gt = NULL) {
   if (all(is.na(x$geno)))
     stop("All genotype fields are NA!")
-  if (is.character(path) && stringr::str_ends(path, "\\.(gz|gzip)"))
+  stopifnot(is.character(path), length(path) == 1)
+  if (stringr::str_ends(path, "\\.(gz|gzip)"))
     warning("Varkit writes regular g-zipped files, not the block g-zip format ",
             "expected by many tools!\n If the latter is desired, write to plain ",
             "vcf and convert using an external tool like 'bgzip'.")
