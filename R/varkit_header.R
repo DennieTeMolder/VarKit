@@ -17,7 +17,7 @@ varkit_header <- function(x) {
       stop("Not all lines above the header line start with a '#'!")
 
     # The last line of the header contains the column names, the rest is metadata
-    meta <- varkit_meta(utils::head(x, n = -1))
+    meta <- .parse_meta(utils::head(x, n = -1))
     col_names <- .parse_col_names(utils::tail(x, n = 1))
   } else {
     meta <- NULL
@@ -30,6 +30,13 @@ varkit_header <- function(x) {
   )
   class(header) <- c("varkit_header", "list")
   header
+}
+
+.parse_meta <- function(x) {
+  stopifnot(is.character(x))
+  x <- stringr::str_remove(x, "##")
+  x <- stringr::str_split_fixed(x, "=", n = 2)
+  tibble::tibble(name = x[, 1], value = x[, 2])
 }
 
 .parse_col_names <- function(x) {

@@ -1,10 +1,10 @@
 ##' @export
-format_summary <- function(x) {
-  UseMethod("format_summary", x)
+get_format_types <- function(x) {
+  UseMethod("get_format_types", x)
 }
 
 ##' @export
-format_summary.varkit <- function(x) {
+get_format_types.varkit <- function(x) {
   frmt <- fixed(x)$format
   if (any(is.na(frmt)))
     stop("The FORMAT column contains missing values!")
@@ -18,7 +18,7 @@ format_summary.varkit <- function(x) {
     message("!FORMAT column is variable, number of combinations found: ", length(uniq))
 
   splits <- stringr::str_split(uniq, ":")
-  splits <- unique(unlist(splits))
+  splits <- sort(unique(unlist(splits)))
   splits <- tibble::tibble(type = splits)
 
   if ("FORMAT" %in% meta(x)$name) {

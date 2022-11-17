@@ -55,14 +55,15 @@ header <- read_vcf_header(path)
 print(header)
 ```
 
-The most important information here are the column names which are printed last
-(located under `header$col_names`). If the VCF file is recognised correctly it
-should list all of the fixed fields and samples present in your VCF.
+> NOTE: Many VarKit functions return a 'tibble', which can be treated as a regular
+> `data.frame`, but it displays more compactly when printed to the console.
 
-The column names listed in the header can be provided to the read vcf function
-in order to exclude them. This is useful if you want to exclude specific
-samples, or if you know you are not going to use certain fixed fields and want
-to save memory.
+The most important information here is the column names, which are printed last
+(located under `header$col_names`). If the VCF file is recognised correctly it
+should list all of the fixed fields and samples present in your VCF. The column
+names listed in the header can be provided to the `read_vcf()` function in order
+to exclude them. This is useful if you want to exclude specific samples, or if
+you know you are not going to use certain fixed fields and want to save memory.
 
 For example here we exclude the "INFO" and "FILTER" fixed fields and the sample "N2":
 
@@ -105,18 +106,17 @@ In this example, the header metadata can be accessed both from the `vcf` and
 `header` objects, like so:
 
 ```{r metdata}
-metadata <- meta(vcf) # OR meta(header)
-print(metadata, verbose = FALSE)
+meta(vcf) # OR meta(header)
 ```
 
 However, you might notice that although the returned object is a data frame,
 most of the information stored in the `$value` column and cannot be easily
 accessed. VarKit provides a function to parse these values, but this requires
 you to select the type of field that should be parsed. You can get an overview
-of the available fields using:
+of the available field types using:
 
 ```{r meta_summary}
-summary(metadata)
+get_meta_types(vcf)
 ```
 
 Using this information we can then use the `parse_meta_type()` function to

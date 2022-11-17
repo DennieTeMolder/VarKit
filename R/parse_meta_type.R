@@ -9,9 +9,9 @@ parse_meta_type.varkit_header <- function(x, type) {
 }
 
 ##' @export
-parse_meta_type.varkit_meta <- function(x, type) {
+parse_meta_type.default <- function(x, type) {
   # Checks
-  stopifnot(all(c("name", "value") %in% names(x)))
+  stopifnot(colnames(x) == c("name", "value"))
 
   x <- x[x$name == type,]
 
