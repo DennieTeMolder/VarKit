@@ -31,7 +31,7 @@ parse_format_type.varkit <- function(x, type, allow_missing = FALSE) {
   res[is_na] <- NA
 
   # Convert to numeric if possible
-  is_numeric <- stringr::str_detect(res , pattern = "^[0-9]+(.[0-9]+)?$")
+  is_numeric <- stringr::str_detect(res , pattern = "^[0-9]+(\\.[0-9]+)?$")
   if (all(is_numeric, na.rm = TRUE))
     res <- apply_each(res, as.numeric)
 
