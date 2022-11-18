@@ -14,13 +14,14 @@ parse_format_type.varkit <- function(x, type, allow_missing = FALSE) {
 
   # Parse type from genotype fields
   if (length(unique(frmt)) == 1) {
+    # For fixed format loop over samples to save time while remaining memory efficient
     idx <- frmt[[1]]
-    res <- apply_each(geno(x), .str_split_get_idx, char = ":", idx = idx)
+    res <- apply_samples(geno(x), .str_split_get_idx, char =":", idx = idx)
   } else {
+    idxs <- unlist(frmt[fixed(x)$format], use.names = FALSE)
     gt <- geno(x)
-    idxs <- frmt[fixed(x)$format]
     res <- sapply(seq_along(idxs), function(i) {
-      .str_split_get_idx(gt[, i], char = ":", idx = idxs[[i]])
+      .str_split_get_idx(gt[, i], char = ":", idx = idxs[i])
     })
     dimnames(res) <- dimnames(gt)
     res <- varkit_geno(res)
