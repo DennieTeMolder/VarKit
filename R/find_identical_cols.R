@@ -2,7 +2,7 @@
 find_identical_cols <- function(x,
                                 pos = NULL,
                                 tolerance = .01,
-                                window = 0,
+                                window = -1,
                                 llist = NULL) {
   .compare_cols(x, FUN = .compare_absolute, pos = pos, window = window, llist = llist, tolerance = tolerance)
 }
