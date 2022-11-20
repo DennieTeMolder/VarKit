@@ -5,6 +5,12 @@ find_linked_cols <- function(x,
                              window = NULL,
                              method = "fast",
                              llist = NULL) {
+  # Missing arguments
+  if (is.null(window))
+    window <- .window_default(use_bp = !is.null(pos))
+  if (is.null(llist))
+    llist <- link_list(seq_len(ncol(x)))
+
   # Check arguments
   stopifnot(is.matrix(x) || is.data.frame(x))
   if (!is.null(pos)) {
@@ -14,20 +20,14 @@ find_linked_cols <- function(x,
       stop("The length of 'pos' should match with ncol(x)!")
   }
   stopifnot(is.numeric(cutoff))
-  if (!is.null(window))
-    stopifnot(is.numeric(window))
+  stopifnot(is.numeric(window))
   stopifnot(method %in% c("fast", "recursive"))
-  if (!is.null(llist)) {
-    stopifnot(is_link_list(llist))
-    if (length(llist) != ncol(x))
-      stop("The length of 'link_list' does not match with 'x'!")
-  }
+  stopifnot(is_link_list(llist))
+  if (length(llist) != ncol(x))
+    stop("The length of 'link_list' does not match with 'x'!")
 
-  # Missing arguments
-  if (is.null(window))
-    window <- .window_default(use_bp = !is.null(pos))
-  if (is.null(llist))
-    llist <- link_list(1:ncol(x))
+  if (ncol(x) == 1)
+    return(llist)
 
   # Remove names for speed
   colnames(x) <- rownames(x) <- NULL
@@ -63,6 +63,7 @@ find_linked_cols <- function(x,
       next()
 
     # Find cols above linkage cutoff
+    # REVIEW method is sensitive to NAs in 'i', see find_identical_cols()
     r2 <- .cor_pair_silent(x[, i], x[, check, drop = FALSE])^2
     above <- check[r2 >= cutoff]
 

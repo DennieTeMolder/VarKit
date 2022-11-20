@@ -1,7 +1,6 @@
 ##' @export
 find_identical_sites <- function(x,
                                  tolerance = .01,
-                                 method = "fast",
                                  by_chrom = TRUE,
                                  cores = 1,
                                  debug = FALSE) {
@@ -12,7 +11,6 @@ find_identical_sites <- function(x,
 ##' @import foreach
 find_identical_sites.varkit <- function(x,
                                         tolerance = .01,
-                                        method = "fast",
                                         by_chrom = TRUE,
                                         cores = 1,
                                         debug = FALSE) {
@@ -20,12 +18,10 @@ find_identical_sites.varkit <- function(x,
 
   # Short-circuit
   if (!by_chrom) {
-    llist <- link_list(fixed(x, add_index = TRUE)$idx)
+    llist <- link_list(which(x$use_site))
     if (cores > 1)
       warning("The 'cores' option only has effect when  `by_chrom = TRUE`.")
-    return(find_identical_cols(
-      geno(x), tolerance = tolerance, method = method, llist = llist
-    ))
+    return(find_identical_cols(geno(x), tolerance = tolerance, llist = llist))
   }
 
   if (debug)
@@ -61,12 +57,10 @@ find_identical_sites.varkit <- function(x,
   ) %dopar% {
     if (debug)
       message("Processing CHROM: ", fix$chrom[1])
+
     llist <- link_list(fix$idx, check = FALSE)
-    if (length(llist) > 1) {
-      llist <- find_identical_cols(
-        gt, tolerance = tolerance, method = method, llist = llist
-      )
-    }
+    llist <- find_identical_cols(gt, tolerance = tolerance, llist = llist)
+
     if (is.null(cl) && !debug)
       .pb_increment(pb)
     llist

@@ -791,14 +791,14 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true"></a><span class="co">#&gt; # A tibble: 1 × 6</span></span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true"></a><span class="co">#&gt;   n_total n_node n_unlinked n_keep n_remove frac_remove</span></span>
 <span id="cb20-4"><a href="#cb20-4" aria-hidden="true"></a><span class="co">#&gt;     &lt;int&gt;  &lt;int&gt;      &lt;int&gt;  &lt;int&gt;    &lt;int&gt;       &lt;dbl&gt;</span></span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true"></a><span class="co">#&gt; 1     197     18         37     55      142       0.721</span></span></code></pre></div>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true"></a><span class="co">#&gt; 1     197     23         43     66      131       0.665</span></span></code></pre></div>
 <p>This will return a “link_list” object that tracks which sites (using their index) are linked to each other and contains information on which sites to mask in order to remove linkage (see also <code>varkit_help(llist)</code>). Therefore, we can use this object to mask sites in order to remove the linkage (this will mask all but the centre most site out of sets of identical/linked sites):</p>
 <div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true"></a>vcf &lt;-<span class="st"> </span><span class="kw">mask</span>(vcf, <span class="dt">site =</span> llist)</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true"></a><span class="kw">summary</span>(vcf)</span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true"></a><span class="co">#&gt; # A tibble: 1 × 4</span></span>
 <span id="cb21-4"><a href="#cb21-4" aria-hidden="true"></a><span class="co">#&gt;   samples sites_visible sites_total visible_frac</span></span>
 <span id="cb21-5"><a href="#cb21-5" aria-hidden="true"></a><span class="co">#&gt;     &lt;int&gt;         &lt;int&gt;       &lt;int&gt;        &lt;dbl&gt;</span></span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true"></a><span class="co">#&gt; 1      15            55         285        0.193</span></span></code></pre></div>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true"></a><span class="co">#&gt; 1      15            66         285        0.232</span></span></code></pre></div>
 <p>Now that identical sites are masked we can check for linkage on the reduced set of sites. Here we will use an cutoff of R<sup>2</sup> = 0.7:</p>
 <div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true"></a>llist &lt;-<span class="st"> </span><span class="kw">find_linked_sites</span>(vcf, <span class="dt">cutoff =</span> <span class="fl">0.7</span>, <span class="dt">window =</span> <span class="fl">5e4</span>, <span class="dt">cores =</span> <span class="dv">1</span>)</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true"></a>vcf &lt;-<span class="st"> </span><span class="kw">mask</span>(vcf, <span class="dt">site =</span> llist)</span></code></pre></div>
@@ -806,7 +806,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true"></a><span class="co">#&gt; # A tibble: 1 × 4</span></span>
 <span id="cb23-3"><a href="#cb23-3" aria-hidden="true"></a><span class="co">#&gt;   samples sites_visible sites_total visible_frac</span></span>
 <span id="cb23-4"><a href="#cb23-4" aria-hidden="true"></a><span class="co">#&gt;     &lt;int&gt;         &lt;int&gt;       &lt;int&gt;        &lt;dbl&gt;</span></span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true"></a><span class="co">#&gt; 1      15            47         285        0.165</span></span></code></pre></div>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true"></a><span class="co">#&gt; 1      15            55         285        0.193</span></span></code></pre></div>
 <p>It is important to know that <code>find_indentical_sites()</code> checks entire chromosomes/scaffolds, whereas <code>find_linked_sites()</code> only checks for linkage within a specified window (here we use the default of 50,000 bp). To check entire chromosomes in the latter case set the “window” option to 0 or -1.</p>
 <blockquote>
 <p>Both of these function support multi-threading through the “cores” option and only look for identical/linked columns within chromosomes/scaffolds. To check for linkage between all chromosomes set <code>by_chrom = FALSE</code>. However, this will greatly increase computational load.</p>
@@ -822,7 +822,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb25-3"><a href="#cb25-3" aria-hidden="true"></a><span class="co">#&gt; # A tibble: 1 × 6</span></span>
 <span id="cb25-4"><a href="#cb25-4" aria-hidden="true"></a><span class="co">#&gt;   n_total n_node n_unlinked n_keep n_remove frac_remove</span></span>
 <span id="cb25-5"><a href="#cb25-5" aria-hidden="true"></a><span class="co">#&gt;     &lt;int&gt;  &lt;int&gt;      &lt;int&gt;  &lt;int&gt;    &lt;int&gt;       &lt;dbl&gt;</span></span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true"></a><span class="co">#&gt; 1      55      5         42     47        8       0.145</span></span></code></pre></div>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true"></a><span class="co">#&gt; 1      66      7         48     55       11       0.167</span></span></code></pre></div>
 </div>
 </div>
 <div id="notes-for-advanced-users" class="section level2">
@@ -860,9 +860,9 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb29-9"><a href="#cb29-9" aria-hidden="true"></a><span class="co">#&gt; [[7]]: NA</span></span>
 <span id="cb29-10"><a href="#cb29-10" aria-hidden="true"></a><span class="co">#&gt; [[8]]: NA</span></span>
 <span id="cb29-11"><a href="#cb29-11" aria-hidden="true"></a><span class="co">#&gt; [[9]]: 0</span></span>
-<span id="cb29-12"><a href="#cb29-12" aria-hidden="true"></a><span class="co">#&gt; [[10]]: 8, 11, 21</span></span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true"></a><span class="co">#&gt; [[10]]: 8, 11, 23</span></span>
 <span id="cb29-13"><a href="#cb29-13" aria-hidden="true"></a><span class="co">#&gt;  ...</span></span>
-<span id="cb29-14"><a href="#cb29-14" aria-hidden="true"></a><span class="co">#&gt; # Total length: 55 </span></span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true"></a><span class="co">#&gt; # Total length: 66 </span></span>
 <span id="cb29-15"><a href="#cb29-15" aria-hidden="true"></a><span class="co">#&gt; </span></span>
 <span id="cb29-16"><a href="#cb29-16" aria-hidden="true"></a><span class="co">#&gt; With a integer translation layer:</span></span>
 <span id="cb29-17"><a href="#cb29-17" aria-hidden="true"></a><span class="co">#&gt;  89, 92, 93, 94, 98, 102, 108, 111, 112, 113 ...</span></span></code></pre></div>

@@ -66,12 +66,12 @@ find_linked_sites.varkit <- function(x,
   ) %dopar% {
     if (debug)
       message("Processing CHROM:", fix$chrom[1])
+
     llist <- link_list(fix$idx, check = FALSE)
-    if (length(llist) > 1) {
-      llist <- find_linked_cols(
-        gt, pos = fix$pos, cutoff = cutoff, window = window, method = method, llist = llist
-      )
-    }
+    llist <- find_linked_cols(
+      gt, pos = fix$pos, cutoff = cutoff, window = window, method = method, llist = llist
+    )
+
     if (is.null(cl) && !debug)
       .pb_increment(pb)
     llist
