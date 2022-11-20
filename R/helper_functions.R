@@ -83,22 +83,6 @@
   x[ceiling(len / 2)]
 }
 
-.which_least_na <- function(cols, data, tiebreaker = "none") {
-  n_na <- colSums(is.na(data[, cols, drop = FALSE]))
-  least_na <- which(n_na == min(n_na))
-  if (tiebreaker == "none") {
-    return(least_na)
-  } else if (tiebreaker == "left") {
-    return(utils::head(least_na, n = 1))
-  } else if (tiebreaker == "middle") {
-    return(.middle(least_na))
-  } else if (tiebreaker == "right") {
-    return(utils::tail(least_na, n = 1))
-  } else {
-    stop("Option '", tiebreaker, "' not recognised as tiebreaker!")
-  }
-}
-
 .check_link_list <- function(llist) {
   len <- length(llist)
 

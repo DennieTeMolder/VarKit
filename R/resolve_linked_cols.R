@@ -1,3 +1,5 @@
+# This code is currently unused, it was part of the discontinued 'recursive' linking algorithm
+
 resolve_linked_cols <- function(linked_cols, data, llist) {
   if (all(is.null(linked_cols)))
     return(llist)

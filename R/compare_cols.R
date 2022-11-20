@@ -55,7 +55,7 @@
     llist <- link_entries(llist, idx = i, links = links)
     check[links] <- FALSE
   }
-  redistribute(llist, data = x, keep = "middle")
+  redistribute(llist, data = x, keep = "least_na", tiebreaker = "middle")
 }
 
 .window_default <- function(use_bp = FALSE) {

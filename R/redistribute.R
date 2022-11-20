@@ -4,13 +4,14 @@ redistribute <- function(x, data, keep = "middle") {
 }
 
 ##' @export
-redistribute.link_list <- function(x, data, keep = "middle") {
+redistribute.link_list <- function(x, data, keep = "least_na", tiebreaker = "middle") {
   stopifnot(is.matrix(data) || is.data.frame(data))
   stopifnot(ncol(data) == length(x))
+  stopifnot(tiebreaker != "none")
 
-  if (keep %in% c("left", "right", "middle")) {
+  if (keep == "least_na") {
     keep_fun <- function(y)
-      .which_least_na(y, data = data, tiebreaker = keep)
+      .which_least_na(y, data = data, tiebreaker = tiebreaker)
   } else {
     stop("Value keep = '", keep, ' not recognised!')
   }
@@ -40,4 +41,23 @@ redistribute.link_list <- function(x, data, keep = "middle") {
     x[[i_keep]] <- combined[-keep_which]
   }
   x
+}
+
+.which_least_na <- function(cols, data, tiebreaker = "none") {
+  n_na <- colSums(is.na(data[, cols, drop = FALSE]))
+  least_na <- which(n_na == min(n_na))
+
+  if (tiebreaker == "none")
+    return(least_na)
+
+  if (tiebreaker == "left")
+    return(utils::head(least_na, n = 1))
+
+  if (tiebreaker == "middle")
+    return(.middle(least_na))
+
+  if (tiebreaker == "right")
+    return(utils::tail(least_na, n = 1))
+
+  stop("Value tiebreaker = '", tiebreaker, "' not recognised!")
 }
