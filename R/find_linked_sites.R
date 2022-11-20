@@ -1,8 +1,8 @@
+# TODO The underlying codebase should be merged with find_identical_sites()
 ##' @export
 find_linked_sites <- function(x,
                               cutoff = .9,
                               window = 5e4,
-                              method = "fast",
                               by_chrom = TRUE,
                               cores = 1,
                               debug = FALSE) {
@@ -14,7 +14,6 @@ find_linked_sites <- function(x,
 find_linked_sites.varkit <- function(x,
                                      cutoff = .9,
                                      window = 5e4,
-                                     method = "fast",
                                      by_chrom = TRUE,
                                      cores = 1,
                                      debug = FALSE) {
@@ -28,9 +27,7 @@ find_linked_sites.varkit <- function(x,
       warning("The 'cores' option only has effect when  `by_chrom = TRUE`.")
     if (window > 0)
       warning("The window option is only supported when `by_chrom = TRUE`, disabling window...")
-    return(find_linked_cols(
-      geno(x), pos = loc$pos, cutoff = cutoff, window = -1, method = method
-    ))
+    return(find_linked_cols(geno(x), pos = loc$pos, cutoff = cutoff, window = -1))
   }
 
   if (debug)
@@ -69,7 +66,7 @@ find_linked_sites.varkit <- function(x,
 
     llist <- link_list(fix$idx, check = FALSE)
     llist <- find_linked_cols(
-      gt, pos = fix$pos, cutoff = cutoff, window = window, method = method, llist = llist
+      gt, pos = fix$pos, cutoff = cutoff, window = window, llist = llist
     )
 
     if (is.null(cl) && !debug)
