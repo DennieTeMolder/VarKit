@@ -1,5 +1,5 @@
 ##' @export
-redistribute <- function(x, data, keep = "middle") {
+redistribute <- function(x, data, keep = "least_na", tiebreaker = "middle") {
   UseMethod("redistribute", x)
 }
 
