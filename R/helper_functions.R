@@ -72,13 +72,58 @@
   max(which_fit)
 }
 
-.which_least_na_middle <- function(cols, data) {
-  n_na <- colSums(is.na(data[, cols]))
+.middle <- function(x, on_even = "left") {
+  stopifnot(is.vector(x))
+  len <- length(x)
+  if (on_even == "right") {
+    len <- len + 1
+  } else if (on_even != "left") {
+    stop("Option on_even = '", on_even, "' not recognised!")
+  }
+  x[ceiling(len / 2)]
+}
+
+.which_least_na <- function(cols, data, tiebreaker = "none") {
+  n_na <- colSums(is.na(data[, cols, drop = FALSE]))
   least_na <- which(n_na == min(n_na))
-  # Take the middle value
-  if (length(least_na) > 1)
-    return(least_na[ceiling(length(least_na) / 2)])
-  least_na
+  if (tiebreaker == "none") {
+    return(least_na)
+  } else if (tiebreaker == "left") {
+    return(utils::head(least_na, n = 1))
+  } else if (tiebreaker == "middle") {
+    return(.middle(least_na))
+  } else if (tiebreaker == "right") {
+    return(utils::tail(least_na, n = 1))
+  } else {
+    stop("Option '", tiebreaker, "' not recognised as tiebreaker!")
+  }
+}
+
+.check_link_list <- function(llist) {
+  len <- length(llist)
+
+  skip <- rep(FALSE, len)
+  for (i in seq_along(llist)) {
+    if (skip[i])
+      next()
+
+    links <- llist[[i]]
+    if (length(links) == 1 && (is.na(links) || links == 0))
+      next()
+    if (any(is.na(links)))
+      stop("Unexpected NA value(s) found at index: ", i)
+
+    if (any(links < 0 | links > len))
+      stop("Out of bounds ([0,", len, "]) link value found at index: ", i)
+
+    for (j in links) {
+      if (!is.na(llist[[j]]))
+        stop("Expected NA at position: ", j, " (link of ", i, ")!")
+    }
+    skip[links] <- TRUE
+  }
+
+  invisible(llist)
 }
 
 .linked_only <- function(x, allow_na = TRUE) {

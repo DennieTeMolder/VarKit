@@ -21,7 +21,8 @@ resolve_linked_cols <- function(linked_cols, data, llist) {
     if (is.null(links))
       next()
 
-    keep <- .which_least_na_middle(links, data = data)
+    # Keep the middle value as we are interested in chains of links
+    keep <- .which_least_na(links, data = data, tiebreaker = "middle")
     llist <- link_entries(llist, links[keep], links[-keep])
     skip[links] <- TRUE
   }

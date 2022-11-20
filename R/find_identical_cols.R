@@ -49,13 +49,10 @@ find_identical_cols <- function(x,
     if (length(identical) == 0)
       next()
 
-    # From all columns with the least number of NAs, select the middle column to be retained
-    combined <- c(i, identical)
-    keep <- .which_least_na_middle(combined, data = x)
-    llist <- link_entries(llist, combined[keep], combined[-keep])
-    skip[combined[-keep]] <- TRUE
+    llist <- link_entries(llist, idx = i, links = identical)
+    skip[identical] <- TRUE
   }
-  llist
+  redistribute(llist, data = x, keep = "middle")
 }
 
 .find_identical_cols_recursive <- function(x, tolerance, llist) {
@@ -75,7 +72,6 @@ find_identical_cols <- function(x,
     if (length(identical) == 0)
       next()
 
-    # From all columns with the least number of NAs, select the middle column to be retained
     identical_cols[[i]] <- c(i, identical)
   }
 

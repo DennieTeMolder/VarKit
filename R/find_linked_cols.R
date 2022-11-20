@@ -3,7 +3,7 @@ find_linked_cols <- function(x,
                              pos = NULL,
                              cutoff = .9,
                              window = NULL,
-                             method = "recursive",
+                             method = "fast",
                              llist = NULL) {
   # Check arguments
   stopifnot(is.matrix(x) || is.data.frame(x))
@@ -70,13 +70,10 @@ find_linked_cols <- function(x,
     if (length(above) == 0)
       next()
 
-    # From all columns with the least number of NAs, select the middle column to be retained
-    combined <- c(i, above)
-    keep <- .which_least_na_middle(combined, data = x)
-    llist <- link_entries(llist, combined[keep], combined[-keep])
-    skip[combined[-keep]] <- TRUE
+    llist <- link_entries(llist, idx = i, links = above)
+    skip[above] <- TRUE
   }
-  llist
+  redistribute(llist, data = x, keep = "middle")
 }
 
 .find_linked_cols_recursive <- function(x, pos, cutoff, window, llist) {

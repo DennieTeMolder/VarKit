@@ -2,7 +2,7 @@
 find_linked_sites <- function(x,
                               cutoff = .9,
                               window = 5e4,
-                              method = "recursive",
+                              method = "fast",
                               by_chrom = TRUE,
                               cores = 1,
                               debug = FALSE) {
@@ -14,7 +14,7 @@ find_linked_sites <- function(x,
 find_linked_sites.varkit <- function(x,
                                      cutoff = .9,
                                      window = 5e4,
-                                     method = "recursive",
+                                     method = "fast",
                                      by_chrom = TRUE,
                                      cores = 1,
                                      debug = FALSE) {
