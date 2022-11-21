@@ -45,10 +45,13 @@ write_vcf.varkit <- function(x, path, replace_filter = FALSE, na_gt = NULL) {
     fxd[missing] <- rep(NA, nrow(fxd))
   }
 
-  if (replace_filter || all(is.na(fxd$filter))) {
+  if (replace_filter
+      || all(is.na(fxd$filter))
+      || all(fxd$filter == "PASS", na.rm = TRUE)) {
     fxd$filter <- ifelse(x$use_site, "PASS", "MASKED")
-  } else if (!all(x$use_site)) {
-    warning("Not storing masked sites in VCF! Use `replace_filter = TRUE` if this is desired.")
+  } else if (!all(fxd$filter[x$use_site] == "PASS", na.rm = TRUE)) {
+    warning("FILTER column does not reflect currently masked sites!\n",
+            "Use `replace_filter = TRUE` if this is desired.")
   }
 
   # Fxd ordering and convert
