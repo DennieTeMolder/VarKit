@@ -29,16 +29,40 @@
   if (length(llist) != n)
     stop("The length of 'link_list' does not match with 'x'!")
 
-  if (ncol(x) == 1)
-    return(llist)
+  # Disable window if it is larger then x
+  if (!.window_disabled(window)) {
+    if (is.null(pos)) {
+      if (window / 2 >= n)
+        window <- -1
+    } else {
+      if (window / 2 >= max(pos) - min(pos))
+        window <- -1
+    }
+  }
 
   # Remove names for speed
   colnames(x) <- rownames(x) <- NULL
 
-  # Work from least to most NAs to prevent sub-optimal linking
-  check_order <- order(colSums(is.na(x)))
+  # Columns that are all NA are not worth checking
+  n_na <- colSums(is.na(x))
+  check <- n_na != nrow(x)
 
-  check <- rep(TRUE, n)
+  # Link columns with all NAs
+  if (sum(!check) > 1) {
+    all_na <- which(!check)
+    llist <- link_entries(llist, idx = all_na[1], links = all_na[-1])
+  }
+
+  # Remove last as it has been in every possible comparison
+  n_comp <- sum(check) - 1
+
+  # No comparisons to make
+  if (n_comp < 1)
+    return(llist)
+
+  # Work from least to most NAs to prevent sub-optimal linking
+  check_order <- utils::head(order(n_na, decreasing = FALSE), n = n_comp)
+
   for (i in check_order) {
     if (!check[i])
       next()
@@ -69,9 +93,13 @@
   window
 }
 
-.which_in_window <- function(i, check, window, pos, n) {
+.window_disabled <- function(window) {
   # Sizes smaller then 1 disable the window
-  if (window < 1)
+  window < 1
+}
+
+.which_in_window <- function(i, check, window, pos, n) {
+  if (.window_disabled(window))
     return(which(check))
 
   window <- ceiling(window / 2)

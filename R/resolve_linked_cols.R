@@ -24,11 +24,10 @@ resolve_linked_cols <- function(linked_cols, data, llist) {
       next()
 
     # Keep the middle value as we are interested in chains of links
-    keep <- .which_least_na(links, data = data, tiebreaker = "middle")
-    llist <- link_entries(llist, links[keep], links[-keep])
+    llist <- link_entries(llist, idx = links[1], links = links[-1])
     skip[links] <- TRUE
   }
-  llist
+  redistribute(llist, data = data, keep = "least_na", tiebreaker = "middle")
 }
 
 .get_all_linked <- function(i, linked_cols) {

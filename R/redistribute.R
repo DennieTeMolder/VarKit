@@ -10,8 +10,8 @@ redistribute.link_list <- function(x, data, keep = "least_na", tiebreaker = "mid
   stopifnot(tiebreaker != "none")
 
   if (keep == "least_na") {
-    keep_fun <- function(y)
-      .which_least_na(y, data = data, tiebreaker = tiebreaker)
+    keep_fun <- function(mat)
+      .which_col_least_na(mat, tiebreaker = tiebreaker)
   } else {
     stop("Value keep = '", keep, ' not recognised!')
   }
@@ -30,7 +30,7 @@ redistribute.link_list <- function(x, data, keep = "least_na", tiebreaker = "mid
     skip[links] <- TRUE
 
     combined <- c(i, links)
-    keep_which <- keep_fun(combined)
+    keep_which <- keep_fun(data[, combined, drop = FALSE])
     i_keep <- combined[keep_which]
 
     if (i_keep == i)
@@ -43,8 +43,8 @@ redistribute.link_list <- function(x, data, keep = "least_na", tiebreaker = "mid
   x
 }
 
-.which_least_na <- function(cols, data, tiebreaker = "none") {
-  n_na <- colSums(is.na(data[, cols, drop = FALSE]))
+.which_col_least_na <- function(mat, tiebreaker = "none") {
+  n_na <- colSums(is.na(mat))
   least_na <- which(n_na == min(n_na))
 
   if (tiebreaker == "none")
@@ -53,6 +53,7 @@ redistribute.link_list <- function(x, data, keep = "least_na", tiebreaker = "mid
   if (tiebreaker == "left")
     return(utils::head(least_na, n = 1))
 
+  # REVIEW Option: determine middle based on all values, not only least NAs
   if (tiebreaker == "middle")
     return(.middle(least_na))
 
