@@ -36,10 +36,12 @@ print.link_list <- function(x, ..., n = 5) {
 ##' @export
 ##' @importFrom rlang .data
 summary.link_list <- function(object, ...) {
+  tbl <- table(get_types(object))
+
   tibble::tibble(
-    n_total = length(object),
-    n_node = sum(contains_link(object)),
-    n_unlinked = sum(is_unlinked(object)),
+    n_total = sum(tbl),
+    n_node = tbl["node"],
+    n_unlinked = tbl["unlinked"],
     n_keep = .data$n_node + .data$n_unlinked,
     n_remove = .data$n_total - .data$n_keep,
     frac_remove = .data$n_remove / .data$n_total

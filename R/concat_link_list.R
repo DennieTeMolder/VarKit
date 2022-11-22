@@ -20,7 +20,7 @@ concat_link_lists <- function(llist_list) {
     }
 
     # Adjust entries that contain links
-    needs_adjust <- contains_link(llist_list[[i]])
+    needs_adjust <- get_types(llist_list[[i]]) == "node"
     for (j in which(needs_adjust)) {
       llist_list[[i]][[j]] <- llist_list[[i]][[j]] + n
     }
