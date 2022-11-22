@@ -1,12 +1,17 @@
 ##' @export
 read_link_list <- function(file) {
-  llist <- rjson::fromJSON(file = file)
-  llist[llist == "NA"] <- NA
-  if (is.list(llist)) {
-    trans <- llist$translation
-    attr(llist, "translation") <- trans
-    llist$translation <- NULL
-  }
+  types <- readr::cols(
+    translation = readr::col_guess(),
+    links = readr::col_character()
+  )
+  suppressWarnings(df <- readr::read_tsv(temp_file, col_types = types))
+
+  llist <- stringr::str_split(df$links, ";")
+  llist <- lapply(llist, as.numeric)
+
+  if ("translation" %in% colnames(df))
+    attr(llist, "translation") <- df$translation
+
   class(llist) <- "link_list"
   llist
 }

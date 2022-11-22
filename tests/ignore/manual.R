@@ -56,7 +56,7 @@ summary(llist)
 
 mask(vcf, llist)
 
-temp_file <- tempfile(fileext = ".json")
+temp_file <- tempfile(fileext = ".tsv.gz")
 write_link_list(llist, temp_file)
 summary(read_link_list(temp_file))
 

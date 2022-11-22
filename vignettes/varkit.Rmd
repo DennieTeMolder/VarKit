@@ -316,8 +316,8 @@ It might be interesting to store the information about linked sites as it will
 tell you the extend of linkage and which sites are a "proxy" of others:
 
 ```{r llist_wirte}
-temp_file <- tempfile(fileext = ".json")
-write_link_list(llist, path = temp_file)
+temp_file <- tempfile(fileext = ".tsv.gz")
+write_link_list(llist, file = temp_file)
 ```
 
 Which can then be read back into memory like so:
