@@ -1,8 +1,7 @@
 ##' @export
-varkit <- function(vcf, ploidy, meta = NULL) {
+varkit <- function(vcf, meta = NULL) {
   # Checks
   stopifnot(is.data.frame(vcf))
-  stopifnot(is.numeric(ploidy), length(ploidy) == 1)
   if (!is.null(meta))
     stopifnot(is.data.frame(meta), colnames(meta) == c("name", "value"))
 
@@ -14,9 +13,9 @@ varkit <- function(vcf, ploidy, meta = NULL) {
   if (ncol(vcf) <= length(fixed_idx))
     stop("Only fixed columns detected in VCF, missing genotypes!")
   if (!all(c("chrom", "pos") %in% colnames(vcf)[fixed_idx]))
-    stop("Missing 'chrom' and 'pos' columns in VCF!")
+    stop("Missing 'chrom' and/or 'pos' columns in VCF!")
 
-  fixed <- vcf[, fixed_idx]
+  fxd <- vcf[, fixed_idx]
   vcf[, fixed_idx] <- NULL
 
   # The remaining fields are the genotype calls, which are stored as a
@@ -26,17 +25,16 @@ varkit <- function(vcf, ploidy, meta = NULL) {
 
   # Apply initial mask based on FILTER column
   use_site <- FALSE
-  if ("filter" %in% names(fixed))
-    use_site <- fixed$filter == "PASS" | is.na(fixed$filter)
+  if ("filter" %in% names(fxd))
+    use_site <- fxd$filter == "PASS" | is.na(fxd$filter)
   if (!any(use_site))
     use_site <- rep(TRUE, ncol(geno))
 
   vcf <- list(
     meta = meta,
-    fixed = fixed,
+    fixed = fxd,
     geno = geno,
-    use_site = use_site,
-    ploidy = ploidy
+    use_site = use_site
   )
   class(vcf) <- c("varkit", "varkit_header", "list")
 

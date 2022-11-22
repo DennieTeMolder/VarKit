@@ -45,7 +45,7 @@ path <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
 In it's simplest form you would load a VCF file into memory like so:
 
 ```{r read_simple, eval = FALSE}
-vcf <- read_vcf(path, ploidy = 2)
+vcf <- read_vcf(path)
 ```
 
 However, it is good practice to first validate if the VCF header is parsed correctly:
@@ -68,7 +68,7 @@ you know you are not going to use certain fixed fields and want to save memory.
 For example here we exclude the "INFO" and "FILTER" fixed fields and the sample "N2":
 
 ```{r read}
-vcf <- read_vcf(path, ploidy = 2, skip_cols = c("info", "filter", "N2"))
+vcf <- read_vcf(path, skip_cols = c("info", "filter", "N2"))
 print(vcf)
 ```
 
@@ -236,7 +236,7 @@ if `replace_filter = TRUE`, allowing you to save and load a masked VCF:
 temp_file <- tempfile(fileext = ".vcf.bz2")
 write_vcf(vcf, path = temp_file, replace_filter = TRUE)
 
-read_vcf(temp_file, ploidy = 2)
+read_vcf(temp_file)
 ```
 
 > NOTE: the `readr` library (which is used internally) does not support writing

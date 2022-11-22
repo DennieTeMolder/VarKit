@@ -9,7 +9,7 @@ example <- "./inst/extdata/celegans.vcf.bgz"
 ## Varkit object ------
 read_vcf_header(example)
 
-vcf <- read_vcf(example, ploidy = 2, skip_cols = c("info", "filter", "N2"))
+vcf <- read_vcf(example, skip_cols = c("info", "filter", "N2"))
 print(vcf)
 
 varkit_help(vcf)
@@ -36,13 +36,13 @@ summary(vcf)
 
 temp_file <- tempfile(fileext = ".vcf.bz2")
 write_vcf(vcf, temp_file, replace_filter = TRUE)
-read_vcf(temp_file, ploidy = 2)
+read_vcf(temp_file)
 
 summary(remove_masked(vcf))
 
 
 ## Linked sites ------
-vcf <- read_vcf(example, ploidy = 2, skip_cols = c("info", "filter"))
+vcf <- read_vcf(example, skip_cols = c("info", "filter"))
 vcf$geno <- .bi_gt2dosage(vcf$geno)
 
 llist <- find_identical_sites(vcf, cores = 1)

@@ -3,6 +3,13 @@
   c("chrom", "pos", "id", "ref", "alt", "qual", "filter", "info", "format")
 }
 
+.stopifnotsingle <- function(x, class = NULL) {
+  if (length(x) != 1)
+    stop("Argument should have a length of 1!")
+  if (!is.null(class) && !inherits(x, what = class))
+    stop("Argument should be of class '", class, "'!")
+}
+
 .collapse <- function(x, delim = ", ") {
   paste(x, collapse = delim)
 }
