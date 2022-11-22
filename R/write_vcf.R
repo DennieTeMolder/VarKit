@@ -1,14 +1,14 @@
 ##' @export
-write_vcf <- function(x, path, replace_filter = FALSE, na_gt = NULL) {
+write_vcf <- function(x, file, replace_filter = FALSE, na_gt = NULL) {
   UseMethod("write_vcf", x)
 }
 
 ##' @export
-write_vcf.varkit <- function(x, path, replace_filter = FALSE, na_gt = NULL) {
+write_vcf.varkit <- function(x, file, replace_filter = FALSE, na_gt = NULL) {
   if (all(is.na(x$geno)))
     stop("All genotype fields are NA!")
-  stopifnot(is.character(path), length(path) == 1)
-  if (stringr::str_ends(path, "\\.(gz|gzip)"))
+  .stopifnotsingle(file, class = "character")
+  if (stringr::str_ends(file, "\\.(gz|gzip)"))
     warning("Varkit writes regular g-zipped files, not the block g-zip format ",
             "expected by many tools!\n If the latter is desired, write to plain ",
             "vcf and convert using an external tool like 'bgzip'.")
@@ -73,10 +73,10 @@ write_vcf.varkit <- function(x, path, replace_filter = FALSE, na_gt = NULL) {
 
   ## Writing
   # Header
-  readr::write_lines(header, path)
+  readr::write_lines(header, file)
   col_names <- paste0("#", paste(colnames(body), collapse = "\t"))
-  readr::write_lines(col_names, path, append = TRUE)
+  readr::write_lines(col_names, file, append = TRUE)
 
   # data
-  readr::write_tsv(body, path, append = TRUE, col_names = FALSE, na = ".")
+  readr::write_tsv(body, file, append = TRUE, col_names = FALSE, na = ".")
 }

@@ -33,7 +33,7 @@ library(varkit)
 # This might need to be increased for large VCFs
 Sys.setenv("VROOM_CONNECTION_SIZE" = 1e6)
 
-path <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
+file <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
 ```
 
 > NOTE: if you want to use `tidyverse` or more specifically `stringr`, it is
@@ -45,13 +45,13 @@ path <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
 In it's simplest form you would load a VCF file into memory like so:
 
 ```{r read_simple, eval = FALSE}
-vcf <- read_vcf(path)
+vcf <- read_vcf(file)
 ```
 
 However, it is good practice to first validate if the VCF header is parsed correctly:
 
 ```{r header}
-header <- read_vcf_header(path)
+header <- read_vcf_header(file)
 print(header)
 ```
 
@@ -68,7 +68,7 @@ you know you are not going to use certain fixed fields and want to save memory.
 For example here we exclude the "INFO" and "FILTER" fixed fields and the sample "N2":
 
 ```{r read}
-vcf <- read_vcf(path, skip_cols = c("info", "filter", "N2"))
+vcf <- read_vcf(file, skip_cols = c("info", "filter", "N2"))
 print(vcf)
 ```
 
@@ -232,9 +232,9 @@ you have removed specific sites or samples and want to write the reduced file.
 Moreover, masks are also stored in the FILTER column of the resulting VCF file
 if `replace_filter = TRUE`, allowing you to save and load a masked VCF:
 
-```{r mask_save}
+```{r save_masked_vcf}
 temp_file <- tempfile(fileext = ".vcf.bz2")
-write_vcf(vcf, path = temp_file, replace_filter = TRUE)
+write_vcf(vcf, file = temp_file, replace_filter = TRUE)
 
 read_vcf(temp_file)
 ```

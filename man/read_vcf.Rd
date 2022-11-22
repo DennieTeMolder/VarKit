@@ -5,7 +5,7 @@
 \title{Load A VCF File From Disk}
 \usage{
 read_vcf(
-  path,
+  file,
   header = NULL,
   skip_cols = NULL,
   na_geno = "./.",
@@ -14,11 +14,11 @@ read_vcf(
 )
 }
 \arguments{
-\item{path}{String, path to the vcf(.bgz) file to load}
+\item{file}{String, path to the vcf(.bgz) file to load}
 
 \item{header}{Varkit_header}
 
-\item{skip_cols}{Character vector, columns to skip loading. Should match names in \code{read_vcf_header(path)$col_names}.}
+\item{skip_cols}{Character vector, columns to skip loading. Should match names in \code{read_vcf_header(file)$col_names}.}
 
 \item{na_geno}{Character vector, exact string(s) to convert to NA in the genotype fields}
 
@@ -33,8 +33,8 @@ A VarKit object
 Load A VCF File From Disk
 }
 \examples{
-path <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
-vcf <- read_vcf(path, skip_cols = c("info", "filter", "N2"))
+file <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
+vcf <- read_vcf(file, skip_cols = c("info", "filter", "N2"))
 }
 \author{
 Dennie te Molder

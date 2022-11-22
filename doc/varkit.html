@@ -385,7 +385,7 @@ but for this example we will use a block-gzipped VCF:</p>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># This might need to be increased for large VCFs</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">Sys.setenv</span>(<span class="st">&quot;VROOM_CONNECTION_SIZE&quot;</span> <span class="ot">=</span> <span class="fl">1e6</span>)</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>path <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;celegans.vcf.bgz&quot;</span>, <span class="at">package =</span> <span class="st">&quot;varkit&quot;</span>)</span></code></pre></div>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>file <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;celegans.vcf.bgz&quot;</span>, <span class="at">package =</span> <span class="st">&quot;varkit&quot;</span>)</span></code></pre></div>
 <blockquote>
 <p>NOTE: if you want to use <code>tidyverse</code> or more specifically
 <code>stringr</code>, it is recommended to load that library first. Due
@@ -396,10 +396,10 @@ to the collision with the <code>fixed()</code> function.</p>
 <h2>Loading a VCF into R</h2>
 <p>In it’s simplest form you would load a VCF file into memory like
 so:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>vcf <span class="ot">&lt;-</span> <span class="fu">read_vcf</span>(path)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>vcf <span class="ot">&lt;-</span> <span class="fu">read_vcf</span>(file)</span></code></pre></div>
 <p>However, it is good practice to first validate if the VCF header is
 parsed correctly:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>header <span class="ot">&lt;-</span> <span class="fu">read_vcf_header</span>(path)</span>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>header <span class="ot">&lt;-</span> <span class="fu">read_vcf_header</span>(file)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(header)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; *VarKit Header Object*</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Header metadata, `meta(header)`:</span></span>
@@ -439,7 +439,7 @@ know you are not going to use certain fixed fields and want to save
 memory.</p>
 <p>For example here we exclude the “INFO” and “FILTER” fixed fields and
 the sample “N2”:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>vcf <span class="ot">&lt;-</span> <span class="fu">read_vcf</span>(path, <span class="at">skip_cols =</span> <span class="fu">c</span>(<span class="st">&quot;info&quot;</span>, <span class="st">&quot;filter&quot;</span>, <span class="st">&quot;N2&quot;</span>))</span>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>vcf <span class="ot">&lt;-</span> <span class="fu">read_vcf</span>(file, <span class="at">skip_cols =</span> <span class="fu">c</span>(<span class="st">&quot;info&quot;</span>, <span class="st">&quot;filter&quot;</span>, <span class="st">&quot;N2&quot;</span>))</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(vcf)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; *VarKit Variant Object*</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Header metadata, `meta(vcf)`:</span></span>
@@ -766,7 +766,7 @@ write the reduced file.</p>
 VCF file if <code>replace_filter = TRUE</code>, allowing you to save and
 load a masked VCF:</p>
 <div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>temp_file <span class="ot">&lt;-</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">&quot;.vcf.bz2&quot;</span>)</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">write_vcf</span>(vcf, <span class="at">path =</span> temp_file, <span class="at">replace_filter =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">write_vcf</span>(vcf, <span class="at">file =</span> temp_file, <span class="at">replace_filter =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Creating missing columns: filter, info</span></span>
 <span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Representing missing genotypes as: &#39;./.&#39;</span></span>
 <span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a></span>
@@ -901,8 +901,8 @@ computational load.</p>
 <p>It might be interesting to store the information about linked sites
 as it will tell you the extend of linkage and which sites are a “proxy”
 of others:</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>temp_file <span class="ot">&lt;-</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">&quot;.json&quot;</span>)</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="fu">write_link_list</span>(llist, <span class="at">path =</span> temp_file)</span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>temp_file <span class="ot">&lt;-</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">&quot;.tsv.gz&quot;</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="fu">write_link_list</span>(llist, <span class="at">file =</span> temp_file)</span></code></pre></div>
 <p>Which can then be read back into memory like so:</p>
 <div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>llist2 <span class="ot">&lt;-</span> <span class="fu">read_link_list</span>(temp_file)</span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(llist2)</span>
