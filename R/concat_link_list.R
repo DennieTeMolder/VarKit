@@ -3,7 +3,7 @@ concat_link_lists <- function(llist_list) {
   n <- NULL
   trans_list <- vector(mode = "list", length = length(llist_list))
   for (i in seq_along(llist_list)) {
-    cur_len <- length(llist_list[[i]])
+    cur_len <- length(.check_link_list(llist_list[[i]]))
 
     # Store translations
     cur_trans <- attr(llist_list[[i]], "translation")
@@ -20,7 +20,7 @@ concat_link_lists <- function(llist_list) {
     }
 
     # Adjust entries that contain links
-    needs_adjust <- get_types(llist_list[[i]]) == "node"
+    needs_adjust <- get_types(llist_list[[i]], check = FALSE) == "node"
     for (j in which(needs_adjust)) {
       llist_list[[i]][[j]] <- llist_list[[i]][[j]] + n
     }
@@ -42,5 +42,5 @@ concat_link_lists <- function(llist_list) {
     attr(llist, "translation") <- trans
   class(llist) <- "link_list"
 
-  llist
+  .check_link_list(llist)
 }

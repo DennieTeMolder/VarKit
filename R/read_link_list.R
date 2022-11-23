@@ -13,5 +13,5 @@ read_link_list <- function(file) {
     attr(llist, "translation") <- df$translation
 
   class(llist) <- "link_list"
-  llist
+  .check_link_list(llist)
 }

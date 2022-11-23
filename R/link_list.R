@@ -36,7 +36,7 @@ print.link_list <- function(x, ..., n = 5) {
 ##' @export
 ##' @importFrom rlang .data
 summary.link_list <- function(object, ...) {
-  tbl <- table(get_types(object))
+  tbl <- table(get_types(object, check = FALSE))
 
   tibble::tibble(
     n_total = sum(tbl),
