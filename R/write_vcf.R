@@ -1,10 +1,10 @@
 ##' @export
-write_vcf <- function(x, file, replace_filter = FALSE, na_gt = NULL) {
+write_vcf <- function(x, file, replace_filter = FALSE, na_geno = NULL) {
   UseMethod("write_vcf", x)
 }
 
 ##' @export
-write_vcf.varkit <- function(x, file, replace_filter = FALSE, na_gt = NULL) {
+write_vcf.varkit <- function(x, file, replace_filter = FALSE, na_geno = NULL) {
   if (all(is.na(x$geno)))
     stop("All genotype fields are NA!")
   .stopifnotsingle(file, class = "character")
@@ -12,8 +12,8 @@ write_vcf.varkit <- function(x, file, replace_filter = FALSE, na_gt = NULL) {
     warning("Varkit writes regular g-zipped files, not the block g-zip format ",
             "expected by many tools!\n If the latter is desired, write to plain ",
             "vcf and convert using an external tool like 'bgzip'.")
-  if (!is.null(na_gt))
-    stopifnot(is.character(na_gt), length(na_gt) == 1)
+  if (!is.null(na_geno))
+    .stopifnotsingle(na_geno, class = "character")
 
   ## Header
   header <- x$meta
@@ -60,12 +60,12 @@ write_vcf.varkit <- function(x, file, replace_filter = FALSE, na_gt = NULL) {
 
   ## Genotype fields
   gt <- t(x$geno)
-  if (is.null(na_gt)) {
+  if (is.null(na_geno)) {
     non_na <- as.character(gt[which(!is.na(gt))[1]])
-    na_gt <- stringr::str_replace_all(non_na, "[^|/:]+", ".")
-    message("Representing missing genotypes as: '", na_gt, "'")
+    na_geno <- stringr::str_replace_all(non_na, "[^|/:]+", ".")
+    message("Representing missing genotypes as: '", na_geno, "'")
   }
-  gt[is.na(gt)] <- na_gt
+  gt[is.na(gt)] <- na_geno
 
   # Combine
   body <- cbind(fxd, gt)
