@@ -45,14 +45,7 @@ write_vcf.varkit <- function(x, file, replace_filter = FALSE, na_geno = NULL) {
     fxd[missing] <- rep(NA, nrow(fxd))
   }
 
-  if (replace_filter
-      || all(is.na(fxd$filter))
-      || all(fxd$filter == "PASS", na.rm = TRUE)) {
-    fxd$filter <- ifelse(x$use_site, "PASS", "MASKED")
-  } else if (!all(fxd$filter[x$use_site] == "PASS", na.rm = TRUE)) {
-    warning("FILTER column does not reflect currently masked sites!\n",
-            "Use `replace_filter = TRUE` if this is desired.")
-  }
+  fxd$filter <- .check_filter(fxd$filter, x$use_site, replace_filter)
 
   # Fxd ordering and convert
   fxd <- dplyr::relocate(fxd, tidyselect::all_of(fixed_names))
@@ -79,4 +72,24 @@ write_vcf.varkit <- function(x, file, replace_filter = FALSE, na_geno = NULL) {
 
   # data
   readr::write_tsv(body, file, append = TRUE, col_names = FALSE, na = ".")
+}
+
+.check_filter <- function(fltr, use_site, replace_filter) {
+  is_na <- is.na(fltr)
+  if (all(is_na))
+    return(ifelse(use_site, "PASS", "MASKED"))
+
+  if (any(is_na))
+    fltr[is_na] <- "PASS"
+
+  pass_filter <- fltr == "PASS"
+  if (any(pass_filter != use_site)) {
+    if (replace_filter) {
+      fltr[use_site] <- "PASS"
+      return(ifelse(pass_filter & !use_site, "MASKED", fltr))
+    }
+    warning("FILTER column does not reflect currently masked sites!\n",
+            "Use `replace_filter = TRUE` if this is desired.")
+  }
+  fltr
 }
