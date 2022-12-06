@@ -9,7 +9,7 @@ find_linked_cols <- function(x,
 
 .compare_r2 <- function(a, b, cutoff) {
   r2 <- .cor_pair_silent(a, b)^2
-  !is.na(r2) & r2 >= cutoff
+  r2 >= cutoff & !is.na(r2)
 }
 
 .cor_pair_silent <- function(x, y = NULL) {

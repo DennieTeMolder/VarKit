@@ -6,16 +6,16 @@
                           window = NULL,
                           llist = NULL,
                           ...) {
+  stopifnot(is.matrix(x) || is.data.frame(x))
+  n <- ncol(x)
+
   # Missing arguments
   if (is.null(window))
     window <- .window_default(use_bp = !is.null(pos))
   if (is.null(llist))
-    llist <- link_list(1:ncol(x))
-
-  n <- ncol(x)
+    llist <- link_list(seq_len(n))
 
   # Check arguments
-  stopifnot(is.matrix(x) || is.data.frame(x))
   stopifnot(is.function(FUN))
   if (!is.null(pos)) {
     stopifnot(is.vector(pos))
@@ -45,7 +45,7 @@
 
   # Columns that are all NA are not worth checking
   n_na <- colSums(is.na(x))
-  check <- n_na != nrow(x)
+  check <- n_na < nrow(x)
 
   # Link columns with all NAs
   if (sum(!check) > 1) {
@@ -70,9 +70,12 @@
     check[i] <- FALSE
     check_idx <- .which_in_window(i, check, window, pos, n)
 
+    if (length(check_idx) < 1)
+      next()
+
     # Check which cols in B can be considered identical to A using predicate FUN
     identical <- do.call(FUN, list(a = x[, i], b = x[, check_idx, drop = FALSE], ...))
-    if (sum(identical) == 0)
+    if (sum(identical) < 1)
       next()
 
     links <- check_idx[identical]
@@ -109,7 +112,8 @@
     return(which(check & pos > pos[i] - window & pos <= pos[i] + window))
 
   # Window using # variants
-  min <- ifelse(i > window, i - window, 1)
-  max <- ifelse(i + window < n, i + window, n)
-  which(check)[min:max]
+  min <- max(c(i - window, 1))
+  max <- min(c(i + window, n))
+  range <- min:max
+  range[check[range]]
 }
