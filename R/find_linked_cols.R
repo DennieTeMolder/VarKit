@@ -1,9 +1,9 @@
 ##' @export
 find_linked_cols <- function(x,
                              pos = NULL,
+                             llist = NULL,
                              cutoff = .9,
-                             window = NULL,
-                             llist = NULL) {
+                             window = NULL) {
   .compare_cols(x, FUN = .compare_r2, pos = pos, window = window, llist = llist, cutoff = cutoff)
 }
 

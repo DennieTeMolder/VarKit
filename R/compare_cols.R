@@ -18,13 +18,12 @@
   # Check arguments
   stopifnot(is.function(FUN))
   if (!is.null(pos)) {
-    stopifnot(is.vector(pos))
-    stopifnot(is.numeric(pos))
+    stopifnot(is.vector(pos) && is.numeric(pos))
     if (length(pos) != n)
       stop("The length of 'pos' should match with ncol(x)!")
   }
   if (!is.null(window))
-    stopifnot(is.numeric(window))
+    .stopifnotsingle(window, class = "numeric")
   stopifnot(is_link_list(llist))
   if (length(llist) != n)
     stop("The length of 'link_list' does not match with 'x'!")
@@ -87,11 +86,11 @@
 
 .window_default <- function(use_bp = FALSE) {
   if (use_bp) {
-    window <- 5e4
+    window <- 1e5
     message("Setting window size to ", window," bp.")
     return(window)
   }
-  window <- 100
+  window <- 1000
   message("Setting window size to ", window," variants.")
   window
 }

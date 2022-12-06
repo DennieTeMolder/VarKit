@@ -127,30 +127,6 @@
   x[as.logical(x)]
 }
 
-.register_workers <- function(cores) {
-  stopifnot(is.numeric(cores) && cores >= 1)
-  if (cores > 1) {
-    log_file <- tempfile(fileext = ".log")
-    message("Writing parallel worker logs to: ", log_file)
-    cl <- snow::makeCluster(cores, outfile = log_file)
-    doSNOW::registerDoSNOW(cl = cl)
-  } else {
-    foreach::registerDoSEQ()
-    cl <- NULL
-  }
-  cl
-}
-
-.unregister_workers <- function(cl) {
-  if (!is.null(cl))
-    snow::stopCluster(cl)
-}
-
-.pb_increment <- function(pb, n = 1) {
-  val <- utils::getTxtProgressBar(pb)
-  utils::setTxtProgressBar(pb, value = val + n)
-}
-
 ## Unused functions ------
 .bi_gt2dosage <- function(mat) {
   stopifnot(is.matrix(mat))

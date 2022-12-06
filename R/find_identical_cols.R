@@ -1,9 +1,9 @@
 ##' @export
 find_identical_cols <- function(x,
                                 pos = NULL,
+                                llist = NULL,
                                 tolerance = .01,
-                                window = -1,
-                                llist = NULL) {
+                                window = -1) {
   .compare_cols(x, FUN = .compare_absolute, pos = pos, window = window, llist = llist, tolerance = tolerance)
 }
 
