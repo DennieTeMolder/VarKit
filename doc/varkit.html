@@ -971,15 +971,17 @@ generated previously:</p>
 <span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; With a integer translation layer:</span></span>
 <span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  89, 92, 93, 94, 98, 102, 108, 111, 112, 113 ...</span></span></code></pre></div>
 <p>Here you can see that the 1st site in the <strong>masked</strong> vcf
-(which is actually site 1024 in the original vcf, according to the
-translation layer) is linked to the 8th site in the masked vcf. In order
+(which is actually site 89 in the original vcf, according to the
+translation layer) is linked to the 7th site in the masked vcf. In order
 to remove this link, the <code>mask(vcf, llist)</code> function will
-mask the 8th site and keep the 1st. Moving on, the 2nd site is linked to
-some other site (if we look further down we can see it is linked to the
-9th site) and the <code>mask()</code> function will mask this site in
-order to remove this link. Finally, the 3rd site in the masked vcf is
-not linked to any other site and thus will not be masked when using the
-<code>mask()</code> function.</p>
+mask the 7th site and keep the 1st. In this same way the 2nd site is
+linked to the 12th. The 3rd to 6th sites in the masked vcf are not
+linked to any other sites and thus will not be masked when using the
+<code>mask()</code> function. The 7th site is listed as NA because it is
+linked to the 1st and will be removed upon masking. Finally, the 8th
+site is linked to some other site and is to be removed. If we look
+furhter down we can see it is linked to the 10th site together with with
+sites 11 and 23.</p>
 </div>
 </div>
 
