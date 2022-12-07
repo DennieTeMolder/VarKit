@@ -35,11 +35,6 @@ loading it into R using the aforementioned Bcftools.
 
 ## Installation
 
-VarKit depends on
-([Rtools](https://cran.r-project.org/bin/windows/Rtools/)) to be
-installed on your system (not as a package), make sure your Rtools
-installation supports your current version of R.
-
 Download `varkit_0.3.2.tar.gz` from the releases tab
 ([link](https://git.wur.nl/molde006/varkit/uploads/6931cb561437f4e4187e5fe01081c14f/varkit_0.3.2.tar.gz)).
 
@@ -50,7 +45,7 @@ that pops up:
 install.packages("remotes")
 pkg_path <- file.choose()
 remotes::install_deps(pkg_path, upgrade = "never")
-install.packages(pkg_path, repos = NULL, type =  "source")
+install.packages(pkg_path, repos = NULL, type = "source")
 ```
 
 And load the package using:
