@@ -48,7 +48,9 @@ that pops up:
 
 ``` r
 install.packages("remotes")
-remotes::install_local(file.choose(), build_vignettes = TRUE)
+pkg_path <- file.choose()
+remotes::install_deps(pkg_path, upgrade = "never")
+install.packages(pkg_path, repos = NULL, type =  "source")
 ```
 
 And load the package using:
