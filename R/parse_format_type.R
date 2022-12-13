@@ -44,11 +44,7 @@ parse_format_type.varkit <- function(x, type, allow_missing = FALSE) {
   if (any(is.na(frmt)))
     stop("The FORMAT column contains missing values!")
 
-  uniq <- levels(frmt)
-  # Some values might be dropped when masking, so we recompute the unique here
-  if (length(uniq) != 1)
-    uniq <- as.character(unique(frmt))
-
+  uniq <- as.character(unique(frmt))
   splits <- stringr::str_split(uniq, ":")
   names(splits) <- uniq
 

@@ -9,10 +9,7 @@ get_format_types.varkit <- function(x) {
   if (any(is.na(frmt)))
     stop("The FORMAT column contains missing values!")
 
-  uniq <- levels(frmt)
-  # Some values might be dropped when masking, so we recompute the unique here
-  if (length(uniq) != 1)
-    uniq <- as.character(unique(frmt))
+  uniq <- as.character(unique(frmt))
 
   if (length(uniq) > 1)
     message("!FORMAT column is variable, number of combinations found: ", length(uniq))

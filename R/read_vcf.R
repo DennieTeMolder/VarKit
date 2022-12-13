@@ -38,7 +38,7 @@ read_vcf <- function(file,
   # Create a string of column types (see readr::cols())
   types <- rep("?", length(header$col_names))
   types[header$col_names %in% skip_cols] <- "_"
-  types[header$col_names %in% c("chrom", "ref", "alt", "format")] <- "f"
+  types[header$col_names %in% c("chrom", "ref", "alt", "format")] <- "c"
   types[header$col_names == "pos"] <- "d"
   types <- paste(types, collapse = "")
 
