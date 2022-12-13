@@ -15,7 +15,7 @@ get_site_idx.data.frame <- function(x, vcf) {
   if (!all(c("chrom", "pos") %in% colnames(x)))
     stop("The data frame 'x' should contain columns 'chrom' and 'pos'!")
   current <- fixed(vcf, cols = c("chrom", "pos"), add_index = TRUE)
-  current <- dplyr::inner_join(fxd, x, by = c("chrom", "pos"))
+  current <- dplyr::inner_join(current, x, by = c("chrom", "pos"))
   if (nrow(x) != nrow(current)) {
     warning("Not all of the provided sites could be found, ",
             "perhaps some were masked previously?")
