@@ -2,7 +2,7 @@
 fixed <- function(x,
                   add_index = FALSE,
                   by_chrom = FALSE,
-                  only_positions = FALSE) {
+                  cols = NULL) {
   UseMethod("fixed", x)
 }
 
@@ -10,12 +10,21 @@ fixed <- function(x,
 fixed.varkit <- function(x,
                          add_index = FALSE,
                          by_chrom = FALSE,
-                         only_positions = FALSE) {
-  if (only_positions) {
-    res <- x$fixed[, c("chrom", "pos")]
+                         cols = NULL) {
+  if (!is.null(cols)) {
+    # Checks
+    stopifnot(is.character(cols))
+    if (!all(cols %in% colnames(x$fixed)))
+      stop("Not all 'cols' are in fixed(", substitute(x), ")!")
+    if (by_chrom)
+      cols <- unique(c("chrom", cols))
+
+    # Subset cols
+    res <- x$fixed[, cols]
   } else {
     res <- x$fixed
   }
+
   if (!all(x$use_site))
     res <- res[x$use_site,]
   if (add_index)

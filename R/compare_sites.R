@@ -30,7 +30,7 @@
   cl <- .register_workers(cores)
 
   # Get required data from varkit object
-  fix_chrom <- fixed(x, add_index = TRUE, by_chrom = TRUE, only_positions = TRUE)
+  fix_chrom <- fixed(x, cols = "pos", add_index = TRUE, by_chrom = TRUE)
   gt_chrom <- geno(x, by_chrom = TRUE)
 
   # Order contigs most to least sites for efficiency

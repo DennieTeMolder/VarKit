@@ -5,7 +5,7 @@ write_bcftools_regions <- function(x, file) {
 
 ##' @export
 write_bcftools_regions.varkit <- function(x, file) {
-  readr::write_tsv(fixed(x, only_positions = TRUE), file = file, col_names = FALSE)
+  readr::write_tsv(fixed(x, cols = c("chrom", "pos")), file = file, col_names = FALSE)
 }
 
 ##' @export

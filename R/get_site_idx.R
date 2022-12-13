@@ -1,36 +1,33 @@
-get_site_idx <- function(x, current_sites) {
-  stopifnot(is.data.frame(current_sites))
-  stopifnot(c("chrom", "pos", "idx") %in% colnames(current_sites))
+get_site_idx <- function(x, vcf) {
+  stopifnot(is_varkit(vcf))
   UseMethod("get_site_idx", x)
 }
 
 ##' @export
-get_site_idx.logical <- function(x, current_sites) {
-  if (length(x) != nrow(current_sites))
+get_site_idx.logical <- function(x, vcf) {
+  if (length(x) != sum(vcf$use_site))
     stop("Length of 'x' not equal to current number of unmasked sites!")
-  current_sites$idx[x]
+  which(vcf$use_site)[x]
 }
 
 ##' @export
-get_site_idx.data.frame <- function(x, current_sites) {
+get_site_idx.data.frame <- function(x, vcf) {
   if (!all(c("chrom", "pos") %in% colnames(x)))
-    stop("The 'x' data frame should contain columns 'chrom' and 'pos'!")
-  current_sites <- dplyr::inner_join(
-    current_sites, x,
-    by = c("chrom", "pos")
-  )
-  if (nrow(x) != nrow(current_sites)) {
+    stop("The data frame 'x' should contain columns 'chrom' and 'pos'!")
+  current <- fixed(vcf, cols = c("chrom", "pos"), add_index = TRUE)
+  current <- dplyr::inner_join(fxd, x, by = c("chrom", "pos"))
+  if (nrow(x) != nrow(current)) {
     warning("Not all of the provided sites could be found, ",
             "perhaps some were masked previously?")
   }
-  current_sites$idx
+  current$idx
 }
 
-get_site_idx.link_list <- function(x, current_sites) {
-  if (length(x) != nrow(current_sites))
+get_site_idx.link_list <- function(x, vcf) {
+  if (length(x) != sum(vcf$use_site))
     stop("Length of 'x' not equal to current number of unmasked sites!")
   idx <- which_remove(x, translate_out = TRUE)
-  if (!all(idx %in% current_sites$idx))
+  if (!all(idx %in% which(vcf$use_site)))
     stop("Indexes of 'link_list' don't align with the current mask!")
   idx
 }
