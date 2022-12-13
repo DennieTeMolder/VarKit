@@ -5,7 +5,7 @@ varkit <- function(vcf, meta = NULL) {
   if (!is.null(meta))
     stopifnot(is.data.frame(meta), colnames(meta) == c("name", "value"))
 
-  # Move fixed fields to a separate df
+  # Detect fixed fields
   fixed_idx <- stats::na.omit(match(.fixed_columns(), colnames(vcf)))
 
   if (length(fixed_idx) == 0)
@@ -15,6 +15,7 @@ varkit <- function(vcf, meta = NULL) {
   if (!all(c("chrom", "pos") %in% colnames(vcf)[fixed_idx]))
     stop("Missing 'chrom' and/or 'pos' columns in VCF!")
 
+  # Move fixed fields to a separate df
   fxd <- vcf[, fixed_idx]
   vcf[, fixed_idx] <- NULL
 
@@ -23,7 +24,7 @@ varkit <- function(vcf, meta = NULL) {
   geno <- varkit_geno(vcf)
   rm(vcf)
 
-  # Apply initial mask based on FILTER column
+  # Apply initial mask based on the FILTER column
   use_site <- FALSE
   if ("filter" %in% names(fxd))
     use_site <- fxd$filter == "PASS" | is.na(fxd$filter)
@@ -51,7 +52,7 @@ print.varkit <- function(x, ..., n = .max_print_col(geno(x))) {
   cat("*VarKit Variant Object*\n")
   if (!is.null(x$meta)) {
     cat("Header metadata, `meta(vcf)`:\n")
-    print(x$meta, ..., verbose = FALSE)
+    print(meta(x), ..., verbose = FALSE)
     cat("\n")
   }
   cat("Fixed fields, `fixed(vcf)`:\n")
