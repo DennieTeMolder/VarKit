@@ -5,7 +5,6 @@
 ##' @param header Varkit_header
 ##' @param skip_cols Character vector, columns to skip loading. Should match names in `read_vcf_header(file)$col_names`.
 ##' @param na_geno Character vector, exact string(s) to convert to NA in the genotype fields
-##' @param header_max_lines Integer, max number of lines to check for the header
 ##' @param ... Arguments passed to [readr::read_tsv()]
 ##' @return A VarKit object
 ##' @export
@@ -17,7 +16,6 @@ read_vcf <- function(file,
                      header = NULL,
                      skip_cols = NULL,
                      na_geno = "./.",
-                     header_max_lines = 1e5,
                      ...) {
   # Argument checks
   if (!is.null(header))
@@ -27,7 +25,7 @@ read_vcf <- function(file,
   stopifnot(is.character(na_geno))
 
   if (is.null(header))
-    header <- read_vcf_header(file, n_max = header_max_lines)
+    header <- read_vcf_header(file)
 
   # Header checks
   if (length(header$col_names) < 2)

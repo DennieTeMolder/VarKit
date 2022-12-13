@@ -4,14 +4,7 @@
 \alias{read_vcf}
 \title{Load A VCF File From Disk}
 \usage{
-read_vcf(
-  file,
-  header = NULL,
-  skip_cols = NULL,
-  na_geno = "./.",
-  header_max_lines = 1e+05,
-  ...
-)
+read_vcf(file, header = NULL, skip_cols = NULL, na_geno = "./.", ...)
 }
 \arguments{
 \item{file}{String, path to the vcf(.bgz) file to load}
@@ -21,8 +14,6 @@ read_vcf(
 \item{skip_cols}{Character vector, columns to skip loading. Should match names in \code{read_vcf_header(file)$col_names}.}
 
 \item{na_geno}{Character vector, exact string(s) to convert to NA in the genotype fields}
-
-\item{header_max_lines}{Integer, max number of lines to check for the header}
 
 \item{...}{Arguments passed to \code{\link[readr:read_delim]{readr::read_tsv()}}}
 }

@@ -1,45 +1,31 @@
 ##' @export
 varkit_header <- function(x) {
   stopifnot(is.character(x))
+  stopifnot(length(x) >= 2 )
 
-  # The last line of the header should be the only line with a single "#"
-  header_end <- stringr::str_detect(x, "^#[^#\n]")
-  if (!any(header_end)) {
-    warning("No VCF header line detected! Using first line for column names.")
-    header_end <- 1
-  } else {
-    header_end <- which(header_end)[1]
-  }
+  if (!stringr::str_detect(x[1], "^##fileformat=VCF"))
+    warning("No valid VCF fileformat meta information detected on the first line!")
 
-  if (header_end > 1) {
-    x <- utils::head(x, n = header_end)
-    if (!all(stringr::str_starts(x, "#")))
-      stop("Not all lines above the header line start with a '#'!")
-
-    # The last line of the header contains the column names, the rest is metadata
-    meta <- .parse_meta(utils::head(x, n = -1))
-    col_names <- .parse_col_names(utils::tail(x, n = 1))
-  } else {
-    meta <- NULL
-    col_names <- .parse_col_names(x[header_end])
-  }
+  if (!all(stringr::str_starts(x, "#")))
+    stop("Invalid VCF. Not all meta lines start with a '#'!")
 
   header <- list(
-    meta = meta,
-    col_names = col_names
+    meta = .parse_meta(utils::head(x, n = -1)),
+    col_names = .parse_col_names(utils::tail(x, n = 1))
   )
   class(header) <- c("varkit_header", "list")
   header
 }
 
 .parse_meta <- function(x) {
-  stopifnot(is.character(x))
   x <- stringr::str_remove(x, "##")
   x <- stringr::str_split_fixed(x, "=", n = 2)
   tibble::tibble(name = x[, 1], value = x[, 2])
 }
 
 .parse_col_names <- function(x) {
+  if (substr(x, 2, 2) == "#")
+    stop("The last line does not appear to be the header line")
   col_names <- stringr::str_remove(x, "#")
   col_names <- stringr::str_split(col_names, "\t")[[1]]
 
