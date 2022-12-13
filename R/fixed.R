@@ -29,7 +29,15 @@ fixed.varkit <- function(x,
     res <- res[x$use_site,]
   if (add_index)
     res$idx <- which(x$use_site)
-  if (by_chrom)
-    return(split(res, ~chrom, drop = TRUE))
+
+  if (by_chrom) {
+    chroms <- unique(res$chrom)
+    return(sapply(chroms, simplify = FALSE, FUN = function(chr) {
+      res[res$chrom == chr,]
+    }))
+  }
+
+  if (!is.null(cols) && length(cols) == 1)
+    return(unlist(res, use.names = FALSE))
   res
 }
