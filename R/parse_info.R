@@ -6,7 +6,7 @@ parse_info <- function(x) {
 ##' @export
 parse_info.varkit <- function(x) {
   # Convert to dataframe assuming ";" and "=" can only be used as delimiters
-  res <- stringr::str_split(fixed(x)$info, ";")
+  res <- stringr::str_split(fixed(x, cols = "info"), ";")
   res <- lapply(res, .split_key_value)
   res <- .bind_rows_list(res)
 

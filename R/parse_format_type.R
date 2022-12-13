@@ -18,7 +18,7 @@ parse_format_type.varkit <- function(x, type, allow_missing = FALSE) {
     idx <- frmt[[1]]
     res <- apply_samples(geno(x), .str_split_get_idx, char =":", idx = idx)
   } else {
-    idxs <- unlist(frmt[fixed(x)$format], use.names = FALSE)
+    idxs <- unlist(frmt[fixed(x, cols = "format")], use.names = FALSE)
     gt <- geno(x)
     res <- sapply(seq_along(idxs), function(i) {
       .str_split_get_idx(gt[, i], char = ":", idx = idxs[i])
@@ -40,7 +40,7 @@ parse_format_type.varkit <- function(x, type, allow_missing = FALSE) {
 }
 
 .index_format <- function(x, type) {
-  frmt <- fixed(x)$format
+  frmt <- fixed(x, cols = "format")
   if (any(is.na(frmt)))
     stop("The FORMAT column contains missing values!")
 

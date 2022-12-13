@@ -5,7 +5,7 @@ get_format_types <- function(x) {
 
 ##' @export
 get_format_types.varkit <- function(x) {
-  frmt <- fixed(x)$format
+  frmt <- fixed(x, cols = "format")
   if (any(is.na(frmt)))
     stop("The FORMAT column contains missing values!")
 
