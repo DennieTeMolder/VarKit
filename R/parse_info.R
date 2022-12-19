@@ -9,34 +9,22 @@ parse_info.varkit <- function(x) {
   res <- stringr::str_split(fixed(x, cols = "info"), ";")
   res <- lapply(res, .split_key_value)
   res <- .bind_rows_list(res)
-
-  # Use INFO metadata to convert specific columns to numeric
-  if ("INFO" %in% meta(x)$name) {
-    types <- parse_meta_type(x, "INFO")
-    types <- dplyr::left_join(data.frame(ID = colnames(res)), types, by = "ID")
-    which_numeric <- which(tolower(types$Type) %in% c("integer", "float"))
-    for (idx in which_numeric) {
-      # Do not convert columns with multi value fields
-      if (!any(stringr::str_detect(res[[idx]], ","), na.rm = TRUE))
-        res[[idx]] <- as.numeric(res[[idx]])
-    }
-  }
-
-  res
+  purrr::map_dfc(res, utils::type.convert, as.is = TRUE, na.strings = c("NA", "."))
 }
 
-.split_key_value <- function(x) {
-  if (all(is.na(x)))
+.split_key_value <- function(str) {
+  if (any(is.na(str)))
     return(NA)
 
-  x <- stringr::str_split_fixed(x, pattern = "=", n = 2)
-  res <- x[, 2]
-  names(res) <- x[, 1]
+  splits <- stringr::str_split_fixed(str, pattern = "=", n = 2)
 
+  res <- splits[[2]]
+  names(res) <- splits[[1]]
   res
 }
 
 .bind_rows_list <- function(lst) {
+  # Give NAs a name attribute, so bind_rows will handle them correctly
   is_na <- is.na(lst)
   if (any(is_na)) {
     non_na_idx <- which(!is_na)[1]

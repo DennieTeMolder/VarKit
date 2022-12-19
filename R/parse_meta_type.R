@@ -33,13 +33,13 @@ parse_meta_type.default <- function(x, type) {
 
 .match_key_value <- function(str, pattern) {
   res <- stringr::str_match_all(str, pattern)
-  res <- lapply(res, .build_df)
+  res <- lapply(res, .match2df)
   do.call(dplyr::bind_rows, res)
 }
 
-.build_df <- function(mat) {
-  res <- matrix(mat[, 3], nrow = 1)
-  colnames(res) <- mat[, 2]
+.match2df <- function(mat) {
+  res <- mat[[3]]
+  names(res) <- mat[[2]]
   as.data.frame(res)
 }
 
