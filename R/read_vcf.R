@@ -18,6 +18,8 @@ read_vcf <- function(file,
                      na_geno = "./.",
                      ...) {
   # Argument checks
+  if (is.function(file))
+    stop("The 'file' argument is required!")
   if (!is.null(header))
     stopifnot(is_varkit_header(header))
   if (!is.null(skip_cols))
