@@ -13,45 +13,38 @@ parse_meta_type.default <- function(x, type) {
   # Checks
   stopifnot(colnames(x) == c("name", "value"))
 
-  x <- x[x$name == type,]
+  values <- x$value[x$name == type]
 
-  if (nrow(x) == 0)
+  if (length(values) == 0)
     stop(paste0("The type '", type, "' could not be found in meta(x)$name!"))
 
-  # We assume here that the values of the key-value pairs in a header line are
-  # either all unquoted, or that it it starts off with one ore more unquoted
-  # values after which all values are quoted.
+  values <- stringr::str_remove_all(values, "(^<|>$)")
 
-  # Check if the first line only contains unquoted values. Unquoted key-value
-  # pairs should not contain any apostrophes.
-  if (!stringr::str_detect(x$value[1], "\""))
-    return(.match_key_value(x$value, pattern = "<?([^=]+)=([^,]+)(?:,|>)"))
+  # First group of the regex should match the key, second should match the corresponding value
+  values <- .match_key_value(values, pattern = '([^="]+)=("(?:[^"\\\\]|\\\\.)+"|[^,]+)(?:,|$)')
 
-  # Split line based on transition from unquoted to quoted values
-  x <- stringr::str_match(x$value, "<(.*[^\"]),([^=]+=\".*)>")
-
-  # Parse unquoted and quoted key-value pairs separately
-  unquoted <- .match_key_value(
-    x[, 2],
-    pattern = "([^=]+)=([^,]+)(?:,|$)"
-  )
-  quoted <- .match_key_value(
-    x[, 3],
-    pattern = "([^=]+)=\"(.+?)\"(?:,|$)"
-  )
-
-  dplyr::bind_cols(unquoted, quoted)
+  purrr::map_dfc(values, .cleanup_col)
 }
 
-.match_key_value <- function(x, pattern) {
-  # Match
-  x <- stringr::str_match_all(x, pattern)
-  # Convert
-  x <- t(sapply(x, function(x) x[, -1]))
-  # First half == colnames; second half == values
-  i <- seq(1, ncol(x) / 2)
-  df <- as.data.frame(x[, -i])
-  colnames(df) <- x[1, i]
-  # Return as tibble
-  tibble::tibble(df)
+.match_key_value <- function(str, pattern) {
+  res <- stringr::str_match_all(str, pattern)
+  res <- lapply(res, .build_df)
+  do.call(dplyr::bind_rows, res)
+}
+
+.build_df <- function(mat) {
+  res <- matrix(mat[, 3], nrow = 1)
+  colnames(res) <- mat[, 2]
+  as.data.frame(res)
+}
+
+.cleanup_col <- function(col) {
+  stopifnot(is.character(col))
+  # Strip surrounding double quotes
+  res <- ifelse(
+    stringr::str_starts(col, '"') & stringr::str_ends(col, '"'),
+    stringr::str_sub(col, 2, -2),
+    col
+  )
+  utils::type.convert(res, as.is = TRUE, na.strings = c("NA", "."))
 }

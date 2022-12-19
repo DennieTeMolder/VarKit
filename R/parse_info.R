@@ -36,7 +36,6 @@ parse_info.varkit <- function(x) {
   res
 }
 
-##' @importFrom dplyr bind_rows
 .bind_rows_list <- function(lst) {
   is_na <- is.na(lst)
   if (any(is_na)) {
@@ -47,5 +46,5 @@ parse_info.varkit <- function(x) {
       names(lst[[idx]]) <- valid_name
   }
 
-  do.call("bind_rows", lst)
+  do.call(dplyr::bind_rows, lst)
 }
