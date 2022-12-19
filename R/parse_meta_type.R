@@ -18,7 +18,12 @@ parse_meta_type.default <- function(x, type) {
   if (length(values) == 0)
     stop(paste0("The type '", type, "' could not be found in meta(x)$name!"))
 
-  values <- stringr::str_remove_all(values, "(^<|>$)")
+  # Values should be surrounded by <...> according to the VCF spec, else abort
+  if (any(!stringr::str_starts(values, "<") | !stringr::str_ends(values, ">")))
+    return(tibble::tibble(value = values))
+
+  # Strip <...>
+  values <- stringr::str_sub(values, 2, -2)
 
   # First group of the regex should match the key, second should match the corresponding value
   values <- .match_key_value(values, pattern = '([^="]+)=("(?:[^"\\\\]|\\\\.)+"|[^,]+)(?:,|$)')
