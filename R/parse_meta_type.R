@@ -1,17 +1,18 @@
 ##' @export
-parse_meta_type <- function(x, type) {
+parse_meta_type <- function(x, type, na = ".") {
   UseMethod("parse_meta_type", x)
 }
 
 ##' @export
-parse_meta_type.varkit_header <- function(x, type) {
+parse_meta_type.varkit_header <- function(x, type, na = ".") {
   parse_meta_type(meta(x), type)
 }
 
 ##' @export
-parse_meta_type.default <- function(x, type) {
+parse_meta_type.default <- function(x, type, na = ".") {
   # Checks
   stopifnot(colnames(x) == c("name", "value"))
+  stopifnot(is.character(na))
 
   values <- x$value[x$name == type]
 
@@ -28,22 +29,21 @@ parse_meta_type.default <- function(x, type) {
   # First group of the regex should match the key, second should match the corresponding value
   values <- .match_key_value(values, pattern = '([^="]+)=("(?:[^"\\\\]|\\\\.)+"|[^,]+)(?:,|$)')
 
-  purrr::map_dfc(values, .cleanup_col)
+  purrr::map_dfc(values, .cleanup_meta_col, na = na)
 }
 
 .match_key_value <- function(str, pattern) {
   res <- stringr::str_match_all(str, pattern)
-  res <- lapply(res, .match2df)
+  # Unpack
+  res <- lapply(res, function(mat) {
+    vec <- mat[, 3]
+    names(vec) <- mat[, 2]
+    vec
+  })
   do.call(dplyr::bind_rows, res)
 }
 
-.match2df <- function(mat) {
-  res <- mat[[3]]
-  names(res) <- mat[[2]]
-  as.data.frame(res)
-}
-
-.cleanup_col <- function(col) {
+.cleanup_meta_col <- function(col, na = ".") {
   stopifnot(is.character(col))
   # Strip surrounding double quotes
   res <- ifelse(
@@ -51,5 +51,5 @@ parse_meta_type.default <- function(x, type) {
     stringr::str_sub(col, 2, -2),
     col
   )
-  utils::type.convert(res, as.is = TRUE, na.strings = c("NA", "."))
+  utils::type.convert(res, as.is = TRUE, na.strings = na)
 }

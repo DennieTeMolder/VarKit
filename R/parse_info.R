@@ -9,7 +9,7 @@ parse_info.varkit <- function(x) {
   res <- stringr::str_split(fixed(x, cols = "info"), ";")
   res <- lapply(res, .split_key_value)
   res <- .bind_rows_list(res)
-  purrr::map_dfc(res, utils::type.convert, as.is = TRUE, na.strings = c("NA", "."))
+  purrr::map_dfc(res, .convert_info_col)
 }
 
 .split_key_value <- function(str) {
@@ -18,8 +18,9 @@ parse_info.varkit <- function(x) {
 
   splits <- stringr::str_split_fixed(str, pattern = "=", n = 2)
 
-  res <- splits[[2]]
-  names(res) <- splits[[1]]
+  res <- splits[, 2]
+  res <- ifelse(res == "", "TRUE", res)
+  names(res) <- splits[, 1]
   res
 }
 
@@ -35,4 +36,11 @@ parse_info.varkit <- function(x) {
   }
 
   do.call(dplyr::bind_rows, lst)
+}
+
+.convert_info_col <- function(col) {
+  col <- utils::type.convert(col, as.is = TRUE, na.strings = "")
+  if (is.logical(col))
+    col[is.na(col)] <- FALSE
+  col
 }

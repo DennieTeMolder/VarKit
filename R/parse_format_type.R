@@ -16,7 +16,7 @@ parse_format_type.varkit <- function(x, type, allow_missing = FALSE) {
   if (length(unique(frmt)) == 1) {
     # For fixed format loop over samples to save time while remaining memory efficient
     idx <- frmt[[1]]
-    res <- apply_samples(geno(x), .str_split_get_idx, char =":", idx = idx)
+    res <- apply_samples(geno(x), .str_split_get_idx, char = ":", idx = idx)
   } else {
     idxs <- unlist(frmt[fixed(x, cols = "format")], use.names = FALSE)
     gt <- geno(x)
@@ -24,19 +24,13 @@ parse_format_type.varkit <- function(x, type, allow_missing = FALSE) {
       .str_split_get_idx(gt[, i], char = ":", idx = idxs[i])
     })
     dimnames(res) <- dimnames(gt)
-    res <- varkit_geno(res)
   }
 
   # Convert NA values
-  is_na <- stringr::str_detect(res , pattern ="^[.,|/]+$")
+  is_na <- stringr::str_detect(res , pattern ="^[.,|/]*$")
   res[is_na] <- NA
 
-  # Convert to numeric if possible
-  is_numeric <- stringr::str_detect(res , pattern = "^[0-9]+(\\.[0-9]+)?$")
-  if (all(is_numeric, na.rm = TRUE))
-    res <- apply_each(res, as.numeric)
-
-  res
+  varkit_geno(utils::type.convert(res, as.is = TRUE, na.strings = ""))
 }
 
 .index_format <- function(x, type) {
