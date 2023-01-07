@@ -35,8 +35,8 @@ loading it into R using the aforementioned Bcftools.
 
 ## Installation
 
-Download `varkit_0.4.1.tar.gz` from the releases tab
-([link](https://git.wur.nl/molde006/varkit/uploads/c4bc2ea2cf3ed258022c2daccd202969/varkit_0.4.1.tar.gz)).
+Download `varkit_0.5.0.tar.gz` from the releases tab
+([link](https://git.wur.nl/molde006/varkit/uploads/ef201cba2de2718d5d15469d6498f3ad/varkit_0.5.0.tar.gz)).
 
 Run the following commands and select the downloaded file in the window
 that pops up:
