@@ -16,7 +16,7 @@
 
   # Short-circuit
   if (!by_chrom) {
-    loc <- fixed(x, add_index = TRUE)
+    loc <- site(x, add_index = TRUE)
     llist <- link_list(loc$idx)
     if (cores > 1)
       warning("The 'cores' option only has effect when  `by_chrom = TRUE`.")
@@ -30,7 +30,7 @@
   cl <- .register_workers(cores)
 
   # Get required data from varkit object
-  fix_chrom <- fixed(x, cols = "pos", add_index = TRUE, by_chrom = TRUE)
+  fix_chrom <- site(x, cols = "pos", add_index = TRUE, by_chrom = TRUE)
   gt_chrom <- geno(x, by_chrom = TRUE)
 
   # Order contigs most to least sites for efficiency

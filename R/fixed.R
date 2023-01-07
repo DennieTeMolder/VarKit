@@ -1,28 +1,28 @@
 ##' @export
-fixed <- function(x,
+site <- function(x,
                   add_index = FALSE,
                   by_chrom = FALSE,
                   cols = NULL) {
-  UseMethod("fixed", x)
+  UseMethod("site", x)
 }
 
 ##' @export
-fixed.varkit <- function(x,
+site.varkit <- function(x,
                          add_index = FALSE,
                          by_chrom = FALSE,
                          cols = NULL) {
   if (!is.null(cols)) {
     # Checks
     stopifnot(is.character(cols))
-    if (!all(cols %in% colnames(x$fixed)))
-      stop("Not all 'cols' are in fixed(", substitute(x), ")!")
+    if (!all(cols %in% colnames(x$site)))
+      stop("Not all 'cols' are in site(", substitute(x), ")!")
     if (by_chrom)
       cols <- unique(c("chrom", cols))
 
     # Subset cols
-    res <- x$fixed[, cols]
+    res <- x$site[, cols]
   } else {
-    res <- x$fixed
+    res <- x$site
   }
 
   if (!all(x$use_site))

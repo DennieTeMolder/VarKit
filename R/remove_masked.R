@@ -5,7 +5,7 @@ remove_masked <- function(x) {
 
 ##' @export
 remove_masked.varkit <- function(x) {
-  x$fixed <- fixed(x)
+  x$site <- site(x)
   x$geno <- geno(x)
   x$use_site <- rep(TRUE, ncol(x$geno))
   x

@@ -33,7 +33,7 @@ varkit <- function(vcf, meta = NULL) {
 
   vcf <- list(
     meta = meta,
-    fixed = fxd,
+    site = fxd,
     geno = geno,
     use_site = use_site
   )
@@ -55,8 +55,8 @@ print.varkit <- function(x, ..., n = .max_print_col(geno(x))) {
     print(meta(x), ..., verbose = FALSE)
     cat("\n")
   }
-  cat("Fixed fields, `fixed(vcf)`:\n")
-  print(fixed(x), ..., n = n)
+  cat("Site information, `site(vcf)`:\n")
+  print(site(x), ..., n = n)
   cat("\nTransposed genotype matrix, `geno(vcf)`:\n")
   print(geno(x), ..., n = n)
   cat("# Use `samples(vcf)` for a vector of all sample names\n")

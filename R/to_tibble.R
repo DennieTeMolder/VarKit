@@ -10,5 +10,5 @@ to_tibble.varkit_geno <- function(x, ...) {
 
 ##' @export
 to_tibble.varkit <- function(x, ...) {
-  dplyr::bind_cols(fixed(x), to_tibble(geno(x)))
+  dplyr::bind_cols(site(x), to_tibble(geno(x)))
 }

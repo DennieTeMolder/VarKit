@@ -31,7 +31,7 @@ write_vcf.varkit <- function(x, file, replace_filter = FALSE, na_geno = NULL) {
   header <- paste0("##", header$name, "=", header$value)
 
   ## Fixed fields
-  fxd <- x$fixed
+  fxd <- x$site
 
   # Add missing columns
   fixed_names <- .fixed_columns()

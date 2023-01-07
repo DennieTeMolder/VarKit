@@ -9,7 +9,7 @@ mask.varkit <- function(x, site, why = NULL) {
     .stopifnotsingle(why, class = "character")
 
   # Mask
-  current <- fixed(x, add_index = TRUE, cols = c("chrom", "pos"))
+  current <- site(x, add_index = TRUE, cols = c("chrom", "pos"))
   idx <- get_site_idx(site, x)
   x$use_site[idx] <- FALSE
 
@@ -17,9 +17,9 @@ mask.varkit <- function(x, site, why = NULL) {
     stop("The requested mask will hide all sites!")
 
   if (!is.null(why)) {
-    if (!"filter" %in% colnames(x$fixed))
-      x$fixed$filter <- ifelse(x$use_site, "PASS", "MASKED")
-    x$fixed$filter[idx] <- why
+    if (!"filter" %in% colnames(x$site))
+      x$site$filter <- ifelse(x$use_site, "PASS", "MASKED")
+    x$site$filter[idx] <- why
   }
   x
 }

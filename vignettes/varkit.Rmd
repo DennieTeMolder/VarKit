@@ -36,10 +36,6 @@ Sys.setenv("VROOM_CONNECTION_SIZE" = 1e6)
 file <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
 ```
 
-> NOTE: if you want to use `tidyverse` or more specifically `stringr`, it is
-> recommended to load that library first. Due to the collision with the
-> `fixed()` function.
-
 ## Loading a VCF into R
 
 In it's simplest form you would load a VCF file into memory like so:
@@ -81,7 +77,7 @@ designated functions, the most important of which are:
 ```{r access}
 samples(vcf)
 
-fixed(vcf)
+site(vcf)
 
 geno(vcf)
 ```
@@ -141,7 +137,7 @@ chromosome I:
 
 ```{r mask}
 # This is a logical vector
-mask_site <- fixed(vcf)$chrom == "I"
+mask_site <- site(vcf)$chrom == "I"
 
 # Be sure to reassign the returned object to `vcf` otherwise the mask will not take effect
 vcf <- mask(vcf, site = mask_site)
@@ -151,12 +147,12 @@ summary(vcf)
 ```
 
 Now if we fetch data from the VCF object the masked sites will no longer be
-returned. For example if we retrieve the fixed fields we can see that the sites
-with CHROM = "I" are missing (if you look back, you can see that they were
-previously on top):
+returned. For example if we retrieve the site information (fixed fields) we can
+see that the sites with CHROM = "I" are missing (if you look back, you can see
+that they were previously on top):
 
 ```{r mask_check}
-fixed(vcf)
+site(vcf)
 ```
 
 It is important to note that masking can be performed multiple times in
@@ -164,7 +160,7 @@ sequence, which will cause sites in **either** mask to be excluded:
 
 ```{r mask_seq}
 # Let's use a data frame this time around
-sites_to_mask <- dplyr::filter(fixed(vcf), qual < 3000)
+sites_to_mask <- dplyr::filter(site(vcf), qual < 3000)
 nrow(sites_to_mask)
 vcf <- mask(vcf, site = sites_to_mask)
 summary(vcf)
@@ -293,6 +289,8 @@ of sites. Here we will use an cutoff of R^2^ = 0.7:
 
 ```{r linked_sites, results = 'hide'}
 llist <- find_linked_sites(vcf, cutoff = 0.7, window = 5e4, cores = 1)
+print(llist, n = 20)
+
 vcf <- mask(vcf, site = llist)
 ```
 
@@ -331,8 +329,8 @@ summary(llist2)
 ### Modifying the varkit object directly
 
 It is safe to directly modify the varkit object using the `$` operator as long
-as `nrow(vcf$fixed) == ncol(vcf$geno) == length(vcf$use_sites)`, the
-`vcf$fixed$chrom` & `vcf$fixed$pos` columns are retained, and `vcf$geno` keeps
+as `nrow(vcf$site) == ncol(vcf$geno) == length(vcf$use_sites)`, the
+`vcf$site$chrom` & `vcf$site$pos` columns are retained, and `vcf$geno` keeps
 the 'varkit_geno' class (the latter may be violated when extracting, e.g.
 `geno(vcf)[, 1]`, which will remove the class).
 
