@@ -1,16 +1,16 @@
 ##' @export
 site <- function(x,
-                  add_index = FALSE,
-                  by_chrom = FALSE,
-                  cols = NULL) {
+                 cols = NULL,
+                 add_index = FALSE,
+                 by_chrom = FALSE) {
   UseMethod("site", x)
 }
 
 ##' @export
 site.varkit <- function(x,
-                         add_index = FALSE,
-                         by_chrom = FALSE,
-                         cols = NULL) {
+                        cols = NULL,
+                        add_index = FALSE,
+                        by_chrom = FALSE) {
   if (!is.null(cols)) {
     # Checks
     stopifnot(is.character(cols))
