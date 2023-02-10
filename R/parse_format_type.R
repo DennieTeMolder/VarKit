@@ -1,11 +1,16 @@
 ##' @export
-parse_format_type <- function(x, type, allow_missing = FALSE) {
+parse_format_type <- function(x, type = NULL, allow_missing = FALSE) {
   UseMethod("parse_format_type", x)
 }
 
 ##' @export
-parse_format_type.varkit <- function(x, type, allow_missing = FALSE) {
-  stopifnot(is.character(type) && length(type) == 1)
+parse_format_type.varkit <- function(x, type = NULL, allow_missing = FALSE) {
+  if (!is.null(type)) {
+    .stopifnotsingle(type, class = "character")
+  } else {
+    message("Please provide the 'type' argument, returning possible options.")
+    return(get_format_types(x))
+  }
 
   # Check te FORMAT field for index of type
   frmt <- .index_format(x, type)

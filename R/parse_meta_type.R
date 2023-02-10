@@ -1,18 +1,24 @@
 ##' @export
-parse_meta_type <- function(x, type, na = ".") {
+parse_meta_type <- function(x, type = NULL, na = ".") {
   UseMethod("parse_meta_type", x)
 }
 
 ##' @export
-parse_meta_type.varkit_header <- function(x, type, na = ".") {
+parse_meta_type.varkit_header <- function(x, type = NULL, na = ".") {
   parse_meta_type(meta(x), type)
 }
 
 ##' @export
-parse_meta_type.default <- function(x, type, na = ".") {
+parse_meta_type.data.frame <- function(x, type = NULL, na = ".") {
   # Checks
   stopifnot(colnames(x) == c("name", "value"))
   stopifnot(is.character(na))
+  if (!is.null(type)) {
+    .stopifnotsingle(type)
+  } else {
+    message("Please provide the 'type' argument, returning possible options.")
+    return(get_meta_types(x))
+  }
 
   values <- x$value[x$name == type]
 

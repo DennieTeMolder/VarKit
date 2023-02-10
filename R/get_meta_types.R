@@ -4,9 +4,10 @@ get_meta_types <- function(x) {
 }
 
 ##' @export
-get_meta_types.default <- function(x) {
-  df <- data.frame(table(x$name))
-  colnames(df) <- c("type", "lines")
+get_meta_types.data.frame <- function(x) {
+  stopifnot("name" %in% colnames(x))
+  df <- as.data.frame(table(x$name), stringsAsFactors = FALSE)
+  colnames(df) <- c("type", "n")
   tibble::as_tibble(df[order(df$type), ])
 }
 
