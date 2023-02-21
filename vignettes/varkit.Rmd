@@ -298,15 +298,16 @@ vcf <- mask(vcf, site = llist)
 summary(vcf)
 ```
 
-It is important to know that `find_indentical_sites()` checks entire
-chromosomes/scaffolds, whereas `find_linked_sites()` only checks for linkage
-within a specified window (here we use the default of 50,000 bp). To check entire
-chromosomes in the latter case set the "window" option to 0 or -1.
+It is important to know that, when using the default settings,
+`find_indentical_sites()` checks entire chromosomes/scaffolds, whereas
+`find_linked_sites()` only checks for linkage within a window (of 50,000 bp). To
+check entire chromosomes in the latter case set the "window" option to 0 or -1.
 
-> Both of these function support multi-threading through the "cores" option and
-> only look for identical/linked columns within chromosomes/scaffolds. To check
-> for linkage between all chromosomes set `by_chrom = FALSE`. However, this will
-> greatly increase computational load.
+> Both of these functions only look for identical/linked columns within
+> chromosomes/scaffolds. To check for linkage between all chromosomes set
+> `by_chrom = FALSE`. Be mindfull that this will greatly increase computational
+> load. Conversely, when `by_chrom = TRUE` computation can parallelized by
+> using the "cores" argument for an even greater speedup.
 
 ### Reading/writing link_list objects to file
 
