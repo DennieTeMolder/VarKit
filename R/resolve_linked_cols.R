@@ -8,13 +8,13 @@ resolve_linked_cols <- function(linked_cols, data, llist) {
 
   # Index the links of all of the columns for lookup speed
   index <- sapply(
-    1:n, .get_all_linked,
+    seq_len(n), .get_all_linked,
     linked_cols = linked_cols, simplify = FALSE
   )
 
   # Keep track of which cols to skip
   skip <- rep(FALSE, n)
-  for (i in seq(1, n - 1)) {
+  for (i in seq_len(n - 1)) {
     if (skip[i])
       next()
 
@@ -23,7 +23,6 @@ resolve_linked_cols <- function(linked_cols, data, llist) {
     if (is.null(links))
       next()
 
-    # Keep the middle value as we are interested in chains of links
     llist <- link_entries(llist, idx = links[1], links = links[-1])
     skip[links] <- TRUE
   }
@@ -53,7 +52,7 @@ resolve_linked_cols <- function(linked_cols, data, llist) {
     return(NULL)
   # Retrieve all indirectly linked columns by iteratively expanding array
   len <- length(a)
-  while (TRUE) {
+  repeat {
     last_len <- len
     a <- unique(unlist(index[a]))
     len <- length(a)
