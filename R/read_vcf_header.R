@@ -10,8 +10,10 @@ read_vcf_header <- function(file) {
   n <- 0
   con <- file(file, "r")
   while (length(line <- readLines(con, n = 1, warn = FALSE)) > 0) {
-    if (substr(line, 1, 1) != "#")
+    if (substr(line, 1, 1) != "#") {
+      close(con)
       stop("Invalid VCF. Not all meta lines start with a '#' or the header line is missing!")
+    }
     n <- n + 1
     if (substr(line, 2, 2) != "#") {
       close(con)
