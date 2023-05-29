@@ -1,7 +1,7 @@
 ##' @export
-index_vcf <- function(file) {
+index_vcf <- function(path) {
   n <- 1
-  con <- file(file, "r")
+  con <- file(path, "r")
 
   cli::cli_progress_step("Scanning VCF header")
   line <- readLines(con, n = 1, warn = FALSE)
@@ -29,7 +29,8 @@ index_vcf <- function(file) {
   # Index variants by line
   cli::cli_progress_step("Indexing... [{round(n / 1e6, 1)}M lines]", "Indexed {n} lines")
   current <- ""
-  index <- list(chrom = NULL, start = NULL)
+  offset <- seek(con)
+  index <- list(chrom = NULL, offset = NULL, linum = NULL)
   while (length(line <- readLines(con, n = 1, warn = FALSE)) > 0) {
     n <- n + 1
     if (n %% 1e5 == 0) cli::cli_progress_update()
@@ -38,8 +39,10 @@ index_vcf <- function(file) {
     if (chrom != current) {
       current <- chrom
       index$chrom <- c(index$chrom, chrom)
-      index$start <- c(index$start, n)
+      index$offset <- c(index$offset, offset)
+      index$linum <- c(index$linum, n)
     }
+    offset <- seek(con)
   }
   cli::cli_progress_done()
   close(con)
@@ -51,6 +54,6 @@ index_vcf <- function(file) {
   if (any(duplicated(index$chrom)))
     warning("The VCF appears to be unsorted, this could cause errors later.")
 
-  index$n <- diff(c(index$start, n + 1))
+  index$n_lines <- diff(c(index$linum, n + 1))
   tibble::as_tibble(index)
 }
