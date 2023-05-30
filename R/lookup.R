@@ -13,7 +13,7 @@ lookup.link_list <- function(x, keys, translate = "both") {
   translate_out <- translate %in% c("out", "both")
 
   if (translate_in) {
-    idx <- key2index(x, keys)
+    idx <- key2idx(x, keys)
   } else {
     stopifnot(is.numeric(keys))
     if (any(keys > length(x)))
@@ -25,6 +25,6 @@ lookup.link_list <- function(x, keys, translate = "both") {
   links <- .linked_only(values, allow_na = FALSE)
 
   if (translate_out)
-    return(index2key(x, links))
+    return(idx2key(x, links))
   links
 }

@@ -9,6 +9,6 @@ which_remove.link_list <- function(x, translate_out = TRUE) {
   links <- .linked_only(all_values)
   links <- sort(links)
   if (translate_out)
-    return(index2key(x, links))
+    return(idx2key(x, links))
   links
 }

@@ -1,10 +1,10 @@
 ##'@export
-key2index <- function(x, keys) {
-  UseMethod("key2index", x)
+key2idx <- function(x, keys) {
+  UseMethod("key2idx", x)
 }
 
 ##' @export
-key2index.link_list <- function(x, keys) {
+key2idx.link_list <- function(x, keys) {
   stopifnot(is.vector(keys))
 
   trans <- attr(x, "translation")

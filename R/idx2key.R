@@ -1,10 +1,10 @@
 ##'@export
-index2key <- function(x, idx) {
-  UseMethod("index2key", x)
+idx2key <- function(x, idx) {
+  UseMethod("idx2key", x)
 }
 
 ##' @export
-index2key.link_list <- function(x, idx) {
+idx2key.link_list <- function(x, idx) {
   stopifnot(is.numeric(idx))
   trans <- attr(x, "translation")
   if (!is.null(trans))
