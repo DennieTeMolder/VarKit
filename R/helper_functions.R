@@ -4,14 +4,26 @@
 }
 
 .stopifnotsingle <- function(x, class = NULL) {
-  if (length(x) != 1)
-    stop("Argument should have a length of 1!")
   if (!is.null(class) && !inherits(x, what = class))
     stop("Argument should be of class '", class, "'!")
+  if (length(x) != 1)
+    stop("Argument should have a length of 1!")
 }
 
 .collapse <- function(x, delim = ", ") {
   paste(x, collapse = delim)
+}
+
+.str_starts <- function(x, what) {
+  substr(x, 1, nchar(what)) == what
+}
+
+.str_ends <- function(x, what, n_char = nchar(x)) {
+  substr(x, n_char - nchar(what) + 1, n_char) == what
+}
+
+.str_split_i <- function(string, on, i) {
+  stringr::str_split_i(string, pattern = stringr::fixed(on), i = i)
 }
 
 .not_variable <- function(x, na_rm = TRUE) {
@@ -23,20 +35,13 @@
   all(duplicated(x)[-1])
 }
 
-.str_split_get_idx <- function(string, char, idx) {
-  stopifnot(is.character(string))
-  if (is.na(idx))
-    return(rep(NA, length(string)))
-  stopifnot(is.character(char) && length(char) == 1)
-  stopifnot(is.numeric(idx) && length(idx) == 1)
+.mutate_all <- function(.tbl, .fns, ...) {
+  dplyr::mutate(.tbl, dplyr::across(dplyr::everything(), .fns, ...))
+}
 
-  if (idx > 1) {
-    match_before <- paste0("([^", char, "]+", char, "){", idx - 1, "}")
-    string <- stringr::str_remove(string, pattern = match_before)
-  }
-
-  match_after <- paste0(char, ".*")
-  stringr::str_remove(string, pattern = match_after)
+.print_tbl <- function(x, ...) {
+  if (FALSE) pillar::pillar() # Silence imports checker
+  do.call(utils::getS3method("print", "tbl", envir = getNamespace("pillar")), c(list(x), ...))
 }
 
 .maxnchar <- function(x) {

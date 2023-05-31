@@ -5,7 +5,8 @@
 ##' @param header Varkit_header
 ##' @param skip_cols Character vector, columns to skip loading. Should match names in `read_vcf_header(file)$col_names`.
 ##' @param na_geno Character vector, exact string(s) to convert to NA in the genotype fields
-##' @param ... Arguments passed to [readr::read_tsv()]
+##' @param spec A list of args passed to [readr::read_delim()]
+##' @param ... Arguments passed to [readr::read_delim()], overriding 'spec'
 ##' @return A VarKit object
 ##' @export
 ##' @author Dennie te Molder
@@ -16,38 +17,21 @@ read_vcf <- function(file,
                      header = NULL,
                      skip_cols = NULL,
                      na_geno = "./.",
+                     spec = NULL,
                      ...) {
-  # Argument checks
-  if (is.function(file))
-    stop("The 'file' argument is required!")
-  if (!is.null(header))
+  if (!is.null(header)) {
     stopifnot(is_varkit_header(header))
-  if (!is.null(skip_cols))
-    stopifnot(is.character(skip_cols))
-  stopifnot(is.character(na_geno))
-
-  if (is.null(header))
+  } else {
     header <- read_vcf_header(file)
+  }
 
-  # Header checks
-  if (length(header$col_names) < 2)
+  # Checks
+  if (length(header$col_names) < 3)
     stop("The number of columns is too low, make sure the file is TAB delimited!")
-  if (!all(skip_cols %in% header$col_names))
-    stop("Not all column names provided for 'skip_cols' are in the VCF header!")
 
-  # Create a string of column types (see readr::cols())
-  types <- rep("?", length(header$col_names))
-  types[header$col_names %in% skip_cols] <- "_"
-  types[header$col_names %in% c("chrom", "ref", "alt", "format")] <- "c"
-  types[header$col_names == "pos"] <- "d"
-  types <- paste(types, collapse = "")
-
-  data <- readr::read_tsv(file,
-    col_names = header$col_names,
-    col_types = types,
-    comment = "#",
-    na = c(".", na_geno),
-    ...
+  data <- do.call(
+    readr::read_delim,
+    spec_vcf(file, col_names = header$col_names, skip_cols = skip_cols, na_geno = na_geno, spec = spec, ...)
   )
 
   varkit(data, meta = header$meta)

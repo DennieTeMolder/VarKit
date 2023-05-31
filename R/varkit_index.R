@@ -1,16 +1,20 @@
 ##' @export
 varkit_index <- function(index, file) {
   stopifnot(is.data.frame(index), nrow(index) > 0)
-  stopifnot(c("chrom", "linum", "offset") %in% colnames(index))
-  if (is.unsorted(index$offset) || is.unsorted(index$linum))
+  stopifnot(c("id", "linum") %in% colnames(index))
+  if (is.unsorted(index$linum))
     stop("The provided 'index' appears to be unsorted!")
-  if (utils::tail(index$chrom, n = 1) != "EOF")
+  if (utils::tail(index$id, n = 1) != "EOF")
     stop("The End Of File (EOF) is not in the index!")
+  stopifnot(file.exists(file))
 
   index <- tibble::as_tibble(index)
   index$n_lines <- c(diff(index$linum), NA)
 
-  attr(index, "file") <- file
+  props <- new.env(parent = rlang::empty_env())
+  props$file <- file
+  props$curr_line <- 1
+  attr(index, "props") <- props
   class(index) <- c("varkit_index", class(index))
   index
 }
@@ -22,13 +26,13 @@ is_varkit_index <- function(x) {
 
 ##' @export
 print.varkit_index <- function(x, ...) {
+  props <- .get_props(x)
   cat("*VarKit Index Object*\n")
-  print(tibble::as_tibble(x))
+  .print_tbl(x, ...)
   if (is_open(x)) {
-    con <- attr(x, "con")
-    cat("# With a pointer at offset", seek(con), "in", summary(con)$description, "\n")
+    cat("# With a pointer at line", props$curr_line, "in", props$file, "\n")
   } else {
-    cat("# For file", attr(x, "file"), "\n")
+    cat("# For file", props$file, "\n")
   }
   invisible(x)
 }
@@ -46,21 +50,30 @@ is_open.connection <- function(x) {
 
 ##' @export
 is_open.varkit_index <- function(x) {
-  is_open.connection(attr(x, "con"))
+  props <- .get_props(x)
+  if (!exists("con", envir = props))
+    return(FALSE)
+  is_open.connection(props$con)
 }
 
 ##' @export
 open.varkit_index <- function(con, open = "r", ...) {
-  if (is_open(con))
-    return(con)
-  attr(con, "con") <- file(attr(con, "file"), open = open, ...)
-  con
+  if (!is_open(con)) {
+    props <- .get_props(con)
+    props$con <- file(props$file, open = open, ...)
+    props$curr_line <- 1
+  }
+  invisible(con)
 }
 
 ##' @export
 close.varkit_index <- function(con, ...) {
-  if (is_open(con))
-    close(attr(con, "con"))
+  if (is_open(con)) {
+    props <- .get_props(con)
+    close(props$con)
+    rm("con", envir = props)
+    props$curr_line <- 1
+  }
   invisible(con)
 }
 
@@ -71,78 +84,97 @@ get_current <- function(x) {
 
 ##' @export
 get_current.varkit_index <- function(x) {
-  if (is_open(x)) {
-    pointer <- seek(attr(x, "con"))
-  } else {
-    pointer <- 0
-  }
-
-  if (pointer == 0)
-    return(tibble::tibble(chrom = NA, offset = 0, linum = 1, n_lines = x$linum[1] - 1))
-
-  i <- match(pointer, x$offset)
-  if (is.na(i))
-    return(tibble::tibble(chrom = NA, offset = pointer, linum = NA, n_lines = NA))
-
-  x[i, ]
-}
-
-##' @export
-read <- function(x, ...) {
-  UseMethod("read", x)
-}
-
-##' @export
-read.varkit_index <- function(x, n = NULL, ...) {
+  props <- .get_props(x)
   if (!is_open(x))
-    stop("Index has no open connection. Run `x <- open(x)` to fix.")
+    props$curr_line <- 1
+
+  i <- max(0, which(x$linum <= props$curr_line))
+  res <- tibble::as_tibble(x[max(i, 1), ])
+  res$linum <- props$curr_line
+
+  # Pointer before start of index
+  if (i == 0)
+    res$id <- NA
+
+  i_next <- min(nrow(x), i + 1)
+  res$n_lines <- x$linum[i_next] - res$linum
+  res
+}
+
+##' @export
+next_block <- function(x, ...) {
+  UseMethod("next_block", x)
+}
+
+##' @export
+next_block.varkit_index <- function(x, n = NULL, ...) {
+  if (!is.null(n))
+    stopifnot(is.numeric(n), length(n) == 1, n > 0)
 
   curr <- get_current(x)
-  if (isTRUE(curr$chrom == "EOF")) {
+  if (curr$n_lines < 1) {
     close(x)
     return(NULL)
   }
 
-  if (is.null(n)) {
+  if (is.null(n))
     n <- curr$n_lines
-    if (is.na(n))
-      stop("File connection is out of sync with index. Run `goto(x)` to fix.")
-  }
+  n <- min(n, utils::tail(x$linum, n = 1) - curr$linum)
 
-  readLines(attr(x, "con"), n = n, warn = FALSE)
+  open(x)
+  props <- .get_props(x)
+  props$curr_line <- props$curr_line + n
+  readLines(props$con, n = n, warn = FALSE)
 }
 
 ##' @export
-goto <- function(x, chrom = NULL) {
+goto <- function(x, where = NULL) {
   UseMethod("goto", x)
 }
 
 ##' @export
-goto.varkit_index <- function(x, chrom = NULL) {
-  if (is.null(chrom)) {
-    target <- x$linum[1]
+goto.varkit_index <- function(x, where = NULL) {
+  if (!is.null(where)) {
+    stopifnot(is.character(where) || is.numeric(where))
   } else {
-    stopifnot(is.character(chrom))
-    target <- x$linum[match(chrom, x$chrom)]
-    if (is.na(target))
-      stop("The value of 'chrom' is not part of the index!")
+    where <- x$linum[1]
   }
 
-  # NOTE this is better achieved using seek(where = ...) but this doesn't seem
-  # to work well on windows.
+  if (is.character(where)) {
+    where <- x$linum[match(where, x$id)]
+    if (is.na(where))
+      stop("The value of 'where' is not present in the 'id' column!")
+  }
+
+  if (where > utils::tail(x$linum, n = 1))
+    stop("The value of 'where' is larger then the index!")
+
   curr_line <- get_current(x)$linum
-  if (is.na(curr_line) || target < curr_line) {
-    x <- open(close(x))
+
+  # Reload file if target line is before current line
+  if (where < curr_line) {
+    open(close(x))
     curr_line <- 1
   }
 
   # Move pointer if needed
-  if (target > curr_line)
-    .skip_lines(x, target - curr_line)
+  if (where > curr_line)
+    .skip_lines(x, where - curr_line)
   invisible(x)
 }
 
-.skip_lines <- function(index, n) {
-  for (i in seq_len(n)) read(index, n = 1)
+## Helpers ------
+.get_props <- function(x) {
+  attr(x, "props")
+}
+
+.skip_lines <- function(index, n, block_size = 5e3) {
+  # Jump trought the file in blocks
+  by <- rep(block_size, n / block_size)
+  mod <- n %% block_size
+  if (mod > 0)
+    by <- c(by, mod)
+
+  for (n_lines in by) next_block(index, n = n_lines)
   invisible(index)
 }

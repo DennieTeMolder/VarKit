@@ -4,7 +4,14 @@
 \alias{read_vcf}
 \title{Load A VCF File From Disk}
 \usage{
-read_vcf(file, header = NULL, skip_cols = NULL, na_geno = "./.", ...)
+read_vcf(
+  file,
+  header = NULL,
+  skip_cols = NULL,
+  na_geno = "./.",
+  spec = NULL,
+  ...
+)
 }
 \arguments{
 \item{file}{String, path to the vcf(.bgz) file to load}
@@ -15,7 +22,9 @@ read_vcf(file, header = NULL, skip_cols = NULL, na_geno = "./.", ...)
 
 \item{na_geno}{Character vector, exact string(s) to convert to NA in the genotype fields}
 
-\item{...}{Arguments passed to \code{\link[readr:read_delim]{readr::read_tsv()}}}
+\item{spec}{A list of args passed to \code{\link[readr:read_delim]{readr::read_delim()}}}
+
+\item{...}{Arguments passed to \code{\link[readr:read_delim]{readr::read_delim()}}, overriding 'spec'}
 }
 \value{
 A VarKit object

@@ -26,7 +26,7 @@ parse_meta_type.data.frame <- function(x, type = NULL, na = ".") {
     stop(paste0("The type '", type, "' could not be found in meta(x)$name!"))
 
   # Values should be surrounded by <...> according to the VCF spec, else abort
-  if (any(!stringr::str_starts(values, "<") | !stringr::str_ends(values, ">")))
+  if (any(!.str_starts(values, "<") | !.str_ends(values, ">")))
     return(tibble::tibble(value = values))
 
   # Strip <...>
@@ -35,7 +35,7 @@ parse_meta_type.data.frame <- function(x, type = NULL, na = ".") {
   # First group of the regex should match the key, second should match the corresponding value
   values <- .match_key_value(values, pattern = '([^="]+)=("(?:[^"\\\\]|\\\\.)+"|[^,]+)(?:,|$)')
 
-  purrr::map_dfc(values, .cleanup_meta_col, na = na)
+  .mutate_all(values, .cleanup_meta_col, na = na)
 }
 
 .match_key_value <- function(str, pattern) {
@@ -52,9 +52,10 @@ parse_meta_type.data.frame <- function(x, type = NULL, na = ".") {
 .cleanup_meta_col <- function(col, na = ".") {
   stopifnot(is.character(col))
   # Strip surrounding double quotes
+  n_char <- nchar(col)
   res <- ifelse(
-    stringr::str_starts(col, '"') & stringr::str_ends(col, '"'),
-    stringr::str_sub(col, 2, -2),
+    .str_starts(col, '"') & .str_ends(col, '"', n_char = n_char),
+    substr(col, 2, n_char - 1),
     col
   )
   utils::type.convert(res, as.is = TRUE, na.strings = na)

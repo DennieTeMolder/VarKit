@@ -14,7 +14,7 @@ Imports:
     doSNOW,
     dplyr,
     foreach,
-    purrr,
+    pillar,
     readr,
     rlang,
     snow,

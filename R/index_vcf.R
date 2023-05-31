@@ -1,5 +1,5 @@
 ##' @export
-index_vcf <- function(file) {
+index_vcf <- function(file, ...) {
   n <- 1
   con <- file(file, "r")
 
@@ -30,7 +30,7 @@ index_vcf <- function(file) {
   cli::cli_progress_step("Indexing... [{round(n / 1e6, 1)}M lines]", "Indexed {n} lines")
   current <- ""
   offset <- seek(con)
-  index <- list(chrom = NULL, linum = NULL, offset = NULL)
+  index <- list(id = NULL, linum = NULL)
   while (length(line <- readLines(con, n = 1, warn = FALSE)) > 0) {
     n <- n + 1
     if (n %% 1e5 == 0) cli::cli_progress_update()
@@ -38,26 +38,27 @@ index_vcf <- function(file) {
     chrom <- substr(line, 1, regexpr("\t", line) - 1)
     if (chrom != current) {
       current <- chrom
-      index$chrom <- c(index$chrom, chrom)
+      index$id <- c(index$id, chrom)
       index$linum <- c(index$linum, n)
-      index$offset <- c(index$offset, offset)
     }
-    offset <- seek(con)
   }
-  cli::cli_progress_done()
   close(con)
+  cli::cli_progress_done()
 
-  if (is.null(index$chrom))
+  if (is.null(index$id))
     stop("No variants found in VCF file!")
-  if ("" %in% index$chrom)
+  if ("" %in% index$id)
     warning("Index contains empty lines.")
-  if (any(duplicated(index$chrom)))
+  if (any(duplicated(index$id)))
     warning("The VCF appears to be unsorted, this could cause errors later.")
 
   # Add end of file
-  index$chrom <- c(index$chrom, "EOF")
+  index$id <- c(index$id, "EOF")
   index$linum <- c(index$linum, n + 1)
-  index$offset <- c(index$offset, offset)
 
-  varkit_index(tibble::as_tibble(index), file)
+  index <- varkit_index(tibble::as_tibble(index), file = file)
+  props <- .get_props(index)
+  props$header <- varkit_header(readLines(file, index$linum[1] - 1))
+  props$spec <- spec_vcf(file, props$header$col_names, ...)
+  index
 }

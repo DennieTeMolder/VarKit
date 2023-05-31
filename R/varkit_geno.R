@@ -33,7 +33,7 @@ print.varkit_geno <- function(x, ..., n = .max_print_col(x)) {
     n <- ncol(x)
 
   cat("# A", class(x[1]), "matrix:",
-      ncol(x), "sites x", nrow(x), "samples;", sum(is.na(x)), "NAs\n")
+      nrow(x), "samples x", ncol(x), "sites;", sum(is.na(x)), "NAs\n")
 
   print(x[, seq_len(n), drop = FALSE], ...)
 

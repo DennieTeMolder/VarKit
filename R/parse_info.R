@@ -9,7 +9,7 @@ parse_info.varkit <- function(x) {
   res <- stringr::str_split(site(x, cols = "info"), ";")
   res <- lapply(res, .split_key_value)
   res <- .bind_rows_list(res)
-  purrr::map_dfc(res, .convert_info_col)
+  .mutate_all(res, .convert_info_col)
 }
 
 .split_key_value <- function(str) {

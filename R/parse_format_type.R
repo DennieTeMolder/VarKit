@@ -21,12 +21,12 @@ parse_format_type.varkit <- function(x, type = NULL, allow_missing = FALSE) {
   if (length(unique(frmt)) == 1) {
     # For fixed format loop over samples to save time while remaining memory efficient
     idx <- frmt[[1]]
-    res <- apply_samples(geno(x), .str_split_get_idx, char = ":", idx = idx)
+    res <- apply_samples(geno(x), .str_split_i, on = ":", i = idx)
   } else {
     idxs <- unlist(frmt[site(x, cols = "format")], use.names = FALSE)
     gt <- geno(x)
     res <- sapply(seq_along(idxs), function(i) {
-      .str_split_get_idx(gt[, i], char = ":", idx = idxs[i])
+      .str_split_i(gt[, i], on = ":", i = idxs[i])
     })
     dimnames(res) <- dimnames(gt)
   }
@@ -44,7 +44,7 @@ parse_format_type.varkit <- function(x, type = NULL, allow_missing = FALSE) {
     stop("The FORMAT column contains missing values!")
 
   uniq <- as.character(unique(frmt))
-  splits <- stringr::str_split(uniq, ":")
+  splits <- stringr::str_split(uniq, stringr::fixed(":"))
   names(splits) <- uniq
 
   lapply(splits, function(y) match(type, y))
