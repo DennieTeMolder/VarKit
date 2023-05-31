@@ -1,12 +1,12 @@
 ##' @export
 varkit_header <- function(x) {
   stopifnot(is.character(x))
-  stopifnot(length(x) >= 2 )
+  stopifnot(length(x) > 1)
 
-  if (!stringr::str_detect(x[1], "^##fileformat=VCF"))
+  if (!.str_starts(x[1], "##fileformat=VCF"))
     warning("No valid VCF fileformat meta information detected on the first line!")
 
-  if (!all(stringr::str_starts(x, "#")))
+  if (!all(.str_starts(x, "#")))
     stop("Invalid VCF. Not all meta lines start with a '#'!")
 
   header <- list(
@@ -18,7 +18,7 @@ varkit_header <- function(x) {
 }
 
 .parse_meta <- function(x) {
-  x <- stringr::str_remove(x, "##")
+  x <- stringr::str_remove(x, "^##")
   x <- stringr::str_split_fixed(x, "=", n = 2)
   tibble::tibble(name = x[, 1], value = x[, 2])
 }
@@ -26,8 +26,8 @@ varkit_header <- function(x) {
 .parse_col_names <- function(x) {
   if (substr(x, 2, 2) == "#")
     stop("The last line does not appear to be the header line")
-  col_names <- stringr::str_remove(x, "#")
-  col_names <- stringr::str_split(col_names, "\t")[[1]]
+  col_names <- stringr::str_remove(x, "^#")
+  col_names <- stringr::str_split_1(col_names, "\t")
 
   # Standardise the names of fixed columns
   fixed_names <- .fixed_columns()
