@@ -9,7 +9,7 @@ varkit_index <- function(index, file) {
   stopifnot(file.exists(file))
 
   index <- tibble::as_tibble(index)
-  index$n_lines <- c(diff(index$linum), NA)
+  index$n_lines <- c(diff(index$linum), 0)
 
   props <- new.env(parent = rlang::empty_env())
   props$file <- file
@@ -102,12 +102,12 @@ get_current.varkit_index <- function(x) {
 }
 
 ##' @export
-next_block <- function(x, ...) {
-  UseMethod("next_block", x)
+next_lines <- function(x, ...) {
+  UseMethod("next_lines", x)
 }
 
 ##' @export
-next_block.varkit_index <- function(x, n = NULL, ...) {
+next_lines.varkit_index <- function(x, n = NULL, ...) {
   if (!is.null(n))
     stopifnot(is.numeric(n), length(n) == 1, n > 0)
 
@@ -175,6 +175,6 @@ goto.varkit_index <- function(x, where = NULL) {
   if (mod > 0)
     by <- c(by, mod)
 
-  for (n_lines in by) next_block(index, n = n_lines)
+  for (n_lines in by) next_lines(index, n = n_lines)
   invisible(index)
 }

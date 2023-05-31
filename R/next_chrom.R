@@ -12,7 +12,7 @@ next_chrom.varkit_index <- function(x, progress = FALSE) {
   if (is.na(get_current(x)$id))
     goto(x)
 
-  chrom <- next_block(x)
+  chrom <- next_lines(x)
   if (is.null(chrom))
     return(NULL)
 
