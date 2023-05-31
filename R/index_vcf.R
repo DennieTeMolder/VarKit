@@ -1,6 +1,49 @@
 ##' @export
-index_vcf <- function(file, ...) {
-  n <- 1
+index_vcf <- function(file, header = NULL, ...) {
+  stopifnot(file.exists(file))
+  if (!is.null(header)) {
+    stopifnot(is_varkit_header(header))
+  } else {
+    cli::cli_progress_step("Parsing VCF header")
+    header <- read_vcf_header(file)
+    cli::cli_progress_done()
+  }
+
+  cli::cli_progress_step("Scanning VCF fields")
+  spec <- spec_vcf(file, header$col_names, ...)
+  cli::cli_progress_done()
+
+  # Override spec to ensure all lines are retained
+  spec_chrom <- spec
+  spec_chrom$col_types <- readr::cols_only(chrom = "f")
+  spec_chrom$skip_empty_rows <- FALSE
+  spec_chrom$comment <- ""
+  spec_chrom$na <- ""
+  spec_chrom$skip <- nrow(header$meta) + 1
+
+  cli::cli_progress_step("Parsing CHROM fields")
+  chrom <- do.call(readr::read_delim, spec_chrom)[[1]]
+  cli::cli_progress_done()
+
+  # Compute line-wise index
+  n_total <- length(chrom)
+  which_uniq <- which(c(1, diff(as.integer(chrom))) == 1)
+  chrom <- as.character(chrom[which_uniq])
+
+  index <- tibble::tibble(
+    id = c(chrom, "EOF"),
+    linum = c(which_uniq, n_total + 1) + spec_chrom$skip
+  )
+  index <- varkit_index(index, file)
+
+  # Add additional properties for next_chrom()
+  props <- .get_props(index)
+  props$header <- header
+  props$spec <- spec
+  index
+}
+
+index_vcf_slow <- function(file, ...) {
   con <- file(file, "r")
 
   cli::cli_progress_step("Scanning VCF header")
@@ -9,6 +52,7 @@ index_vcf <- function(file, ...) {
     warning("No valid VCF fileformat tag detected on the first line.")
 
   # Skip rest of header header
+  n <- 1
   while (length(line <- readLines(con, n = 1, warn = FALSE)) > 0) {
     n <- n + 1
     if (substr(line, 1, 2) != "##")
@@ -56,9 +100,12 @@ index_vcf <- function(file, ...) {
   index$id <- c(index$id, "EOF")
   index$linum <- c(index$linum, n + 1)
 
+  cli::cli_progress_step("Scanning VCF fields")
   index <- varkit_index(tibble::as_tibble(index), file = file)
   props <- .get_props(index)
   props$header <- varkit_header(readLines(file, index$linum[1] - 1))
   props$spec <- spec_vcf(file, props$header$col_names, ...)
+  cli::cli_progress_done()
+
   index
 }
