@@ -28,9 +28,9 @@ spec_vcf <- function(file, col_names, skip_cols = NULL, na_geno = "./.", spec = 
     ),
     quoted_na = FALSE,
     comment = "#",
-    trim_ws = FALSE,
+    trim_ws = TRUE,
     guess_max = 5000,
-    skip_empty_rows = FALSE,
+    skip_empty_rows = TRUE,
     show_col_types = FALSE,
     lazy = FALSE
   )
@@ -43,7 +43,7 @@ spec_vcf <- function(file, col_names, skip_cols = NULL, na_geno = "./.", spec = 
   # Provided args
   args$file <- file
   args$col_names <- col_names
-  args$na = unique(c(".", na_geno))
+  args$na = unique(c("", ".", na_geno))
 
   spec <- do.call(readr::spec_delim, args)
 
