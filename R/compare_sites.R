@@ -34,7 +34,7 @@
   gt_chrom <- geno(x, by_chrom = TRUE)
 
   # Order contigs most to least sites for efficiency
-  idx <- order(sapply(fix_chrom, nrow), decreasing = TRUE)
+  idx <- order(vapply(fix_chrom, nrow, integer(1)), decreasing = TRUE)
   fix_chrom <- fix_chrom[idx]
   gt_chrom <- gt_chrom[idx]
 

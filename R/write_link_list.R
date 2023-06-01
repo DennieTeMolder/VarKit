@@ -5,7 +5,7 @@ write_link_list <- function(x, file) {
 
 ##' @export
 write_link_list.link_list <- function(x, file) {
-  df <- data.frame(links = sapply(x, .collapse, delim = ";"))
+  df <- data.frame(links = vapply(x, .collapse, character(1), delim = ";"))
   trans <- attr(x, "translation")
   if (!is.null(trans))
     df <- cbind(translation = trans, df)

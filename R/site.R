@@ -32,9 +32,7 @@ site.varkit <- function(x,
 
   if (by_chrom) {
     chroms <- unique(res$chrom)
-    return(sapply(chroms, simplify = FALSE, FUN = function(chr) {
-      res[res$chrom == chr,]
-    }))
+    return(lapply(chroms, function(chr) res[res$chrom == chr, ]))
   }
 
   if (!is.null(cols) && length(cols) == 1)

@@ -7,10 +7,7 @@ resolve_linked_cols <- function(linked_cols, data, llist) {
   n <- length(linked_cols)
 
   # Index the links of all of the columns for lookup speed
-  index <- sapply(
-    seq_len(n), .get_all_linked,
-    linked_cols = linked_cols, simplify = FALSE
-  )
+  index <- lapply(seq_len(n), .get_all_linked, linked_cols = linked_cols)
 
   # Keep track of which cols to skip
   skip <- rep(FALSE, n)

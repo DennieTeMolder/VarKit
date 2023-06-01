@@ -23,11 +23,11 @@ parse_format_type.varkit <- function(x, type = NULL, allow_missing = FALSE) {
     idx <- frmt[[1]]
     res <- apply_samples(geno(x), .str_split_i, on = ":", i = idx)
   } else {
-    idxs <- unlist(frmt[site(x, cols = "format")], use.names = FALSE)
+    idxs <- unname(frmt[site(x, cols = "format")])
     gt <- geno(x)
-    res <- sapply(seq_along(idxs), function(i) {
+    res <- vapply(seq_along(idxs), function(i) {
       .str_split_i(gt[, i], on = ":", i = idxs[i])
-    })
+    }, character(length(samples(x))))
     dimnames(res) <- dimnames(gt)
   }
 
@@ -47,6 +47,6 @@ parse_format_type.varkit <- function(x, type = NULL, allow_missing = FALSE) {
   splits <- stringr::str_split(uniq, stringr::fixed(":"))
   names(splits) <- uniq
 
-  lapply(splits, function(y) match(type, y))
+  vapply(splits, function(y) match(type, y), integer(1))
 }
 

@@ -11,7 +11,7 @@ varkit_help <- function(x, varkit_only = TRUE) {
   methods <- sapply(classes, function(class) {
     stringr::str_remove(
       methods(class = class),
-      pattern = paste0("\\.", class, "$")
+      pattern = stringr::fixed(paste0("\\.", class, "$"))
     )
   })
   methods <- sort(unique(unlist(methods, use.names = FALSE)))

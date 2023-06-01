@@ -9,7 +9,7 @@ example <- "./inst/extdata/celegans.vcf.bgz"
 ## Varkit object ------
 read_vcf_header(example)
 
-vcf <- read_vcf(example, skip_cols = c("info", "filter", "N2"))
+vcf <- read_vcf(example, skip_cols = c("id", "filter", "N2"))
 print(vcf)
 
 varkit_help(vcf)
@@ -21,6 +21,7 @@ samples(vcf)
 
 parse_meta_type(vcf, "INFO")
 parse_meta_type(vcf, "contig")
+parse_info(vcf)
 
 hide_site <- site(vcf)$chrom == "I"
 vcf <- mask(vcf, site = hide_site)

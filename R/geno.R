@@ -7,7 +7,7 @@ geno <- function(x, by_chrom = FALSE) {
 geno.varkit <- function(x, by_chrom = FALSE) {
   if (by_chrom) {
     chroms <- unique(site(x, cols = "chrom"))
-    return(sapply(chroms, simplify = FALSE, FUN = function(chr) {
+    return(lapply(chroms, function(chr) {
       varkit_filter(x$geno, site = x$site$chrom == chr & x$use_site)
     }))
   }
