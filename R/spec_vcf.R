@@ -1,9 +1,19 @@
 ##' @export
-spec_vcf <- function(file, col_names, skip_cols = NULL, na_geno = "./.", spec = NULL, ...) {
+spec_vcf <- function(file, col_names = NULL, skip_cols = NULL, na_geno = "./.", spec = NULL, ...) {
+  if (!is.null(col_names)) {
+    stopifnot(is.character(col_names))
+  } else {
+    cli::cli_progress_step("Parsing VCF header")
+    col_names <- read_vcf_header(file)$col_names
+    cli::cli_progress_done()
+  }
+
   if (!is.null(skip_cols)) {
     stopifnot(is.character(skip_cols))
     if (any(c("chrom", "pos") %in% skip_cols))
       stop("The 'chrom' and/or 'pos' columns cannot be skipped!")
+    if (!all(skip_cols %in% col_names))
+      stop("Not all column names provided for 'skip_cols' are in the VCF header!")
   }
   stopifnot(is.character(na_geno))
   if (!is.null(spec))
@@ -35,6 +45,7 @@ spec_vcf <- function(file, col_names, skip_cols = NULL, na_geno = "./.", spec = 
     lazy = FALSE
   )
 
+  # User overrides
   if (!is.null(spec))
     args <- utils::modifyList(args, val = spec, keep.null = TRUE)
   if (!missing(...))
@@ -44,15 +55,17 @@ spec_vcf <- function(file, col_names, skip_cols = NULL, na_geno = "./.", spec = 
   args$file <- file
   args$col_names <- col_names
   args$na = unique(c("", ".", na_geno))
-
-  spec <- do.call(readr::spec_delim, args)
-
-  if (!all(skip_cols %in% names(spec$cols)))
-    stop("Not all column names provided for 'skip_cols' are in the VCF header!")
   for (current in skip_cols)
-    spec$cols[[current]] <- readr::col_skip()
+    args$cols[[current]] <- readr::col_skip()
 
-  args$col_types <- spec
-  args$col_names <- names(spec$cols)
+  if (is.null(spec)) {
+    cli::cli_progress_step("Scanning VCF fields")
+    args$col_types <- do.call(readr::spec_delim, args)
+    cli::cli_progress_done()
+  }
+
+  if (!is.null(args$col_types) && any(col_names != names(args$col_types$cols)))
+    warning("The provided 'col_names' do not match with 'spec$col_types'.")
+
   args
 }

@@ -9,9 +9,7 @@ index_vcf <- function(file, header = NULL, ...) {
     cli::cli_progress_done()
   }
 
-  cli::cli_progress_step("Scanning VCF fields")
   spec <- spec_vcf(file, header$col_names, ...)
-  cli::cli_progress_done()
 
   # Override spec to ensure all lines are retained
   spec_chrom <- spec
