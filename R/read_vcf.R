@@ -40,5 +40,8 @@ read_vcf <- function(file,
     spec_vcf(file, col_names = col_names(header), skip_cols = skip_cols, na_geno = na_geno, spec = spec, ...)
   )
 
+  if (nrow(data) < 1)
+    stop("The VCF body appears to be empty!")
+
   varkit(data, meta = header$meta)
 }

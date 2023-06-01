@@ -1,7 +1,7 @@
 ##' @export
 varkit <- function(vcf, meta = NULL) {
   # Checks
-  stopifnot(is.data.frame(vcf))
+  stopifnot(is.data.frame(vcf), nrow(vcf) > 0)
   if (!is.null(meta))
     stopifnot(is.data.frame(meta), colnames(meta) == c("name", "value"))
 
