@@ -33,7 +33,7 @@ read_vcf <- function(file,
 
   # Create spec that prompts spec_vcf() to skip guessing col_types (2x quicker)
   if (is.null(spec))
-    spec <- list(col_types = NULL)
+    spec <- list(col_types = readr::cols())
 
   data <- do.call(
     readr::read_delim,
