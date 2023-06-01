@@ -51,12 +51,14 @@ spec_vcf <- function(file, col_names = NULL, skip_cols = NULL, na_geno = "./.", 
   if (!missing(...))
     args <- utils::modifyList(args, val = list(...), keep.null = TRUE)
 
+  # Ensure col_types are always present
+  if (is.null(args$col_types))
+    args$col_types <- readr::cols()
+
   # Provided args
   args$file <- file
   args$col_names <- col_names
   args$na = unique(c("", ".", na_geno))
-  for (current in skip_cols)
-    args$cols[[current]] <- readr::col_skip()
 
   if (is.null(spec)) {
     cli::cli_progress_step("Scanning VCF fields")
@@ -64,8 +66,11 @@ spec_vcf <- function(file, col_names = NULL, skip_cols = NULL, na_geno = "./.", 
     cli::cli_progress_done()
   }
 
-  if (!is.null(args$col_types) && any(col_names != names(args$col_types$cols)))
+  if (length(args$col_types$cols) > 0 && !all(col_names %in% names(args$col_types$cols)))
     warning("The provided 'col_names' do not match with 'spec$col_types'.")
+
+  for (current in skip_cols)
+    args$col_types$cols[[current]] <- readr::col_skip()
 
   args
 }
