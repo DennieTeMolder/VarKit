@@ -1,36 +1,20 @@
 ##' @export
-write_vcf <- function(x, file, replace_filter = FALSE, na_geno = NULL) {
+write_vcf <- function(x, file, append = FALSE, replace_filter = FALSE, na_geno = NULL) {
   UseMethod("write_vcf", x)
 }
 
 ##' @export
-write_vcf.varkit <- function(x, file, replace_filter = FALSE, na_geno = NULL) {
-  if (all(is.na(x$geno)))
-    stop("All genotype fields are NA!")
-  .stopifnotsingle(file, class = "character")
-  if (stringr::str_ends(file, "\\.(gz|gzip)"))
-    warning("Varkit writes regular g-zipped files, not the block g-zip format ",
-            "expected by many tools!\n If the latter is desired, write to plain ",
-            "vcf and convert using an external tool like 'bgzip'.")
+write_vcf.varkit <- function(x, file, append = FALSE, replace_filter = FALSE, na_geno = NULL) {
   if (!is.null(na_geno))
     .stopifnotsingle(na_geno, class = "character")
 
-  ## Header
-  header <- x$meta
-  if (!is.null(header))
-    header <- header[header$name != "fileformat", ]
-  # Replace fileformat and add info
-  header <- rbind(
-    data.frame(name = "fileformat", value = "VCFv4.2"),
-    header,
-    data.frame(
-      name = "VarKit",
-      value = paste0("Modified and written to file by 'write_vcf';Date=", date())
-    )
-  )
-  header <- paste0("##", header$name, "=", header$value)
+  if (!append || !file.exists(file)) {
+    cli::cli_progress_step("Writing VCF header")
+    write_vcf_header(x, file)
+    cli::cli_process_done
+  }
 
-  ## Fixed fields
+  ## Fixed fields ------
   fxd <- x$site
 
   # Add missing columns
@@ -38,10 +22,10 @@ write_vcf.varkit <- function(x, file, replace_filter = FALSE, na_geno = NULL) {
   missing <- fixed_names[!fixed_names %in% tolower(colnames(fxd))]
 
   if ("format" %in% missing)
-    warning("The FORMAT column is missing!")
+    cli::cli_alert_danger("The FORMAT column is missing!")
 
   if (length(missing) > 0) {
-    message("Creating missing columns: ", paste(missing, collapse = ", "))
+    cli::cli_alert_info(c("Creating missing columns: ", .collapse(missing)))
     fxd[missing] <- rep(NA, nrow(fxd))
   }
 
@@ -51,26 +35,18 @@ write_vcf.varkit <- function(x, file, replace_filter = FALSE, na_geno = NULL) {
   fxd <- dplyr::relocate(fxd, tidyselect::all_of(fixed_names))
   colnames(fxd) <- toupper(colnames(fxd))
 
-  ## Genotype fields
+  ## Genotype fields ------
   gt <- t(x$geno)
   if (is.null(na_geno)) {
     non_na <- as.character(gt[which(!is.na(gt))[1]])
     na_geno <- stringr::str_replace_all(non_na, "[^|/:]+", ".")
-    message("Representing missing genotypes as: '", na_geno, "'")
+    cli::cli_alert_info(c("Representing missing genotypes as: '", na_geno, "'"))
   }
   gt[is.na(gt)] <- na_geno
 
-  # Combine
+  cli::cli_progress_step("Writing VCF body")
   body <- cbind(fxd, gt)
   rm(fxd, gt)
-
-  ## Writing
-  # Header
-  readr::write_lines(header, file)
-  col_names <- paste0("#", paste(colnames(body), collapse = "\t"))
-  readr::write_lines(col_names, file, append = TRUE)
-
-  # data
   readr::write_tsv(body, file, append = TRUE, col_names = FALSE, na = ".")
 }
 
@@ -88,8 +64,8 @@ write_vcf.varkit <- function(x, file, replace_filter = FALSE, na_geno = NULL) {
       fltr[use_site] <- "PASS"
       return(ifelse(pass_filter & !use_site, "MASKED", fltr))
     }
-    warning("FILTER column does not reflect currently masked sites!\n",
-            "Use `replace_filter = TRUE` if this is desired.")
+    cli::cli_alert_warning("FILTER column does not reflect currently masked sites!")
+    cli::cli_alert_warning("Use `replace_filter = TRUE` if this is desired.")
   }
   fltr
 }

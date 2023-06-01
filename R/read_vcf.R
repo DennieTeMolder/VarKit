@@ -28,7 +28,7 @@ read_vcf <- function(file,
   }
 
   # Checks
-  if (length(header$col_names) < 3)
+  if (length(col_names(header)) < 3)
     stop("The number of columns is too low, make sure the file is TAB delimited!")
 
   # Create spec that prompts spec_vcf() to skip guessing col_types (2x quicker)
@@ -37,7 +37,7 @@ read_vcf <- function(file,
 
   data <- do.call(
     readr::read_delim,
-    spec_vcf(file, col_names = header$col_names, skip_cols = skip_cols, na_geno = na_geno, spec = spec, ...)
+    spec_vcf(file, col_names = col_names(header), skip_cols = skip_cols, na_geno = na_geno, spec = spec, ...)
   )
 
   varkit(data, meta = header$meta)

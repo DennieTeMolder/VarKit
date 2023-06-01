@@ -48,7 +48,7 @@ print.varkit_header <- function(x, ..., n = NULL) {
     cat("Header metadata, `meta(header)`:\n")
     print(meta(x), ..., n = n)
   }
-  cat("\nColumn names (for 'skip_cols'), `header$col_names`:\n")
+  cat("\nColumn names (for 'skip_cols'), `col_names(header)`:\n")
   print(x$col_names, ...)
   cat("# Use `samples(header)` to get only columns recognised as samples\n")
 }

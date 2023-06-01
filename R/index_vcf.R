@@ -8,10 +8,10 @@ index_vcf <- function(file, header = NULL, ...) {
     header <- read_vcf_header(file)
     cli::cli_progress_done()
   }
-  if (!"chrom" %in% header$col_names)
+  if (!"chrom" %in% col_names(header))
     stop("Could not detect CHROM field in VCF! Examine the output of `read_vcf_header()`.")
 
-  spec <- spec_vcf(file, header$col_names, ...)
+  spec <- spec_vcf(file, col_names(header), ...)
 
   # Override spec to ensure all lines are retained
   spec_chrom <- spec
@@ -112,7 +112,7 @@ index_vcf_slow <- function(file, ...) {
   index <- varkit_index(tibble::as_tibble(index), file = file)
   props <- .get_props(index)
   props$header <- varkit_header(readLines(file, index$linum[1] - 1))
-  props$spec <- spec_vcf(file, props$header$col_names, ...)
+  props$spec <- spec_vcf(file, col_names(props$header), ...)
   cli::cli_progress_done()
 
   index
