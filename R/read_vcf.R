@@ -22,12 +22,18 @@ read_vcf <- function(file,
   if (!is.null(header)) {
     stopifnot(is_varkit_header(header))
   } else {
+    cli::cli_progress_step("Parsing VCF header")
     header <- read_vcf_header(file)
+    cli::cli_progress_done()
   }
 
   # Checks
   if (length(header$col_names) < 3)
     stop("The number of columns is too low, make sure the file is TAB delimited!")
+
+  # Create spec that prompts spec_vcf() to skip guessing col_types (2x quicker)
+  if (is.null(spec))
+    spec <- list(col_types = NULL)
 
   data <- do.call(
     readr::read_delim,
