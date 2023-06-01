@@ -8,6 +8,8 @@ index_vcf <- function(file, header = NULL, ...) {
     header <- read_vcf_header(file)
     cli::cli_progress_done()
   }
+  if (!"chrom" %in% header$col_names)
+    stop("Could not detect CHROM field in VCF! Examine the output of `read_vcf_header()`.")
 
   spec <- spec_vcf(file, header$col_names, ...)
 
@@ -16,18 +18,26 @@ index_vcf <- function(file, header = NULL, ...) {
   spec_chrom$col_types <- readr::cols_only(chrom = "f")
   spec_chrom$skip_empty_rows <- FALSE
   spec_chrom$comment <- ""
-  spec_chrom$na <- ""
   spec_chrom$skip <- nrow(header$meta) + 1
 
-  cli::cli_progress_step("Parsing CHROM fields")
+  cli::cli_progress_step("Extracting CHROM fields")
   chrom <- do.call(readr::read_delim, spec_chrom)[[1]]
-  cli::cli_progress_done()
 
   # Compute line-wise index
   n_total <- length(chrom)
   which_uniq <- which(c(1, diff(as.integer(chrom))) == 1)
   chrom <- as.character(chrom[which_uniq])
 
+  # Checks
+  if (any(is.na(chrom)))
+    warning("Some CHROM fields appear to be empty/NA.")
+  if (any(substr(chrom, 1, 1) == "#"))
+    warning("The VCF contains comments. The index likely requires manual filtering.")
+  if (any(duplicated(chrom)))
+    warning("The VCF appears to be unsorted, this could cause errors later.")
+  cli::cli_progress_done()
+
+  # Add End Of File (EOF) entry and calculate line numbers
   index <- tibble::tibble(
     id = c(chrom, "EOF"),
     linum = c(which_uniq, n_total + 1) + spec_chrom$skip
