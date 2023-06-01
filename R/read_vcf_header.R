@@ -1,6 +1,6 @@
 ##' @export
 read_vcf_header <- function(file) {
-  .stopifnotsingle(file, class = "character")
+  stopifnot(file.exists(file))
   header_end <- .find_header_end(file)
   header <- readr::read_lines(file, n_max = header_end)
   varkit_header(header)
