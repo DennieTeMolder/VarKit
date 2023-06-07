@@ -11,7 +11,7 @@ write_vcf.varkit <- function(x, file, append = FALSE, replace_filter = FALSE, na
   if (!append || !file.exists(file)) {
     cli::cli_progress_step("Writing VCF header")
     write_vcf_header(x, file)
-    cli::cli_process_done
+    cli::cli_progress_done()
   }
 
   ## Fixed fields ------
