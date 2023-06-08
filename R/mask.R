@@ -9,7 +9,6 @@ mask.varkit <- function(x, site, why = NULL) {
     .stopifnotsingle(why, class = "character")
 
   # Mask
-  current <- site(x, add_index = TRUE, cols = c("chrom", "pos"))
   idx <- get_site_idx(site, x)
   x$use_site[idx] <- FALSE
 
