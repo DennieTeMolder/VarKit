@@ -8,46 +8,50 @@ write_vcf.varkit <- function(x, file, append = FALSE, replace_filter = FALSE, na
   if (!is.null(na_geno))
     .stopifnotsingle(na_geno, class = "character")
 
-  if (!append || !file.exists(file)) {
-    cli::cli_progress_step("Writing VCF header")
-    write_vcf_header(x, file)
-    cli::cli_progress_done()
-  }
-
   ## Fixed fields ------
-  fxd <- x$site
+  x$site <- x$site
 
   # Add missing columns
   fixed_names <- .fixed_columns()
-  missing <- fixed_names[!fixed_names %in% tolower(colnames(fxd))]
+  missing <- fixed_names[!fixed_names %in% tolower(colnames(x$site))]
 
   if ("format" %in% missing)
     cli::cli_alert_danger("The FORMAT column is missing!")
 
   if (length(missing) > 0) {
     cli::cli_alert_info(c("Creating missing columns: ", .collapse(missing)))
-    fxd[missing] <- rep(NA, nrow(fxd))
+    x$site[, missing] <- rep(NA, nrow(x$site))
   }
+  x$site <- dplyr::relocate(x$site, tidyselect::all_of(fixed_names))
 
-  fxd$filter <- .check_filter(fxd$filter, x$use_site, replace_filter)
-
-  # Fxd ordering and convert
-  fxd <- dplyr::relocate(fxd, tidyselect::all_of(fixed_names))
-  colnames(fxd) <- toupper(colnames(fxd))
+  x$site$filter <- .check_filter(x$site$filter, x$use_site, replace_filter)
 
   ## Genotype fields ------
-  gt <- t(x$geno)
+  is_na <- is.na(x$geno)
+  if (all(is_na)) {
+    if (is.null(na_geno)) {
+      stop("All genotypes are NA, please provide 'na_geno'!")
+    } else {
+      cli::cli_alert_danger("All genotypes are NA!")
+    }
+  }
+
   if (is.null(na_geno)) {
-    non_na <- as.character(gt[which(!is.na(gt))[1]])
+    non_na <- x$geno[which.min(is_na)]
     na_geno <- stringr::str_replace_all(non_na, "[^|/:]+", ".")
     cli::cli_alert_info(c("Representing missing genotypes as: '", na_geno, "'"))
   }
-  gt[is.na(gt)] <- na_geno
+  x$geno[is_na] <- na_geno
+
+  ## Write ------
+  if (!append || !file.exists(file)) {
+    cli::cli_progress_step("Writing VCF header")
+    write_vcf_header(x, file)
+    cli::cli_progress_done()
+  }
 
   cli::cli_progress_step("Writing VCF body")
-  body <- cbind(fxd, gt)
-  rm(fxd, gt)
-  readr::write_tsv(body, file, append = TRUE, col_names = FALSE, na = ".")
+  readr::write_tsv(to_tibble.varkit(x), file, append = TRUE, col_names = FALSE, na = ".")
 }
 
 .check_filter <- function(fltr, use_site, replace_filter) {

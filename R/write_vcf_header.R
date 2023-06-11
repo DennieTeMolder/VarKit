@@ -26,7 +26,7 @@ write_vcf_header.varkit_header <- function(x, file) {
 
   header <- c(
     paste0("##", header$name, "=", header$value),
-    paste0("#", .collapse(col_names(x), "\t"))
+    paste0("#", toupper(.collapse(col_names(x), "\t")))
   )
 
   readr::write_lines(header, file)

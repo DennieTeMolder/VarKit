@@ -5,9 +5,9 @@
 
 .stopifnotsingle <- function(x, class = NULL) {
   if (!is.null(class) && !inherits(x, what = class))
-    stop("Argument should be of class '", class, "'!")
+    stop("Argument '", substitute(x), "' should be of class '", class, "'!")
   if (length(x) != 1)
-    stop("Argument should have a length of 1!")
+    stop("Argument '", substitute(x), "' should have a length of 1!")
 }
 
 .collapse <- function(x, delim = ", ") {
