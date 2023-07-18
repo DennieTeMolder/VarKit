@@ -8,6 +8,7 @@ col_names.varkit <- function(x) {
   c(colnames(x$site), samples.varkit(x))
 }
 
+##' @export
 col_names.varkit_header <- function(x) {
   x$col_names
 }
