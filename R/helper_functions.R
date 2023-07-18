@@ -45,6 +45,8 @@
 }
 
 .maxnchar <- function(x) {
+  if (all(is.na(x)))
+    return(2)
   max(nchar(x), na.rm = TRUE)
 }
 
