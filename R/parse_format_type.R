@@ -21,7 +21,7 @@ parse_format_type.varkit <- function(x, type = NULL, allow_missing = FALSE) {
   if (length(unique(frmt)) == 1) {
     # For fixed format loop over samples to save time while remaining memory efficient
     idx <- frmt[[1]]
-    res <- apply_samples(geno(x), .str_split_i, on = ":", i = idx)
+    res <- as.matrix(apply_samples(geno(x), .str_split_i, on = ":", i = idx))
   } else {
     idxs <- unname(frmt[site(x, cols = "format")])
     gt <- geno(x)
