@@ -16,7 +16,7 @@
 read_vcf <- function(file,
                      header = NULL,
                      skip_cols = NULL,
-                     na_geno = "./.",
+                     na_geno = c("./.", ".|."),
                      spec = NULL,
                      ...) {
   if (!is.null(header)) {
