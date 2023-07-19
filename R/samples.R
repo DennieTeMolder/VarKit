@@ -15,5 +15,5 @@ samples.varkit <- function(x) {
 
 ##' @export
 samples.varkit_header <- function(x) {
-  x$col_names[!x$col_names %in% .fixed_columns()]
+  x$col_names[!tolower(x$col_names) %in% .fixed_columns()]
 }

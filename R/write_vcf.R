@@ -9,21 +9,7 @@ write_vcf.varkit <- function(x, file, append = FALSE, replace_filter = FALSE, na
     .stopifnotsingle(na_geno, class = "character")
 
   ## Fixed fields ------
-  x$site <- x$site
-
-  # Add missing columns
-  fixed_names <- .fixed_columns()
-  missing <- fixed_names[!fixed_names %in% tolower(colnames(x$site))]
-
-  if ("format" %in% missing)
-    cli::cli_alert_danger("The FORMAT column is missing!")
-
-  if (length(missing) > 0) {
-    cli::cli_alert_info(c("Creating missing columns: ", .collapse(missing)))
-    x$site[, missing] <- rep(NA, nrow(x$site))
-  }
-  x$site <- dplyr::relocate(x$site, tidyselect::all_of(fixed_names))
-
+  x <- standardize_cols(x)
   x$site$filter <- .check_filter(x$site$filter, x$use_site, replace_filter)
 
   ## Genotype fields ------
