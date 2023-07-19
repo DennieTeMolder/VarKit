@@ -29,12 +29,8 @@ standardize_cols.varkit_header <- function(x) {
   if (length(missing) == 0)
     return(character(0))
 
-  if (!silent) {
-    if ("format" %in% missing)
-      cli::cli_alert_danger("The FORMAT column is missing!")
-
+  if (!silent)
     cli::cli_alert_info(c("Creating missing columns: ", toupper(.collapse(missing))))
-  }
 
   missing
 }
