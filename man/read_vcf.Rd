@@ -8,7 +8,7 @@ read_vcf(
   file,
   header = NULL,
   skip_cols = NULL,
-  na_geno = "./.",
+  na_geno = c("./.", ".|."),
   spec = NULL,
   ...
 )

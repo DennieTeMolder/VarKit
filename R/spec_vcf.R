@@ -57,11 +57,8 @@ spec_vcf <- function(file, col_names = NULL, skip_cols = NULL, na_geno = "./.", 
   args$col_names <- col_names
   args$na <- unique(c("", ".", na_geno))
 
-  if (is.null(spec)) {
-    cli::cli_progress_step("Scanning VCF fields")
-    args$col_types <- do.call(readr::spec_delim, args)
-    cli::cli_progress_done()
-  }
+  if (is.null(spec))
+    args$col_types <- .quick_spec_delim(args)
 
   if (length(args$col_types$cols) > 0 && !all(names(args$col_types$cols) %in% col_names))
     warning("Not all 'spec$col_types' are in 'col_names'.")
@@ -70,4 +67,10 @@ spec_vcf <- function(file, col_names = NULL, skip_cols = NULL, na_geno = "./.", 
     args$col_types$cols[[current]] <- readr::col_skip()
 
   args
+}
+
+# HACK readr::spec* always loads the entire file despite 'guess_max', here we force it
+.quick_spec_delim <- function(args) {
+  args$file <- I(readr::read_lines(args$file, skip = .find_header_end(args$file), n_max = args$guess_max))
+  do.call(readr::spec_delim, args)
 }
