@@ -167,6 +167,67 @@
   gt
 }
 
+.ad2aaf <- function(vcf, type = "AD") {
+  stopifnot(is_varkit(vcf))
+
+  # Extract allelic depth (AD)
+  ad <- parse_format_type(vcf, type)
+  n_sites <- ncol(ad)
+  n_samples <- nrow(ad)
+  n_allele <- max(stringr::str_count(ad[1, ], stringr::fixed(","))) + 1
+
+  # Split into one matrix per site of [samples x alleles]
+  ad <- stringr::str_split_fixed(ad, stringr::fixed(","), n = n_allele)
+  ad <- utils::type.convert(ad, as.is = TRUE, na.strings = c("", "."))
+  ad <- split.data.frame(ad, rep(seq_len(n_sites), each = n_samples))
+  names(ad) <- NULL
+
+  # Remove NA columns
+  ad <- lapply(ad, function(site) site[, !apply(is.na(site), 2, all)])
+
+  res <- lapply(ad, function(site) {
+    if (ncol(site) == 2) {
+      # Simple case if site is bi-allelic
+      alt_idx <- 1
+      bi_dp <- rowSums(site)
+      bi_dp[bi_dp == 0] <- NA
+      bi_frac <- rep(1, length(bi_dp))
+    } else {
+      # For multi-allelic sites, use the most abundant alt allele
+      alt_idx <- which.max(colSums(site[, -1, drop = FALSE]))
+      # Total read depth per site
+      dp <- rowSums(site)
+      dp[dp == 0] <- NA
+      # Bi-allelic read depth
+      bi_dp <- rowSums(site[, c(1, alt_idx + 1), drop = FALSE])
+      bi_dp[bi_dp == 0] <- NA
+      # Fraction of reads that support bi-allelic sites
+      bi_frac <- bi_dp / dp
+    }
+
+    # Alternative Allele Fraction (AAF)
+    aaf <- round(site[, alt_idx + 1] / bi_dp, 3)
+
+    list(aaf = aaf, bi_dp = bi_dp, bi_frac = bi_frac, alt_idx = alt_idx)
+  })
+  rm(ad)
+
+  # Unpack and convert to matrix (last entry in each list is a vector not matrix)
+  alt_idx <- unlist(lapply(res, utils::tail, n = 1), use.names = FALSE)
+  col_names <- utils::head(names(res[[1]]), n = -1)
+  res <- lapply(seq_along(col_names), function(i) {
+    mat <- sapply(res, function(x) x[[i]], simplify = "array")
+    rownames(mat) <- samples(vcf)
+    varkit_geno(mat)
+  })
+  names(res) <- col_names
+
+  # Indicate which alt allele was used
+  res$alt_idx <- alt_idx
+
+  res
+}
+
 .missed_correlations <- function(cor_mat, cutoff = .9, llist = NULL) {
   stopifnot(is.matrix(cor_mat))
   stopifnot(nrow(cor_mat) == ncol(cor_mat))
