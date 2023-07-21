@@ -187,26 +187,24 @@
 
   res <- lapply(ad, function(site) {
     if (ncol(site) == 2) {
-      # Simple case if site is bi-allelic
+      # Simple case if site is bi-allelic (bi_dp == dp)
       alt_idx <- 1
       bi_dp <- rowSums(site)
-      bi_dp[bi_dp == 0] <- NA
-      bi_frac <- rep(1, length(bi_dp))
+      bi_frac <- ifelse(bi_dp == 0, NA, 1)
     } else {
       # For multi-allelic sites, use the most abundant alt allele
       alt_idx <- which.max(colSums(site[, -1, drop = FALSE]))
-      # Total read depth per site
-      dp <- rowSums(site)
-      dp[dp == 0] <- NA
       # Bi-allelic read depth
       bi_dp <- rowSums(site[, c(1, alt_idx + 1), drop = FALSE])
-      bi_dp[bi_dp == 0] <- NA
-      # Fraction of reads that support bi-allelic sites
-      bi_frac <- bi_dp / dp
+      # Fraction of total reads that support bi-allelic sites
+      # 0 if there are only multi-allelic reads, NA if there are no reads
+      dp <- rowSums(site)
+      bi_frac <- bi_dp / ifelse(dp == 0, NA, dp)
     }
 
     # Alternative Allele Fraction (AAF)
-    aaf <- round(site[, alt_idx + 1] / bi_dp, 3)
+    aaf <- site[, alt_idx + 1] / ifelse(bi_dp == 0, NA, bi_dp)
+    aaf <- round(aaf, 3)
 
     list(aaf = aaf, bi_dp = bi_dp, bi_frac = bi_frac, alt_idx = alt_idx)
   })
