@@ -6,17 +6,18 @@ parse_info <- function(x) {
 ##' @export
 parse_info.varkit <- function(x) {
   # Convert to dataframe assuming ";" and "=" can only be used as delimiters
-  res <- stringr::str_split(site(x, cols = "info"), ";")
+  res <- stringr::str_split(site(x, cols = "info"), stringr::fixed(";"))
   res <- lapply(res, .split_key_value)
   res <- .bind_rows_list(res)
+  res <- dplyr::relocate(res, sort(colnames(res)))
   .mutate_all(res, .convert_info_col)
 }
 
 .split_key_value <- function(str) {
-  if (any(is.na(str)))
+  if (anyNA(str))
     return(NA)
 
-  splits <- stringr::str_split_fixed(str, pattern = "=", n = 2)
+  splits <- stringr::str_split_fixed(str, pattern = stringr::fixed("="), n = 2)
 
   res <- splits[, 2]
   res <- ifelse(res == "", "TRUE", res)
