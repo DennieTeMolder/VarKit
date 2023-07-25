@@ -248,15 +248,21 @@ These functions use the `stats::cor(..., method = "pearson", use =
 more information.
 
 In order for this to work `geno(vcf)` should contain only **numeric** values (or
-NA). Most likely you genotype fields will be in the string format and thus need
+NA). Most likely your genotype fields will be in the string format and thus need
 to be converted. How to achieve this is highly circumstantial and will require
 manual parsing/conversion. For tips take a look at the "Notes for advanced
 users" section at the bottom.
 
-As you might have noticed, the example file contains genotype calls (GT, e.g.
-"0/1"), which will first convert to numeric dosages using a hidden function:
+As you might have noticed, the example file contains complex genotypes that
+consist of multiple parts (delimited by a colon) that are described in the
+'format' column of `site(vcf)`. We first extract the genotype calls (GT, e.g.
+"0/1") from these complex fields, which we then convert to numeric dosages using
+a hidden function:
 
 ```{r convert_geno}
+# Overwriting vcf$geno in this way is only safe if no sites are masked
+vcf <- unmask_all(vcf)
+vcf$geno <- parse_format_type(vcf, type = "GT")
 # The function below is not exported as it is not very robust, use it with caution!
 vcf$geno <- varkit:::.bi_gt2dosage(vcf$geno)
 ```
@@ -334,12 +340,6 @@ as `nrow(vcf$site) == ncol(vcf$geno) == length(vcf$use_sites)`, the
 `vcf$site$chrom` & `vcf$site$pos` columns are retained, and `vcf$geno` keeps
 the 'varkit_geno' class (the latter may be violated when extracting, e.g.
 `geno(vcf)[, 1]`, which will remove the class).
-
-The attentive reader might have noticed that we have already made use of this before:
-
-```{r advanced_example, eval = FALSE}
-vcf$geno <- varkit:::.bi_gt2dosage(vcf$geno)
-```
 
 To retain the "varkit_geno" class use the `varkit_geno()` function, e.g.:
 

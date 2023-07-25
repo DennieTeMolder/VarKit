@@ -44,6 +44,8 @@ summary(remove_masked(vcf))
 
 ## Linked sites ------
 vcf <- read_vcf(example, skip_cols = c("info", "filter"))
+stopifnot(all(export_mask(vcf)))
+vcf$geno <- parse_format_type(vcf, type = "GT")
 vcf$geno <- .bi_gt2dosage(vcf$geno)
 
 llist <- find_identical_sites(vcf, cores = 1)
