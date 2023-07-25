@@ -11,7 +11,7 @@ index_vcf <- function(file, header = NULL, ...) {
   if (!"chrom" %in% col_names(header))
     stop("Could not detect CHROM field in VCF! Examine the output of `read_vcf_header()`.")
 
-  spec <- spec_vcf(file, col_names(header), ...)
+  spec <- spec_vcf(file = file, col_names = col_names(header), ...)
 
   # Override spec to ensure all lines are retained
   spec_chrom <- spec
@@ -22,35 +22,46 @@ index_vcf <- function(file, header = NULL, ...) {
 
   cli::cli_progress_step("Extracting CHROM fields")
   chrom <- do.call(readr::read_delim, spec_chrom)[[1]]
+  cli::cli_progress_done()
 
-  # Compute line-wise index
+  cli::cli_progress_step("Computing index")
   n_total <- length(chrom)
-  which_uniq <- which(c(1, diff(as.integer(chrom))) == 1)
-  chrom <- as.character(chrom[which_uniq])
+  which_diff <- which(c(1, diff(as.integer(chrom))) != 0)
+  chrom <- as.character(chrom[which_diff])
+
+  index <- tibble::tibble(
+    id = chrom,
+    linum = which_diff + spec_chrom$skip,
+    n_lines = diff(c(which_diff, n_total + 1))
+  )
 
   # Checks
-  if (any(is.na(chrom)))
+  if (anyNA(chrom))
     warning("Some CHROM fields appear to be empty/NA.")
   if (any(substr(chrom, 1, 1) == "#"))
     warning("The VCF contains comments. The index likely requires manual filtering.")
-  if (any(duplicated(chrom)))
+  if (anyDuplicated(chrom) != 0)
     warning("The VCF appears to be unsorted, this could cause errors later.")
-  cli::cli_progress_done()
 
-  # Add End Of File (EOF) entry and calculate line numbers
-  index <- tibble::tibble(
-    id = c(chrom, "EOF"),
-    linum = c(which_uniq, n_total + 1) + spec_chrom$skip
-  )
-  index <- varkit_index(index, file)
-
-  # Add additional properties for next_chrom()
-  props <- .get_props(index)
-  props$header <- header
-  props$spec <- spec
-  index
+  # Create index and add additional properties for next_chrom()
+  varkit_index(index, file = file, header = header, spec = spec)
 }
 
+##' @export
+index_vcf_dummy <- function(file, chunk_size = 5e3, header = NULL, ...) {
+  if (!is.null(header)) {
+    stopifnot(is_varkit_header(header))
+  } else {
+    cli::cli_progress_step("Parsing VCF header")
+    header <- read_vcf_header(file)
+    cli::cli_progress_done()
+  }
+  spec <- spec_vcf(file = file, col_names = col_names(header), ...)
+  index <- tibble::tibble(id = "dummy", linum = nrow(meta(header)) + 2, n_lines = chunk_size)
+  varkit_index(index, file = file, header = header, spec = spec)
+}
+
+## Unused ------
 index_vcf_slow <- function(file, ...) {
   con <- file(file, "r")
 
@@ -105,15 +116,15 @@ index_vcf_slow <- function(file, ...) {
     warning("The VCF appears to be unsorted, this could cause errors later.")
 
   # Add end of file
-  index$id <- c(index$id, "EOF")
-  index$linum <- c(index$linum, n + 1)
+  index$n_lines <- diff(c(index$linum, n + 1))
 
-  cli::cli_progress_step("Scanning VCF fields")
-  index <- varkit_index(tibble::as_tibble(index), file = file)
-  props <- .get_props(index)
-  props$header <- varkit_header(readLines(file, index$linum[1] - 1))
-  props$spec <- spec_vcf(file, col_names(props$header), ...)
-  cli::cli_progress_done()
+  header <- varkit_header(readLines(file, index$linum[1] - 1))
+  spec <- spec_vcf(file = file, col_names = col_names(header), ...)
 
-  index
+  varkit_index(
+    tibble::as_tibble(index),
+    file = file,
+    header = header,
+    spec = spec
+  )
 }
