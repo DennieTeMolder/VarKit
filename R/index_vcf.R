@@ -48,7 +48,7 @@ index_vcf <- function(file, header = NULL, ...) {
 }
 
 ##' @export
-index_vcf_dummy <- function(file, chunk_size = 5e3, header = NULL, ...) {
+index_vcf_partial <- function(file, chunk_size = 5e3, header = NULL, ...) {
   if (!is.null(header)) {
     stopifnot(is_varkit_header(header))
   } else {
