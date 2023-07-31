@@ -57,7 +57,7 @@ index_vcf_partial <- function(file, chunk_size = 5e3, header = NULL, ...) {
     cli::cli_progress_done()
   }
   spec <- spec_vcf(file = file, col_names = col_names(header), ...)
-  index <- tibble::tibble(id = "dummy", linum = nrow(meta(header)) + 2, n_lines = chunk_size)
+  index <- tibble::tibble(id = "chunk_size", linum = nrow(meta(header)) + 2, n_lines = chunk_size)
   varkit_index(index, file = file, header = header, spec = spec)
 }
 
