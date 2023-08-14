@@ -14,8 +14,10 @@ site.varkit <- function(x,
   if (!is.null(cols)) {
     # Checks
     stopifnot(is.character(cols))
-    if (!all(cols %in% colnames(x$site)))
-      stop("Not all 'cols' are in site(", substitute(x), ")!")
+    col_in_site <- cols %in% colnames(x$site)
+    if (!all(col_in_site))
+      stop("The following 'cols' are not present in site(", substitute(x), "): ",
+           .collapse(cols[!col_in_site]))
     if (by_chrom)
       cols <- unique(c("chrom", cols))
 
