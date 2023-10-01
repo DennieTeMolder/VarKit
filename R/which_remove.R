@@ -1,14 +1,12 @@
 ##' @export
-which_remove <- function(x, translate_out = TRUE) {
+which_remove <- function(x) {
   UseMethod("which_remove", x)
 }
 
 ##' @export
-which_remove.link_list <- function(x, translate_out = TRUE) {
-  all_values <- unlist(x)
-  links <- .linked_only(all_values)
-  links <- sort(links)
-  if (translate_out)
-    return(idx2key(x, links))
-  links
+which_remove.varkit_linkage_graph <- function(x) {
+  deg <- igraph::degree(x, mode = "in", loops = FALSE)
+  if (any(deg >= 2))
+    stop("The linkage graph appears to be corrupted!")
+  as.integer(names(deg)[deg == 1])
 }

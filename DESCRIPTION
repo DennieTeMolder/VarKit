@@ -11,14 +11,17 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Imports: 
     cli,
-    doSNOW,
+    digest,
     dplyr,
     forcats,
-    foreach,
+    furrr,
+    future,
+    igraph,
     pillar,
+    purrr,
     readr,
+    RhpcBLASctl,
     rlang,
-    snow,
     stringr,
     tibble,
     tidyselect

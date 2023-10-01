@@ -1,3 +1,8 @@
-# Ignore these when missing from global env during devools::check()
-# These variables are assigned by foreach::foreach and are therefore missed.
-utils::globalVariables(c("fix", "gt"))
+# 'Alias' functions from bundled R packages
+head <- utils::head
+tail <- utils::tail
+setNames <- stats::setNames
+quantile <- stats::quantile
+
+# This fixes missing bindings withing tidy-eval
+utils::globalVariables(".data")

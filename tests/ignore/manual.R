@@ -43,48 +43,19 @@ summary(remove_masked(vcf))
 
 
 ## Linked sites ------
-vcf <- read_vcf(example, skip_cols = c("info", "filter"))
-stopifnot(all(export_mask(vcf)))
+vcf <- unmask_all(read_vcf(example))
 vcf$geno <- parse_format_type(vcf, type = "GT")
 vcf$geno <- .bi_gt2dosage(vcf$geno)
 
-llist <- find_identical_sites(vcf, cores = 1)
-summary(llist)
+links <- find_linked_sites(vcf, n_window = -1, cores = 1)
+lgraph <- resolve_links(links, cores = 1)
+summary(lgraph, vcf = vcf)
 
-vcf <- mask(vcf, llist)
-summary(vcf)
+summary(mask(vcf, lgraph))
 
-llist <- find_linked_sites(vcf, cutoff = 0.7)
-summary(llist)
-
-mask(vcf, llist)
-
-temp_file <- tempfile(fileext = ".tsv.gz")
-write_link_list(llist, temp_file)
-summary(read_link_list(temp_file))
-
-
-## Link list ------
-names <- LETTERS[1:10]
-llist <- link_list(names)
-
-# Link entries by their index
-llist <- link_entries(llist, 3, c(2, 7))
-print(llist, n = NULL)
-llist <- link_entries(llist, 6, 3)
-print(llist, n = NULL)
-
-# Lookup by name
-lookup(llist, "F")
-# Lookup by name to index
-lookup(llist, "F", translate = "in")
-# Lookup by index to name
-lookup(llist, 6, translate = "out")
-# Lookup by index to index
-lookup(llist, 6, translate = "none")
-
-# Request entries to be removed to make data unlinked
-which_remove(llist, translate_out = TRUE)
+groups <- igraph::groups(lgraph)
+length(groups)
+length(unlist(groups))
 
 
 ### Tests ------

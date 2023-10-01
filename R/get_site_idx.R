@@ -25,11 +25,10 @@ get_site_idx.data.frame <- function(site, vcf) {
 }
 
 ##' @export
-get_site_idx.link_list <- function(site, vcf) {
-  if (length(site) != sum(vcf$use_site))
-    stop("Length of 'site' not equal to current number of unmasked sites!")
-  idx <- which_remove(site, translate_out = TRUE)
-  if (!all(idx %in% which(vcf$use_site)))
-    stop("Indexes of 'link_list' don't align with the current mask!")
-  idx
+get_site_idx.varkit_linkage_graph <- function(site, vcf) {
+  if (!originates_from(site, origin = vcf)) {
+    stop("The provided linkage graph does not originate from 'vcf'!\n",
+         "Most likely either the mask or samples(vcf) differs between the two.")
+  }
+  which_remove.varkit_linkage_graph(site)
 }

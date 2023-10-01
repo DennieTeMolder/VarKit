@@ -49,6 +49,20 @@
   do.call(utils::getS3method("print", "tbl", envir = getNamespace("pillar")), c(list(x), ...))
 }
 
+# Use with on.exit(restore_fn())
+.set_cores <- function(cores) {
+  stopifnot(cores > 1)
+  old_blas_threads <- RhpcBLASctl::blas_get_num_procs()
+  RhpcBLASctl::blas_set_num_threads(1)
+  old_plan <- future::plan(future::multisession, workers = cores)
+
+  restore_fn <- function() {
+    RhpcBLASctl::blas_set_num_threads(old_blas_threads)
+    future::plan(old_plan)
+  }
+  restore_fn
+}
+
 .maxnchar <- function(x) {
   if (all(is.na(x)))
     return(2)
@@ -100,43 +114,6 @@
     stop("Option on_even = '", on_even, "' not recognised!")
   }
   x[ceiling(len / 2)]
-}
-
-.check_link_list <- function(llist) {
-  len <- length(llist)
-
-  skip <- rep(FALSE, len)
-  for (i in seq_along(llist)) {
-    if (skip[i])
-      next()
-
-    links <- llist[[i]]
-    if (length(links) == 1 && (is.na(links) || links == 0))
-      next()
-    if (any(is.na(links)))
-      stop("Unexpected NA value(s) found at index: ", i)
-
-    if (any(links < 0 | links > len))
-      stop("Out of bounds ([0,", len, "]) link value found at index: ", i)
-
-    for (j in links) {
-      if (!is.na(llist[[j]]))
-        stop("Expected NA at position: ", j, " (link of ", i, ")!")
-    }
-    skip[links] <- TRUE
-  }
-
-  invisible(llist)
-}
-
-.linked_only <- function(x, allow_na = TRUE) {
-  if (allow_na) {
-    x <- x[!is.na(x)]
-  } else {
-    if (any(is.na(x)))
-      stop("Removed indexes (idx) requested, this not allowed!")
-  }
-  x[as.logical(x)]
 }
 
 ## Unused functions ------
@@ -229,22 +206,4 @@
   res$alt_idx <- alt_idx
 
   res
-}
-
-.missed_correlations <- function(cor_mat, cutoff = .9, llist = NULL) {
-  stopifnot(is.matrix(cor_mat))
-  stopifnot(nrow(cor_mat) == ncol(cor_mat))
-  if (!is.null(llist)) {
-    stopifnot(is_link_list(llist))
-    stopifnot(length(llist) == ncol(cor_mat))
-
-    rm <- which_remove(llist)
-    cor_mat <- cor_mat[-rm, -rm]
-  }
-
-  cor_mat[lower.tri(cor_mat, diag = T)] <- NA
-  missed <- apply(cor_mat, 2, function(col) {
-    any(col >= cutoff, na.rm = TRUE)
-  })
-  missed
 }

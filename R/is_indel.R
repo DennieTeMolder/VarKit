@@ -5,10 +5,10 @@ is_indel <- function(x) {
 
 ##'@export
 is_indel.varkit <- function(x) {
-  ref <- site(vcf, "ref")
+  ref <- site(x, "ref")
   if (anyNA(ref))
     stop("The site$ref column contains missing values")
-  alt <- site(vcf, "alt")
+  alt <- site(x, "alt")
   if (anyNA(alt))
     stop("The site$alt column contains missing values")
 
@@ -18,5 +18,5 @@ is_indel.varkit <- function(x) {
       return(TRUE)
     any(nchar(current) > 1)
   })
-  alt_indel | nchar(site(vcf, "ref")) > 1
+  alt_indel | nchar(site(x, "ref")) > 1
 }

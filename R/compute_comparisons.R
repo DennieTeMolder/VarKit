@@ -1,0 +1,45 @@
+# Intended for use with splitm(by_na_pattern = TRUE)
+##' @export
+compute_comparisons <- function(x, y = NULL, window = -1, use = FALSE) {
+  if (!is.null(y) && window >= 0)
+    stop("A positive 'window' argument produces nonsensical results if 'y' is supplied.")
+
+  seq_x <- seq_along(x)
+  seq_y <- if (is.null(y)) seq_x else seq_along(y)
+  idxs <- expand.grid(j = seq_y, i = seq_x)
+
+  if (is.null(y))
+    idxs <- idxs[idxs[[1]] >= idxs[[2]], ]
+
+  if (window >= 0)
+    idxs <- idxs[idxs[[1]] - idxs[[2]] <= window, ]
+
+  rownames(idxs) <- NULL
+  idx <- tibble::as_tibble(idxs[, 2:1])
+
+  if (!use)
+    return(idx)
+
+  # Indices of impure matrices, i.e. with variable NA postions on the rows
+  x_mixed_idx <- match("below_min_size", names(x), nomatch = 0)
+  if (is.null(y)) {
+    y_mixed_idx <- x_mixed_idx
+  } else {
+    y_mixed_idx <- match("below_min_size", names(y), nomatch = 0)
+  }
+
+  # Use a different comparison type when an at least one matrix is impure
+  idx$use <- ifelse(
+    idx$i == x_mixed_idx | idx$j == y_mixed_idx,
+    "pairwise.complete.obs",
+    "na.or.complete"
+  )
+
+  idx
+}
+
+.generate_comparisons <- function(mat_list, window) {
+  which_comp <- compute_comparisons(mat_list, window = window)
+  which_comp$j[with(which_comp, i == j)] <- NA
+  tibble::tibble(x = mat_list[which_comp$i], y = mat_list[which_comp$j])
+}

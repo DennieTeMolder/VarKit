@@ -1,17 +1,26 @@
 ##' @export
-find_linked_cols <- function(x,
-                             pos = NULL,
-                             llist = NULL,
-                             cutoff = .9,
-                             window = NULL) {
-  .compare_cols(x, FUN = .compare_r2, pos = pos, window = window, llist = llist, cutoff = cutoff)
-}
+find_linked_cols <- function(mat,
+                             cutoff = 0.9,
+                             cols_each = 2000,
+                             window = -1,
+                             return_r2 = FALSE,
+                             cores = 1,
+                             min_ncol = 20
+                             ) {
+  stopifnot(is.matrix(mat), is.numeric(mat))
+  stopifnot(is.numeric(cutoff), length(cutoff) == 1)
+  stopifnot(is.numeric(cols_each), length(cols_each) == 1)
+  stopifnot(is.numeric(window), length(window) == 1)
+  stopifnot(is.numeric(min_ncol), length(min_ncol) == 1)
 
-.compare_r2 <- function(a, b, cutoff) {
-  r2 <- .cor_pair_silent(a, b)^2
-  r2 >= cutoff & !is.na(r2)
-}
+  # Ensure the matrix has col names so it can be reconstructed
+  if (is.null(colnames(mat)))
+    colnames(mat) <- seq_len(ncol(mat))
 
-.cor_pair_silent <- function(x, y = NULL) {
-  suppressWarnings(stats::cor(x, y, use = "pairwise.complete.obs"))
+  # Split the matrix by COLS_EACH and generate the comparisons according to WINDOW
+  mat_list <- splitm(mat, margin = 2, size = cols_each, by_na_pattern = TRUE, min_size = min_ncol)
+  comps <- .generate_comparisons(mat_list, window = window)
+
+  res <- .r2_cutoff_parallel(comps$x, comps$y, cutoff = cutoff, return_r2 = return_r2, cores = cores)
+  do.call(rbind, res)
 }

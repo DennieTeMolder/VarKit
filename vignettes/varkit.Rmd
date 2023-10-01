@@ -242,10 +242,10 @@ read_vcf(temp_file)
 
 ## Detecting linkage between sites
 
-Lastly, the VarKit package provides functions to detect linkage between sites.
-These functions use the `stats::cor(..., method = "pearson", use =
-"pairwise.complete.obs")` internally, thus you can lookup its documentation for
-more information.
+Lastly, the VarKit package provides functionality to detect and remove linkage
+between sites. Internally this package reimplements `stats::cor(..., method =
+"pearson", use = "pairwise.complete.obs")` to utilize BLAS, thus using a faster
+BLAS library like openBLAS should improve performance.
 
 In order for this to work `geno(vcf)` should contain only **numeric** values (or
 NA). Most likely your genotype fields will be in the string format and thus need
@@ -267,69 +267,47 @@ vcf$geno <- parse_format_type(vcf, type = "GT")
 vcf$geno <- varkit:::.bi_gt2dosage(vcf$geno)
 ```
 
-Although you could use the `find_linked_sites()` function directly, on larger
-VCF files you can speed up the process by first checking for identical columns
-(i.e. R^2^ = 1):
-
-```{r identical_sites, results = 'hide'}
-llist <- find_identical_sites(vcf, cores = 1)
-```
-
-```{r identical_sites_summary}
-summary(llist)
-```
-
-This will return a "link_list" object that tracks which sites (using their
-index) are linked to each other and contains information on which sites to mask
-in order to remove linkage (see also `varkit_help(llist)`). Therefore, we can
-use this object to mask sites in order to remove the linkage (this will mask all
-but the centre most site out of sets of identical/linked sites):
-
-```{r mask_identical}
-vcf <- mask(vcf, site = llist)
-summary(vcf)
-```
-
-Now that identical sites are masked we can check for linkage on the reduced set
-of sites. Here we will use an cutoff of R^2^ = 0.7:
+Now we run `find_linked_sites()` to obtain a list of dataframes with sites that
+have an R^2^ above the specified cutoff for each CHROM. Then we call
+`resolve_links()` to determine which sites should be excluded if we want to
+remove as many of the detected links as possible (very few links could remain).
 
 ```{r linked_sites, results = 'hide'}
-llist <- find_linked_sites(vcf, cutoff = 0.7, window = 5e4, cores = 1)
-print(llist, n = 20)
-
-vcf <- mask(vcf, site = llist)
+links <- find_linked_sites(vcf, cutoff = 0.9, window_size_bp = 1e5, n_window = 2, by_chrom = TRUE, cores = 1)
+lgraph <- resolve_links(links, cores = 1)
 ```
+
+> Here we use a sliding window spanning 2 (`n_window`) X 1e5 base pairs
+> (`window_bp_size`) = 2e5 bases to the left AND right (effectively 4e5 bases)
+> of any given site. You could use any combination of `n_window` and
+> `window_size_bp` to achieve this number, but there is a trade-off in
+> computational efficientcy that can be balanced. Generally one should first
+> increase `window_size_bp` to 1e5 and then achieve higher size by increasing
+> `n_window` above 1. The `n_window` argument can also be set to a negative
+> number, in which case all sites within each CHROM are compared (the window
+> size will still impact performance). To enable comparisons between chromosomes
+> set `by_chrom` to FALSE (when `n_window` is positive only chromosomes
+> that follow one another in the VCF are compared).
 
 ```{r linked_sites_summary}
+summary(lgraph, vcf = vcf)
+```
+
+This will return a directed acyclic graph in which each node is labeled with the
+(column) index of a site in the vcf. Each node that should be removed to reduce
+linkage is connected to a note that will be retained and is guaranteed to have
+an R^2^ of above the cutoff (retained -> removed). Please refer to the Igraph
+package for information on working with graphs.
+
+Luckily there is no need to understand graph theory as the removal of linked
+sites can be automated by passing the graph as the second argument to the
+`mask()` function. In the resulting vcf, for each group of linked sites, the
+single best site is retained and all others are masked, thus representing the
+most amount of information with the least amount of variants.
+
+```{r mask_linked}
+vcf <- mask(vcf, site = lgraph)
 summary(vcf)
-```
-
-It is important to know that, when using the default settings,
-`find_indentical_sites()` checks entire chromosomes/scaffolds, whereas
-`find_linked_sites()` only checks for linkage within a window (of 50,000 bp). To
-check entire chromosomes in the latter case set the "window" option to 0 or -1.
-
-> Both of these functions only look for identical/linked columns within
-> chromosomes/scaffolds. To check for linkage between all chromosomes set
-> `by_chrom = FALSE`. Be mindfull that this will greatly increase computational
-> load. Conversely, when `by_chrom = TRUE` computation can parallelized by
-> using the "cores" argument for an even greater speedup.
-
-### Reading/writing link_list objects to file
-
-It might be interesting to store the information about linked sites as it will
-tell you the extend of linkage and which sites are a "proxy" of others:
-
-```{r llist_wirte}
-temp_file <- tempfile(fileext = ".tsv.gz")
-write_link_list(llist, file = temp_file)
-```
-
-Which can then be read back into memory like so:
-
-```{r llist_read}
-llist2 <- read_link_list(temp_file)
-summary(llist2)
 ```
 
 ## Notes for advanced users
@@ -361,29 +339,3 @@ Above we do not use `geno(vcf)` as that function only returns the non-masked sit
 
 > NOTE: the `apply` wrappers will only retain the "varkit_geno" class if the
 > function returns a vector of the same length as the input.
-
-### A closer look into the link_list object
-
-Link_list objects are lists that contain a 0 if the site at the matching index
-is not linked to any other site. If it contains any other number (or multiple
-numbers) the site at that index is linked to sites at the index of the listed
-numbers and this site is to be retained when removing linkage. If it contains
-NA the site is linked to at least one other sited and this site should be
-excluded to remove the linkage.
-
-Armed with this knowledge let's take a look at the link_list we generated previously:
-
-```{r advanced_llist}
-print(llist, n = 10)
-```
-
-Here you can see that the 1st site in the **masked** vcf (which is actually site
-89 in the original vcf, according to the translation layer) is linked to the 7th
-site in the masked vcf. In order to remove this link, the `mask(vcf, llist)`
-function will mask the 7th site and keep the 1st. In this same way the 2nd site
-is linked to the 12th. The 3rd to 6th sites in the masked vcf are not linked to
-any other sites and thus will not be masked when using the `mask()` function.
-The 7th site is listed as NA because it is linked to the 1st and will be removed
-upon masking. Finally, the 8th site is linked to some other site and is to be
-removed. If we look furhter down we can see it is linked to the 10th site
-together with with sites 11 and 23.
