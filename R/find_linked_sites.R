@@ -25,14 +25,13 @@ find_linked_sites.varkit <- function(x,
   stopifnot(is.numeric(window_size_bp), length(window_size_bp) == 1)
   stopifnot(is.numeric(n_window), length(n_window) == 1)
   stopifnot(is.numeric(min_ncol), length(min_ncol) == 1)
-
-  # Ensure the matrix has col names so it can be reconstructed
-  gt <- geno(x)
-  if (!(is.matrix(gt) && is.numeric(gt)))
+  if (!(is.matrix(vcf$geno) && is.numeric(vcf$geno)))
     stop("geno(vcf) should be a numeric matrix!")
-  colnames(gt) <- seq_len(ncol(gt))
 
-  mat_list <- splitm(gt,
+  # Label the columns with their index so they can be mapped back later
+  colnames(x$geno) <- seq_len(ncol(x$geno))
+
+  mat_list <- splitm(geno(x),
     f = site(x, "chrom"),       # Split by CHROM
     margin = 2,                   # Split over the columns
     distances = site(x, "pos"), # Further split based on bp distance
@@ -40,7 +39,6 @@ find_linked_sites.varkit <- function(x,
     by_na_pattern = TRUE,         # Further split by NA pattern across samples
     min_size = min_ncol
   )
-  rm(gt)
 
   if (by_chrom) {
     # Make a dataframe of lists that contains all requested comparisons

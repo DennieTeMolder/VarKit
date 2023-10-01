@@ -30,5 +30,10 @@ get_site_idx.varkit_linkage_graph <- function(site, vcf) {
     stop("The provided linkage graph does not originate from 'vcf'!\n",
          "Most likely either the mask or samples(vcf) differs between the two.")
   }
-  which_remove.varkit_linkage_graph(site)
+
+  # All nodes that should be removed have a single in-going edge
+  deg <- igraph::degree(site, mode = "in", loops = FALSE)
+  if (any(deg >= 2))
+    stop("The linkage graph appears to be corrupted!")
+  as.integer(names(deg)[deg == 1])
 }

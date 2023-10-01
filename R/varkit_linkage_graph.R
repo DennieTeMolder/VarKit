@@ -13,6 +13,11 @@ varkit_linkage_graph <- function(graph, origin = NULL) {
 }
 
 ##' @export
+is_varkit_linkage_graph <- function(x) {
+  inherits(x, "varkit_linkage_graph")
+}
+
+##' @export
 summary.varkit_linkage_graph <- function(object, ..., vcf = NULL) {
   if (!is.null(vcf))
     stopifnot(is_varkit(vcf), originates_from(object, origin = vcf))
