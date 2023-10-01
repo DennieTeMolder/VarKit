@@ -39,3 +39,14 @@ groups.varkit_linkage_graph <- function(x) {
     igraph::neighbors(x, v = node, mode = "out")$name
   }, simplify = FALSE)
 }
+
+# The graphml XML format retains graph attributes and column names
+##' @export
+write_graph <- function(graph, file) {
+  igraph::write_graph(graph, file = file, format = "graphml")
+}
+
+##' @export
+read_graph <- function(file) {
+  igraph::read_graph(file, format = "graphml")
+}
