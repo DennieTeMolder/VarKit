@@ -25,8 +25,8 @@ find_linked_sites.varkit <- function(x,
   stopifnot(is.numeric(window_size_bp), length(window_size_bp) == 1)
   stopifnot(is.numeric(n_window), length(n_window) == 1)
   stopifnot(is.numeric(min_ncol), length(min_ncol) == 1)
-  if (!(is.matrix(vcf$geno) && is.numeric(vcf$geno)))
-    stop("geno(vcf) should be a numeric matrix!")
+  if (!(is.matrix(x$geno) && is.numeric(x$geno)))
+    stop("geno(x) should be a numeric matrix!")
 
   # Label the columns with their index so they can be mapped back later
   colnames(x$geno) <- seq_len(ncol(x$geno))

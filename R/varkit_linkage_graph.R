@@ -45,13 +45,16 @@ groups.varkit_linkage_graph <- function(x) {
   }, simplify = FALSE)
 }
 
-# The graphml XML format retains graph attributes and column names
+# NOTE using save() also seems to work and uses 10x less disk space (binary format).
 ##' @export
-write_graph <- function(graph, file) {
+write_graph <- function(graph, file, format = "xml") {
+  if (!format[1] %in% c("xml", "graphml"))
+    stop("Only the 'xml' (graphml) format is supported! Others lack graph and/or vertex attributes.")
   igraph::write_graph(graph, file = file, format = "graphml")
 }
 
 ##' @export
 read_graph <- function(file) {
-  igraph::read_graph(file, format = "graphml")
+  graph <- igraph::read_graph(file, format = "graphml")
+  igraph::remove.vertex.attribute(graph, "id")
 }
