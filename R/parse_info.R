@@ -18,31 +18,41 @@ parse_info.varkit <- function(x, type = NULL, use_meta = TRUE) {
       stop("The type '", type, "' could not be found in parse_meta(x, 'INFO')$ID!")
   }
 
-  pattern <- paste0("(?:^|;)", type, "=([^;]*)")
-  res <- stringr::str_extract(site(x, "info"), pattern = pattern, group = 1)
+  info <- site(x, "info")
+  if (all(is.na(info)))
+    stop("The INFO column only contains NAs!")
+
+  pattern <- paste0("(?:^|;)", type, "(?:=([^;]*))?(?:;|$)")
+  info <- stringr::str_match(info, pattern = pattern)
 
   if (use_meta) {
-    return(.convert_using_meta(res, meta_info, type))
+    return(.convert_using_meta(info, meta_info, type))
   }
-  utils::type.convert(res, as.is = TRUE, na.strings = "")
+
+  is_na <- is.na(info)
+  if (all(is_na[, 2])) {
+    if (all(is_na[1, ]))
+      return(info[, 2])
+    return(!is.na(info[, 2]))
+  }
+
+  utils::type.convert(info[, 2], as.is = TRUE, na.strings = "")
 }
 
-.convert_using_meta <- function(str, meta_info, info_type) {
+.convert_using_meta <- function(info, meta_info, info_type) {
   meta_info <- meta_info[meta_info$ID == info_type, , drop = FALSE]
   convert_to <- .get_info_col_types(meta_info)[[1]]
 
   if (convert_to == "l") {
-    str <- as.logical(str)
-    if (anyNA(str))
-      str[is.na(str)] <- FALSE
-    return(str)
+    return(!is.na(info[, 1]))
   } else if (convert_to == "i") {
-    return(as.integer(str))
+    return(as.integer(info[, 2]))
   } else if (convert_to == "d") {
-    return(as.double(str))
+    return(as.double(info[, 2]))
   }
 
-  # Conversion to charater is not needed but we check for NAs
-  str[str == ""] <- NA
-  str
+  # Return as character, replace NAs for parity w/ type.convert()
+  info <- info[, 2]
+  info[info == ""] <- NA
+  info
 }
