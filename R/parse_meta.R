@@ -5,25 +5,19 @@ parse_meta <- function(x, type = NULL, na = ".") {
 
 ##' @export
 parse_meta.varkit_header <- function(x, type = NULL, na = ".") {
-  parse_meta(meta(x), type)
-}
-
-##' @export
-parse_meta.data.frame <- function(x, type = NULL, na = ".") {
-  # Checks
-  stopifnot(colnames(x) == c("name", "value"))
+  stopifnot(colnames(meta(x)) == c("name", "value"))
   stopifnot(is.character(na))
   if (!is.null(type)) {
-    .stopifnotsingle(type)
+    .stopifnotsingle(type, class = "character")
   } else {
     warning("Please provide the 'type' argument, returning possible options.")
     return(.get_meta_types(x))
   }
 
-  values <- x$value[x$name == type]
+  values <- meta(x)$value[meta(x)$name == type]
 
   if (length(values) == 0)
-    stop(paste0("The type '", type, "' could not be found in meta(x)$name!"))
+    stop("The type '", type, "' could not be found in meta(x)$name!")
 
   # Values should be surrounded by <...> according to the VCF spec, else abort
   if (any(!.str_starts(values, "<") | !.str_ends(values, ">")))
@@ -38,10 +32,8 @@ parse_meta.data.frame <- function(x, type = NULL, na = ".") {
   .mutate_all(values, .cleanup_meta_col, na = na)
 }
 
-.get_meta_types <- function(x) {
-  if (!"name" %in% colnames(x))
-    stop("meta(vcf) is missing the 'name' column!")
-  df <- as.data.frame(table(x$name), stringsAsFactors = FALSE)
+.get_meta_types <- function(vcf) {
+  df <- as.data.frame(table(meta(vcf)$name), stringsAsFactors = FALSE)
   colnames(df) <- c("type", "n")
   tibble::as_tibble(df[order(df$type), ])
 }

@@ -15,7 +15,8 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
   # Check te FORMAT field for index of type
   frmt <- .index_format(x, type)
   if (!allow_missing && any(is.na(frmt)))
-    stop("`type` not found in all FORMAT fields!")
+    stop("The type '", type, "' is not found in all FORMAT fields! If this is expected use `allow_missing = TRUE`.")
+
 
   # Parse type from genotype fields
   if (all(frmt == frmt[[1]])) {

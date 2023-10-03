@@ -27,6 +27,7 @@ parse_geno(vcf)
 parse_geno(vcf, type = "GT")
 
 parse_info(vcf)
+parse_info(vcf, type = "DP")
 
 hide_site <- site(vcf)$chrom == "I"
 vcf <- mask(vcf, site = hide_site)

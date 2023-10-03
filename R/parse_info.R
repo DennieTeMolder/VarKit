@@ -1,47 +1,48 @@
 ##' @export
-parse_info <- function(x) {
+parse_info <- function(x, type = NULL, use_meta = TRUE) {
   UseMethod("parse_info", x)
 }
 
 ##' @export
-parse_info.varkit <- function(x) {
-  # Convert to dataframe assuming ";" and "=" can only be used as delimiters
-  res <- stringr::str_split(site(x, cols = "info"), stringr::fixed(";"))
-  res <- lapply(res, .split_key_value)
-  res <- .bind_rows_list(res)
-  res <- dplyr::relocate(res, sort(colnames(res)))
-  .mutate_all(res, .convert_info_col)
-}
-
-.split_key_value <- function(str) {
-  if (anyNA(str))
-    return(NA)
-
-  splits <- stringr::str_split_fixed(str, pattern = stringr::fixed("="), n = 2)
-
-  res <- splits[, 2]
-  res <- ifelse(res == "", "TRUE", res)
-  names(res) <- splits[, 1]
-  res
-}
-
-.bind_rows_list <- function(lst) {
-  # Give NAs a name attribute, so bind_rows will handle them correctly
-  is_na <- is.na(lst)
-  if (any(is_na)) {
-    non_na_idx <- which(!is_na)[1]
-    valid_name <- names(lst[[non_na_idx]])[1]
-
-    for (idx in which(is_na))
-      names(lst[[idx]]) <- valid_name
+parse_info.varkit <- function(x, type = NULL, use_meta = TRUE) {
+  if (!is.null(type)) {
+    .stopifnotsingle(type, class = "character")
+  } else {
+    warning("Please provide the 'type' argument, returning possible options.")
+    return(dplyr::transmute(parse_meta(x, "INFO"), type = .data$ID, description = .data$Description))
   }
 
-  do.call(dplyr::bind_rows, lst)
+  if (use_meta) {
+    meta_info <- parse_meta(x, "INFO")
+    if (!type %in% meta_info$ID)
+      stop("The type '", type, "' could not be found in parse_meta(x, 'INFO')$ID!")
+  }
+
+  pattern <- paste0("(?:^|;)", type, "=([^;]*)")
+  res <- stringr::str_extract(site(x, "info"), pattern = pattern, group = 1)
+
+  if (use_meta) {
+    return(.convert_using_meta(res, meta_info, type))
+  }
+  utils::type.convert(res, as.is = TRUE, na.strings = "")
 }
 
-.convert_info_col <- function(col) {
-  col <- utils::type.convert(col, as.is = TRUE, na.strings = "")
-  if (is.logical(col))
-    col[is.na(col)] <- FALSE
-  col
+.convert_using_meta <- function(str, meta_info, info_type) {
+  meta_info <- meta_info[meta_info$ID == info_type, , drop = FALSE]
+  convert_to <- .get_info_col_types(meta_info)[[1]]
+
+  if (convert_to == "l") {
+    str <- as.logical(str)
+    if (anyNA(str))
+      str[is.na(str)] <- FALSE
+    return(str)
+  } else if (convert_to == "i") {
+    return(as.integer(str))
+  } else if (convert_to == "d") {
+    return(as.double(str))
+  }
+
+  # Conversion to charater is not needed but we check for NAs
+  str[str == ""] <- NA
+  str
 }
