@@ -49,19 +49,24 @@ is_varkit <- function(x) {
 
 ##' @export
 print.varkit <- function(x, ..., n = .max_print_col(geno(x))) {
-  cat("*VarKit Variant Object*\n")
+  .msg_h1("VarKit Variant Object")
   if (!is.null(x$meta)) {
-    cat("Header metadata, `meta(vcf)`:\n")
+    .msg_h2("Header metadata, `meta(vcf)`")
     print(meta(x), ..., verbose = FALSE)
     cat("\n")
   }
-  cat("Site information, `site(vcf)`:\n")
+
+  .msg_h2("Site information, `site(vcf)`")
   print(site(x), ..., n = n)
-  cat("\nTransposed genotype matrix, `geno(vcf)`:\n")
+  cat("\n")
+
+  .msg_h2("Transposed genotype matrix, `geno(vcf)`")
   print(geno(x), ..., n = n)
-  cat("# Use `samples(vcf)` for a vector of all sample names\n")
-  cat("\nCurrently selected", sum(x$use_site), "out of",
-      length(x$use_site), "sites, see `summary(vcf)`\n")
+  .msg_info("Use `samples(vcf)` for a vector of all sample names")
+  cat("\n")
+
+  cli::cli_alert_warning(c("Currently selected {sum(x$use_site)}, out of ",
+                           "{length(x$use_site)} sites, see `summary(vcf)`"))
 }
 
 ##' @export

@@ -44,6 +44,18 @@
   dplyr::mutate(.tbl, dplyr::across(dplyr::everything(), .fns, ...))
 }
 
+.msg_info <- function(...) {
+  cat(paste0("# ", cli::symbol$info, " ", ..., "\n"))
+}
+
+.msg_h1 <- function(...) {
+  print(cli::rule(left = paste0(...), line = 2))
+}
+
+.msg_h2 <- function(...) {
+  print(cli::rule(left = paste0(...), line = 1))
+}
+
 .print_tbl <- function(x, ...) {
   if (FALSE) pillar::pillar() # Silence imports checker
   do.call(utils::getS3method("print", "tbl", envir = getNamespace("pillar")), c(list(x), ...))
