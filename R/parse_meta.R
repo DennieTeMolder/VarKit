@@ -1,23 +1,23 @@
 ##' @export
-parse_meta_type <- function(x, type = NULL, na = ".") {
-  UseMethod("parse_meta_type", x)
+parse_meta <- function(x, type = NULL, na = ".") {
+  UseMethod("parse_meta", x)
 }
 
 ##' @export
-parse_meta_type.varkit_header <- function(x, type = NULL, na = ".") {
-  parse_meta_type(meta(x), type)
+parse_meta.varkit_header <- function(x, type = NULL, na = ".") {
+  parse_meta(meta(x), type)
 }
 
 ##' @export
-parse_meta_type.data.frame <- function(x, type = NULL, na = ".") {
+parse_meta.data.frame <- function(x, type = NULL, na = ".") {
   # Checks
   stopifnot(colnames(x) == c("name", "value"))
   stopifnot(is.character(na))
   if (!is.null(type)) {
     .stopifnotsingle(type)
   } else {
-    message("Please provide the 'type' argument, returning possible options.")
-    return(get_meta_types(x))
+    warning("Please provide the 'type' argument, returning possible options.")
+    return(.get_meta_types(x))
   }
 
   values <- x$value[x$name == type]
@@ -36,6 +36,14 @@ parse_meta_type.data.frame <- function(x, type = NULL, na = ".") {
   values <- .match_key_value(values, pattern = '([^="]+)=("(?:[^"\\\\]|\\\\.)+"|[^,]+)(?:,|$)')
 
   .mutate_all(values, .cleanup_meta_col, na = na)
+}
+
+.get_meta_types <- function(x) {
+  if (!"name" %in% colnames(x))
+    stop("meta(vcf) is missing the 'name' column!")
+  df <- as.data.frame(table(x$name), stringsAsFactors = FALSE)
+  colnames(df) <- c("type", "n")
+  tibble::as_tibble(df[order(df$type), ])
 }
 
 .match_key_value <- function(str, pattern) {

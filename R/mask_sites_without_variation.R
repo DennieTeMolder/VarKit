@@ -1,12 +1,12 @@
 ##' @export
-mask_sites_without_variation <- function(x, format_type = NULL) {
+mask_sites_without_variation <- function(x, parse_geno_type = NULL) {
   UseMethod("mask_sites_without_variation", x)
 }
 
 ##' @export
-mask_sites_without_variation.varkit <- function(x, format_type = NULL) {
-  if (!is.null(format_type)) {
-    data <- parse_format_type.varkit(x, type = format_type)
+mask_sites_without_variation.varkit <- function(x, parse_geno_type = NULL) {
+  if (!is.null(parse_geno_type)) {
+    data <- parse_geno.varkit(x, type = parse_geno_type)
   } else {
     data <- geno(x)
   }

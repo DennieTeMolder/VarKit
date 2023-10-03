@@ -5,9 +5,9 @@ get_info_col_types <- function(x, meta_type = "INFO", ...) {
 
 ##' @export
 get_info_col_types.varkit_header <- function(x, meta_type = "INFO", ...) {
-  meta_info <- parse_meta_type(x, type = meta_type)
+  meta_info <- parse_meta(x, type = meta_type)
   if (!all(c("ID", "Number", "Type") %in% colnames(meta_info)))
-    stop("Parsing error: `parse_meta_type(vcf, meta_type)` does not have columns ID, Number, and Type!")
+    stop("Parsing error: `parse_meta(vcf, meta_type)` does not have columns ID, Number, and Type!")
 
   col_types <- .get_info_col_types(meta_info)
   do.call(readr::cols, c(col_types, ...))

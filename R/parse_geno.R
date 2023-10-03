@@ -1,15 +1,15 @@
 ##' @export
-parse_format_type <- function(x, type = NULL, allow_missing = FALSE) {
-  UseMethod("parse_format_type", x)
+parse_geno <- function(x, type = NULL, allow_missing = FALSE) {
+  UseMethod("parse_geno", x)
 }
 
 ##' @export
-parse_format_type.varkit <- function(x, type = NULL, allow_missing = FALSE) {
+parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
   if (!is.null(type)) {
     .stopifnotsingle(type, class = "character")
   } else {
-    message("Please provide the 'type' argument, returning possible options.")
-    return(get_format_types(x))
+    warning("Please provide the 'type' argument, returning possible options.")
+    return(.get_format_types(x))
   }
 
   # Check te FORMAT field for index of type
@@ -36,6 +36,29 @@ parse_format_type.varkit <- function(x, type = NULL, allow_missing = FALSE) {
   res[is_na] <- NA
 
   varkit_geno(utils::type.convert(res, as.is = TRUE, na.strings = ""))
+}
+
+.get_format_types <- function(x) {
+  frmt <- site(x, cols = "format")
+  if (any(is.na(frmt)))
+    stop("The FORMAT column contains missing values!")
+
+  uniq <- as.character(unique(frmt))
+
+  # Split the unique combinations and check if specific types appear at a fixed position/index
+  uniq <- stringr::str_split(uniq, ":")
+  uniq_mat <- sapply(uniq, `[`, 1:min(sapply(uniq, length)))
+  fixed_position <- uniq_mat[apply(uniq_mat, 1, .not_variable), 1]
+  types <- sort(unique(unlist(uniq)))
+  results <- tibble::tibble(type = types, index = match(types, fixed_position))
+
+  if ("FORMAT" %in% meta(x)$name) {
+    metadata <- parse_meta(x, "FORMAT")
+    metadata <- tibble::tibble(type = metadata$ID, description = metadata$Description)
+    return(dplyr::right_join(metadata, results, by = "type"))
+  }
+
+  results
 }
 
 .index_format <- function(x, type) {

@@ -112,18 +112,17 @@ you to select the type of field that should be parsed. You can get an overview
 of the available field types using:
 
 ```{r meta_summary}
-get_meta_types(vcf)
+parse_meta(vcf)
 ```
 
-Using this information we can then use the `parse_meta_type()` function to
-parse the metadata of a specific type. For example we can lookup what the
-different values in the INFO fields mean, or we can access the size of the
-contigs:
+Using this information we can then provide the `parse_meta()` function the
+desired type we want to extract. For example we can lookup what the different
+values in the INFO fields mean, or we can access the size of the contigs:
 
 ```{r meta_parse}
-parse_meta_type(vcf, "INFO")
+parse_meta(vcf, "INFO")
 
-parse_meta_type(vcf, "contig")
+parse_meta(vcf, "contig")
 ```
 
 ## Masking
@@ -262,7 +261,7 @@ a hidden function:
 ```{r convert_geno}
 # Overwriting vcf$geno in this way is only safe if no sites are masked
 vcf <- unmask_all(vcf)
-vcf$geno <- parse_format_type(vcf, type = "GT")
+vcf$geno <- parse_geno(vcf, type = "GT")
 # The function below is not exported as it is not very robust, use it with caution!
 vcf$geno <- varkit:::.bi_gt2dosage(vcf$geno)
 ```

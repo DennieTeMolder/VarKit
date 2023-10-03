@@ -19,8 +19,13 @@ site(vcf)
 geno(vcf)
 samples(vcf)
 
-parse_meta_type(vcf, "INFO")
-parse_meta_type(vcf, "contig")
+parse_meta(vcf)
+parse_meta(vcf, type = "INFO")
+parse_meta(vcf, type = "contig")
+
+parse_geno(vcf)
+parse_geno(vcf, type = "GT")
+
 parse_info(vcf)
 
 hide_site <- site(vcf)$chrom == "I"

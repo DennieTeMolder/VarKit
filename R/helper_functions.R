@@ -153,7 +153,7 @@
   stopifnot(is_varkit(vcf))
 
   # Extract allelic depth (AD)
-  ad <- parse_format_type(vcf, type)
+  ad <- parse_geno(vcf, type)
   n_sites <- ncol(ad)
   n_samples <- nrow(ad)
   n_allele <- max(stringr::str_count(ad[1, ], stringr::fixed(","))) + 1
