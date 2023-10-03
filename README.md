@@ -43,9 +43,13 @@ that pops up:
 
 ``` r
 install.packages("remotes")
-pkg_path <- file.choose()
-remotes::install_deps(pkg_path, upgrade = "never")
-install.packages(pkg_path, repos = NULL, type = "source")
+install_varkit <- function(pkg_path, upgrade_dependencies = TRUE) {
+  remotes::install_deps(pkg_path, upgrade = if (upgrade_dependencies) "always" else "never")
+  install.packages(pkg_path, repos = NULL, type = "source")
+}
+
+# If desired you can set 'upgrade_dependencies' to FALSE
+install_varkit(file.choose(), upgrade_dependencies = TRUE)
 ```
 
 And load the package using:
