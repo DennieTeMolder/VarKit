@@ -13,3 +13,22 @@ geno.varkit <- function(x, by_chrom = FALSE) {
   }
   varkit_filter(x$geno, site = x$use_site)
 }
+
+##' @export
+`geno<-` <- function(x, value) {
+  if (!is_varkit(x))
+    stop("`geno() <-` is only supported for 'varkit' objects!")
+  if (!is.matrix(value))
+    stop("The new value should be a matrix!")
+  if (ncol(x$geno) != ncol(value)) {
+    if (!all(x$use_site))
+      stop("Remove current mask before modifying! See `unmask_all()`.")
+    stop("The new value should have an equal number of columns!\n",
+         "Use `mask()/retain()` (+ `remove_masked()`) to remove columns/sites.")
+  }
+  if (is.null(rownames(value)))
+    stop("The new value should have `rownames()`!")
+
+  x$geno <- varkit_geno(value)
+  x
+}

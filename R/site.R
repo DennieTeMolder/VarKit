@@ -41,3 +41,24 @@ site.varkit <- function(x,
     return(unlist(res, use.names = FALSE))
   res
 }
+
+##' @export
+`site<-` <- function(x, value) {
+  if (!is_varkit(x))
+    stop("`site() <-` is only supported on 'varkit' objects!")
+  if (!is.data.frame(value))
+    stop("The new value must be a data frame!")
+  if (!all(c("chrom", "pos") %in% colnames(value)))
+    stop("The new value must include columns 'chrom' & 'pos'")
+  if (nrow(value) != nrow(x$site)) {
+    if (!all(x$use_site))
+      stop("Remove current mask before modifying! See `unmask_all()`.")
+    stop("The new value should have an equal number of rows!\n",
+         "Use `mask()/retain()` (+ `remove_masked()`) to remove rows/sites.")
+  }
+  value$chrom <- as.character(value$chrom)
+  value$pos <- as.numeric(value$pos)
+
+  x$meta <- value
+  x
+}
