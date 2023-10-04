@@ -51,8 +51,10 @@ summary(remove_masked(vcf))
 
 ## Linked sites ------
 vcf <- unmask_all(read_vcf(example))
-vcf$geno <- parse_format_type(vcf, type = "GT")
+vcf$geno <- parse_geno(vcf, type = "GT")
 vcf$geno <- .bi_gt2dosage(vcf$geno)
+
+as_genind(vcf, ploidy = 2)
 
 links <- find_linked_sites(vcf, n_window = -1, cores = 1)
 lgraph <- resolve_links(links, cores = 1)
