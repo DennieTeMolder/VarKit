@@ -5,21 +5,13 @@ varkit_geno <- function(x) {
 
 ##' @export
 varkit_geno.data.frame <- function(x) {
-  x <- t(x)
-  class(x) <- c("varkit_geno", "matrix", "array")
-  x
+  varkit_geno.matrix(t(as.matrix(x)))
 }
 
 ##' @export
 varkit_geno.matrix <- function(x) {
-  class(x) <- c("varkit_geno", "matrix", "array")
+  class(x) <- c("varkit_geno", class(x))
   x
-}
-
-##' @export
-t.varkit_geno <- function(x) {
-  class(x) <- c("matrix", "array")
-  t(x)
 }
 
 ##' @export
@@ -55,4 +47,15 @@ print.varkit_geno <- function(x, ..., n = .max_print_col(x), n_samples = 25) {
 
   invisible(x)
 }
+##' @export
+`[.varkit_geno` <- function(x, ...) {
+  res <- NextMethod()
+  if (is.matrix(res))
+    class(res) <- class(x)
+  res
+}
 
+##' @export
+t.varkit_geno <- function(x) {
+  t(unclass(x))
+}
