@@ -32,7 +32,7 @@ print.varkit_geno <- function(x, ..., n = .max_print_col(x), n_samples = 25) {
   cat("# A", typeof(x), "matrix:", nrow(x), "samples x", ncol(x), "sites;",
       sum(is.na(x)), "NAs\n")
 
-  print(x[seq_len(n_samples), seq_len(n), drop = FALSE], ...)
+  print(unclass(x[seq_len(n_samples), seq_len(n), drop = FALSE]), ...)
 
   if (sample_trunc)
     .msg_info(nrow(x) - n_samples, " more samples")

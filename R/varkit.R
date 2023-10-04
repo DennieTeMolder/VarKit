@@ -57,7 +57,7 @@ print.varkit <- function(x, ..., n = .max_print_col(geno(x)), n_samples = 10) {
   }
 
   .msg_h2("Sample names, `samples(vcf)`")
-  samp <- cli::cli_vec(samples(vcf), style = list("vec-sep" = ", ", "vec-last" = ", ", "vec-trunc" = 100))
+  samp <- cli::cli_vec(samples(x), style = list("vec-sep" = ", ", "vec-last" = ", ", "vec-trunc" = 100))
   cli::cli_text("{samp}")
   cat("\n")
 
