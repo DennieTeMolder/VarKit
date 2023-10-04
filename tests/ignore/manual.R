@@ -25,6 +25,7 @@ parse_meta(vcf, type = "contig")
 
 parse_geno(vcf)
 parse_geno(vcf, type = "GT")
+parse_geno(vcf, type = "DP")
 
 parse_info(vcf)
 parse_info(vcf, type = "DP")
