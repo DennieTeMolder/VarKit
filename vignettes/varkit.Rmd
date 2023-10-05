@@ -30,7 +30,7 @@ example we will use a block-gzipped VCF:
 ```{r setup}
 library(varkit)
 
-# This might need to be increased for large VCFs
+# This might need to be increased for VCFs with long lines
 Sys.setenv("VROOM_CONNECTION_SIZE" = 1e6)
 
 file <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
@@ -259,11 +259,11 @@ consist of multiple parts (delimited by a colon) that are described in the
 a hidden function:
 
 ```{r convert_geno}
-# Overwriting vcf$geno in this way is only safe if no sites are masked
+# Overwriting geno(vcf) is only allowed when it has no masked sites
 vcf <- unmask_all(vcf)
-vcf$geno <- parse_geno(vcf, type = "GT")
+geno(vcf) <- parse_geno(vcf, type = "GT")
 # The function below is not exported as it is not very robust, use it with caution!
-vcf$geno <- varkit:::.bi_gt2dosage(vcf$geno)
+geno(vcf) <- varkit:::.bi_gt2dosage(geno(vcf))
 ```
 
 Now we run `find_linked_sites()` to obtain a list of dataframes with sites that
@@ -280,23 +280,23 @@ lgraph <- resolve_links(links, cores = 1)
 > (`window_bp_size`) = 2e5 bases to the left AND right (effectively 4e5 bases)
 > of any given site. You could use any combination of `n_window` and
 > `window_size_bp` to achieve this number, but there is a trade-off in
-> computational efficientcy that can be balanced. Generally one should first
-> increase `window_size_bp` to 1e5 and then achieve higher size by increasing
-> `n_window` above 1. The `n_window` argument can also be set to a negative
-> number, in which case all sites within each CHROM are compared (the window
-> size will still impact performance). To enable comparisons between chromosomes
-> set `by_chrom` to FALSE (when `n_window` is positive only chromosomes
-> that follow one another in the VCF are compared).
+> computational efficientcy that you should try to balance. Generally one should
+> first increase `window_size_bp` to 1e5 and then achieve a higher size by
+> increasing `n_window` above 1. The `n_window` argument can also be set to a
+> negative number, in which case all sites within each CHROM are compared (the
+> window size will still impact performance). To enable comparisons between
+> chromosomes set `by_chrom` to FALSE (when `n_window > 0` only chromosomes that
+> follow one another in the VCF are compared).
 
 ```{r linked_sites_summary}
 summary(lgraph, vcf = vcf)
 ```
 
 This will return a directed acyclic graph in which each node is labeled with the
-(column) index of a site in the vcf. Each node that should be removed to reduce
-linkage is connected to a note that will be retained and is guaranteed to have
-an R^2^ of above the cutoff (retained -> removed). Please refer to the Igraph
-package for information on working with graphs.
+(column) index of a site in the **unmasked** vcf. Each node that should be
+removed to reduce linkage is connected to a note that will be retained and is
+guaranteed to have an R^2^ above the cutoff (retained -> removed). Please refer
+to the Igraph package for information on working with these graphs.
 
 Luckily there is no need to understand graph theory as the removal of linked
 sites can be automated by passing the graph as the second argument to the
@@ -314,17 +314,17 @@ summary(vcf)
 
 It is safe to directly modify the varkit object using the `$` operator as long
 as `nrow(vcf$site) == ncol(vcf$geno) == length(vcf$use_sites)`, the
-`vcf$site$chrom` & `vcf$site$pos` columns are retained, and `vcf$geno` keeps
-the 'varkit_geno' class (the latter may be violated when extracting, e.g.
-`geno(vcf)[, 1]`, which will remove the class).
+`vcf$site$chrom` & `vcf$site$pos` columns are retained, and `vcf$geno` keeps the
+'varkit_geno'. However it is generally advised to use the setter functions to
+modify varkit objects (e.g. `geno(vcf) <- my_new_value`).
 
-To retain the "varkit_geno" class use the `varkit_geno()` function, e.g.:
+A condensed version of the example given before:
 
 ```{r advanced_geno, eval = FALSE}
-vcf$geno <- varkit_geno(my_matrix) # this is an example, my_matrix is not defined here
+geno(vcf) <- parse_geno(unmaks_all(vcf), type = "GT")
 ```
 
-Or use one of the the provided apply wrappers:
+This is how you would modify the object directly (using one of the handy apply wrappers):
 
 ```{r apply}
 # Here `x` contains all genotypes for a single site (length == # samples)
@@ -334,7 +334,9 @@ vcf$geno <- apply_sites(vcf$geno, function(x) x + 1)
 vcf$geno <- apply_samples(vcf$geno, function(x) x - 1)
 ```
 
-Above we do not use `geno(vcf)` as that function only returns the non-masked sites.
+Be warned that, in the above example, **you** will responsible for ensuring that
+the previously mentioned constraints are satisfied! Also note that we do not use
+`geno(vcf)` as that function only returns the non-masked sites.
 
 > NOTE: the `apply` wrappers will only retain the "varkit_geno" class if the
 > function returns a vector of the same length as the input.
