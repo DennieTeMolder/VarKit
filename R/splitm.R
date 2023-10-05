@@ -43,7 +43,7 @@ splitm <- function(x,
     })
   }
 
-  .split_internal <- function(ind, data, margin) {
+  .extract <- function(ind, data, margin) {
     len <- length(ind)
     if (len == 1 && ind == 0)
       return(data)
@@ -66,10 +66,10 @@ splitm <- function(x,
   if (margin != 0)
     stopifnot(length(dim(x)) == 2)
   stopifnot(is.numeric(min_size), length(min_size) == 1)
-  if (!missing(min_size) && missing(by_na_pattern))
-    by_na_pattern <- TRUE
+  if (!missing(min_size) && !by_na_pattern)
+    warning("The argument 'min_size' is ignored when 'by_na_pattern = FALSE'.")
   if (by_na_pattern && margin == 0) {
-    warning("The options 'by_na_pattern' & 'min_size' are ignored for one-dimensional objects.")
+    warning("The arguments 'by_na_pattern' & 'min_size' are ignored for one-dimensional objects.")
     by_na_pattern <- FALSE
   }
 
@@ -82,7 +82,7 @@ splitm <- function(x,
   ## Code ------
   # Implement base::split() with support for margins
   if (is.null(f)) {
-    f_split_ind <- list(0) # Instruct .split_internal to return the full object
+    f_split_ind <- list(0) # Instruct .extract to return the full object
   } else {
     if (inherits(f, "formula")) {
       f <- .apply_formula(f, x, margin)
@@ -99,20 +99,18 @@ splitm <- function(x,
 
   # Split by f
   res <- lapply(f_split_ind, function(ind) {
-    split <- .split_internal(ind, x, margin)
-    dist <- if (is.null(distances)) NULL else .split_internal(ind, distances, margin = 0)
+    split <- .extract(ind, x, margin)
+    dist <- if (is.null(distances)) NULL else .extract(ind, distances, margin = 0)
 
     max_size <- if (is.null(dist)) .get_size(split) else diff(range(dist))
-    if (!is.null(size))
-      size <- min(size, max_size)
 
-    if (is.null(size) || size == max_size) {
+    if (is.null(size) || size >= max_size) {
       size_split_ind <- list(0)
     } else {
       if (is.null(dist)) {
         size_split_ind <- rep(seq(0, max_size / size), each = size, length.out = max_size)
       } else {
-        size_split_ind <- seq(min(dist) + size, max_size + 1, by = size)
+        size_split_ind <- min(dist) + seq(size, max_size + 1, by = size)
         size_split_ind <- findInterval(dist, size_split_ind)
       }
       size_split_ind <- split(seq_along(size_split_ind), size_split_ind)
@@ -121,12 +119,12 @@ splitm <- function(x,
     # Split by size
     # NOTE Using indices is 10x faster then using unique() & ==
     size_splits <- lapply(size_split_ind, function(ind2) {
-      split2 <- .split_internal(ind2, split, margin)
+      split2 <- .extract(ind2, split, margin)
 
       if (!by_na_pattern)
         return(split2)
 
-      min_size <- min(min_size, size, max_size)
+      min_size_current <- min(min_size, if (is.null(dist)) max_size else .get_size(split2))
 
       # Split the current matrix further based on pattern of NA values if any
       if (!anyNA(split2))
@@ -142,14 +140,14 @@ splitm <- function(x,
 
       # Group together "rare" na patterns for computational efficiency
       # The combined patterns end up in an impure matrix named "below_min_size"
-      if (min_size > 1 && length(levels(is_na)) > 1) {
-        is_na <- forcats::fct_lump_min(is_na, min = min_size, other_level = "below_min_size")
+      if (min_size_current > 1 && length(levels(is_na)) > 1) {
+        is_na <- forcats::fct_lump_min(is_na, min = min_size_current, other_level = "below_min_size")
         if (length(levels(is_na)) == 1)
           return(list(below_min_size = split2))
       }
 
       # Split such that each subset has the same pattern of NAs (except below_min_size)
-      lapply(split(seq_along(is_na), is_na), .split_internal, split2, margin)
+      lapply(split(seq_along(is_na), is_na), .extract, split2, margin)
     })
     setNames(size_splits, NULL)
   })
