@@ -81,6 +81,7 @@ close.varkit_index <- function(con, ...) {
     props <- .get_props(con)
     close(props$con)
     rm("con", envir = props)
+    props$curr_line <- 1
   }
   invisible(con)
 }
@@ -93,6 +94,9 @@ get_current <- function(x) {
 ##' @export
 get_current.varkit_index <- function(x) {
   props <- .get_props(x)
+
+  if (!is_open.varkit_index(x))
+    props$curr_line <- 1
 
   i <- max(0, which(x$linum <= props$curr_line))
   res <- tibble::as_tibble(x[max(i, 1), ])
