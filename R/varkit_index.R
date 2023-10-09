@@ -36,12 +36,12 @@ is_varkit_index <- function(x) {
 ##' @export
 print.varkit_index <- function(x, ...) {
   props <- .get_props(x)
-  cat("*VarKit Index Object*\n")
+  .msg_h1("VarKit Index Object")
   .print_tbl(x, ...)
   if (is_open(x)) {
-    cat("# With a pointer at line", props$curr_line, "in", props$file, "\n")
+    .msg_info("With a pointer at line ", props$curr_line, " in ", props$file)
   } else {
-    cat("# For file", props$file, "\n")
+    .msg_info("For file ", props$file)
   }
   invisible(x)
 }
