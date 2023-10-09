@@ -4,7 +4,7 @@ varkit_index <- function(index, file, ...) {
   stopifnot(c("id", "linum", "n_lines") %in% colnames(index))
   if (any(is.na(index$linum)) || any(is.na(index$n_lines)))
     stop("The 'linum' and/or 'n_lines' columns contain NA values!")
-  if (is.unsorted(index$linum))
+  if (is.unsorted(index$linum, strictly = TRUE))
     stop("The provided 'index' appears to be unsorted!")
   if (any(diff(index$linum) != utils::head(index$n_lines, n = -1)))
     stop("The 'n_lines' column id not congruent with 'linum'!")

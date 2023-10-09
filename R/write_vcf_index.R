@@ -6,11 +6,15 @@ write_vcf_index <- function(index, vcf_path) {
 ##' @export
 write_vcf_index.varkit_index <- function(index, vcf_path) {
   stopifnot(c("id", "linum", "n_lines") %in% colnames(index))
+  stopifnot(!is.unsorted(index$linum, strictly = TRUE))
   stopifnot(file.exists(vcf_path))
 
   index_path <- paste0(vcf_path, ".index.tsv")
 
   header <- read_vcf_header(vcf_path)
+  expected_start <- nrow(meta(header)) + 2
+  if (index$linum[1] != expected_start)
+    stop("The first value of 'linum' does not match with the VCF header size! Expected value: ", expected_start)
   sha <- digest::sha1(header)
 
   cli::cli_progress_step("Writing VCF index to: {index_path}")
