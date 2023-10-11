@@ -10,7 +10,7 @@ varkit_geno.data.frame <- function(x) {
 
 ##' @export
 varkit_geno.matrix <- function(x) {
-  class(x) <- c("varkit_geno", class(x))
+  class(x) <- unique(c("varkit_geno", class(x)))
   x
 }
 
@@ -47,6 +47,7 @@ print.varkit_geno <- function(x, ..., n = .max_print_col(x), n_samples = 25) {
 
   invisible(x)
 }
+
 ##' @export
 `[.varkit_geno` <- function(x, ...) {
   res <- NextMethod()

@@ -59,6 +59,6 @@ site.varkit <- function(x,
   value$chrom <- as.character(value$chrom)
   value$pos <- as.numeric(value$pos)
 
-  x$meta <- value
+  x$site <- value
   x
 }
