@@ -1,5 +1,5 @@
 ##' @export
-spec_vcf <- function(file, col_names = NULL, skip_cols = NULL, na_geno = "./.", spec = NULL, ...) {
+spec_vcf <- function(file, col_names = NULL, skip_cols = NULL, na_geno = c("./.", ".|."), spec = NULL, ...) {
   if (!is.null(col_names)) {
     stopifnot(is.character(col_names))
   } else if (!is.null(spec) && !is.null(spec$col_names)) {
@@ -37,7 +37,6 @@ spec_vcf <- function(file, col_names = NULL, skip_cols = NULL, na_geno = "./.", 
       info = "c",
       format = "c"
     ),
-    quoted_na = FALSE,
     comment = "#",
     trim_ws = TRUE,
     guess_max = 5000,
