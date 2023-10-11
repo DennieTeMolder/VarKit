@@ -76,10 +76,11 @@ print.varkit <- function(x, ..., n = NULL, n_samples = 10) {
   cat("\n")
 
   if (all(x$use_site)) {
-    cli::cli_alert_success("No mask is active, using all sites. See `summary(vcf)`")
+    total <- .frmt_big(length(x$use_site))
+    cli::cli_alert_success("No mask is active, using all {total} sites. See `summary(vcf)`")
   } else {
-    current <- sum(x$use_site)
     total <- length(x$use_site)
+    current <- sum(x$use_site)
     cli::cli_alert_warning(sprintf(
       "A mask is active, using %s%% of all sites (%s/%s). See `summary(vcf)`",
       round(current / total * 100, digits = 1), .frmt_big(current), .frmt_big(total)
