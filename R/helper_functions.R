@@ -164,58 +164,62 @@
 .ad2aaf <- function(vcf, type = "AD") {
   stopifnot(is_varkit(vcf))
 
-  # Extract allelic depth (AD)
-  ad <- parse_geno(vcf, type)
+  if (is.null(type)) {
+    ad <- geno(vcf)
+  } else {
+    # Extract allelic depth (AD)
+    ad <- parse_geno(vcf, type)
+  }
+
+  if (storage.mode(ad) != "character")
+    stop(if (is.null(type)) "geno(vcf)" else "parse_geno(vcf, type)", " should return a character matrix!")
+
   n_sites <- ncol(ad)
   n_samples <- nrow(ad)
   n_allele <- max(stringr::str_count(ad[1, ], stringr::fixed(","))) + 1
 
+  if (n_allele < 2)
+    stop("Could not detect multiple allelic depths delimited by a ','!")
+
+  # Variables for storing results
+  aaf <- matrix(NA_real_, nrow = n_samples, ncol = n_sites, dimnames = dimnames(ad))
+  bi_dp <- matrix(NA_integer_, nrow = n_samples, ncol = n_sites, dimnames = dimnames(ad))
+  bi_frac <- matrix(NA_real_, nrow = n_samples, ncol = n_sites, dimnames = dimnames(ad))
+  alt_idx <- vector("integer", n_sites)
+
   # Split into one matrix per site of [samples x alleles]
   ad <- stringr::str_split_fixed(ad, stringr::fixed(","), n = n_allele)
-  ad <- utils::type.convert(ad, as.is = TRUE, na.strings = c("", "."))
+  storage.mode(ad) <- "integer"
   ad <- split.data.frame(ad, rep(seq_len(n_sites), each = n_samples))
   names(ad) <- NULL
 
-  # Remove NA columns
-  ad <- lapply(ad, function(site) site[, !apply(is.na(site), 2, all)])
+  for (i in seq_along(ad)) {
+    current <- ad[[i]]
+    is_na <- is.na(current[1, ])
+    if (any(is_na))
+      current <- current[, !is_na, drop = FALSE]
 
-  res <- lapply(ad, function(site) {
-    if (ncol(site) == 2) {
-      # Simple case if site is bi-allelic (bi_dp == dp)
-      alt_idx <- 1
-      bi_dp <- rowSums(site)
-      bi_frac <- ifelse(bi_dp == 0, NA, 1)
+    if (ncol(current) == 2) {
+      # Simple case if current is bi-allelic (bi_dp == dp)
+      current_idx <- 2
+      current_dp <- current[, 1] + current[, current_idx]
+      current_frac <- ifelse(current_dp > 0, 1, NaN)
     } else {
       # For multi-allelic sites, use the most abundant alt allele
-      alt_idx <- which.max(colSums(site[, -1, drop = FALSE]))
+      current_idx <- which.max(colSums(current[, -1, drop = FALSE])) + 1
       # Bi-allelic read depth
-      bi_dp <- rowSums(site[, c(1, alt_idx + 1), drop = FALSE])
+      current_dp <- current[, 1] + current[, current_idx]
       # Fraction of total reads that support bi-allelic sites
       # 0 if there are only multi-allelic reads, NA if there are no reads
-      dp <- rowSums(site)
-      bi_frac <- bi_dp / ifelse(dp == 0, NA, dp)
+      current_frac <- current_dp / rowSums(current)
     }
 
     # Alternative Allele Fraction (AAF)
-    aaf <- site[, alt_idx + 1] / ifelse(bi_dp == 0, NA, bi_dp)
-    aaf <- round(aaf, 3)
+    aaf[, i] <- current[, current_idx] / current_dp
+    bi_dp[, i] <- current_dp
+    bi_frac[, i] <- current_frac
+    alt_idx[i] <- current_idx - 1
+  }
 
-    list(aaf = aaf, bi_dp = bi_dp, bi_frac = bi_frac, alt_idx = alt_idx)
-  })
-  rm(ad)
-
-  # Unpack and convert to matrix (last entry in each list is a vector not matrix)
-  alt_idx <- unlist(lapply(res, utils::tail, n = 1), use.names = FALSE)
-  col_names <- utils::head(names(res[[1]]), n = -1)
-  res <- lapply(seq_along(col_names), function(i) {
-    mat <- sapply(res, function(x) x[[i]], simplify = "array")
-    rownames(mat) <- samples(vcf)
-    varkit_geno(mat)
-  })
-  names(res) <- col_names
-
-  # Indicate which alt allele was used
-  res$alt_idx <- alt_idx
-
-  res
+  list(aaf = varkit_geno(aaf), bi_dp = varkit_geno(bi_dp), bi_frac = varkit_geno(bi_frac), alt_idx = alt_idx)
 }
