@@ -75,23 +75,22 @@
   restore_fn
 }
 
-.maxnchar <- function(x) {
-  if (all(is.na(x)))
-    return(2)
-  max(nchar(x), na.rm = TRUE)
-}
-
 .max_print_col <- function(mat, width = getOption("width")) {
   stopifnot(is.matrix(mat))
 
+  .max_nchar <- function(x) {
+    max(nchar(format(x, trim = TRUE)))
+  }
+
   # Reduce size of matrix to a reasonable size
-  check_ncol <- min(c(300, ncol(mat)))
-  mat <- mat[, seq_len(check_ncol), drop = FALSE]
+  n_max <- max(1, floor(width / 2) - 1)
+  if (ncol(mat) > n_max)
+    mat <- mat[, seq_len(n_max), drop = FALSE]
 
   if (is.null(rownames(mat))) {
     rname_len <- nchar(nrow(mat)) + 3
   } else {
-    rname_len <- .maxnchar(rownames(mat))
+    rname_len <- .max_nchar(rownames(mat))
   }
 
   if (is.null(colnames(mat))) {
@@ -102,8 +101,8 @@
     cname_len <- nchar(colnames(mat)) + 3
   }
 
-  col_len <- apply(mat, 2, .maxnchar) + 1
-  if (is.character(mat[1]))
+  col_len <- apply(mat, 2, .max_nchar) + 1
+  if (is.character(mat))
     col_len <- col_len + 2
 
   # Check if col name or col value is widest, add row name width to first element

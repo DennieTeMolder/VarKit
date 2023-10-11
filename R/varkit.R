@@ -48,7 +48,13 @@ is_varkit <- function(x) {
 }
 
 ##' @export
-print.varkit <- function(x, ..., n = .max_print_col(geno(x)), n_samples = 10) {
+print.varkit <- function(x, ..., n = NULL, n_samples = 10) {
+  if (is.null(n)) {
+    width <- getOption("width")
+    which_show <- utils::head(which(x$use_site), n = max(1, floor(width / 2) - 1))
+    n <- .max_print_col(x$geno[seq_len(n_samples), which_show], width = width)
+  }
+
   .msg_h1("VarKit Variant Object")
   if (!is.null(x$meta)) {
     .msg_h2("Header metadata, `meta(vcf)`")
