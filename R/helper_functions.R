@@ -44,6 +44,11 @@
   dplyr::mutate(.tbl, dplyr::across(dplyr::everything(), .fns, ...))
 }
 
+.frmt_big <- function(x, scientific = FALSE, ...) {
+  big.mark <- if (getOption("OutDec", ".") == ".") "," else "."
+  format(x, big.mark = big.mark, scientific = scientific, ...)
+}
+
 .msg_info <- function(...) {
   cat(paste0("# ", cli::symbol$info, " ", ..., "\n"))
 }

@@ -46,7 +46,6 @@ check_window <- function(vcf, window, cols_each, probs = c(0, 0.025, 0.5, 0.975,
   }
 
   res <- c(mean = mean(dist), quantile(dist, probs = probs))
-  big.mark <- if (getOption("OutDec", ".") == ".") "," else "."
-  res <- format(round(res), big.mark = big.mark, scientific = FALSE)
+  res <- .frmt_big(round(res))
   data.frame(quantile = names(res), bp_distance = setNames(res, NULL))
 }
