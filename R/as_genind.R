@@ -1,5 +1,7 @@
 ##' @export
 as_genind <- function(x, ploidy, type = c("codom", "PA"), check_geno = TRUE) {
+  if (!nchar(system.file(package = "adegenet")) > 0)
+    stop("This function requires the 'adegenet' package to be installed!")
   UseMethod("as_genind", x)
 }
 
