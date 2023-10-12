@@ -43,12 +43,14 @@ is_varkit_header <- function(x) {
 
 ##'@export
 print.varkit_header <- function(x, ..., n = NULL) {
-  cat("*VarKit Header Object*\n")
+  .msg_h1("VarKit Header Object")
   if (!is.null(meta(x))) {
-    cat("Header metadata, `meta(header)`:\n")
+    .msg_h2("Header metadata, `meta(header)`")
     print(meta(x), ..., n = n)
+    cat("\n")
   }
-  cat("\nColumn names (for 'skip_cols'), `col_names(header)`:\n")
-  print(x$col_names, ...)
-  cat("# Use `samples(header)` to get only columns recognised as samples\n")
+  .msg_h2("Column names (for 'skip_cols'), `col_names(header)`")
+  cnames <- cli::cli_vec(col_names(x), style = list("vec-sep" = ", ", "vec-last" = ", ", "vec-trunc" = 100))
+  cli::cli_text("{cnames}")
+  .msg_info("Use `samples(header)` to get only columns recognised as sample names")
 }
