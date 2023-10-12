@@ -1,5 +1,5 @@
 ##' @export
-index_vcf <- function(file, header = NULL, ...) {
+index_vcf <- function(file, header = NULL, chunk_size = 1e5, ...) {
   stopifnot(file.exists(file))
   if (!is.null(header)) {
     stopifnot(is_varkit_header(header))
@@ -18,29 +18,32 @@ index_vcf <- function(file, header = NULL, ...) {
   spec_chrom$col_types <- readr::cols_only(chrom = "f")
   spec_chrom$skip_empty_rows <- FALSE
   spec_chrom$comment <- ""
+  spec_chrom$na <- character()
   spec_chrom$skip <- nrow(header$meta) + 1
+  spec_chrom$lazy <- NULL
+  spec_chrom$chunk_size <- chunk_size
+  spec_chrom$callback <- readr::DataFrameCallback$new(function(chunk, start) {
+    which_keep <- which(!.is_repeated(chunk$chrom))
+    tibble::tibble(
+      id = as.character(chunk$chrom[which_keep]),
+      linum = which_keep + start - 1,
+      chunk_end = nrow(chunk) + start - 1
+    )
+  })
 
-  cli::cli_progress_step("Extracting CHROM fields")
-  chrom <- do.call(readr::read_delim, spec_chrom)[[1]]
-  cli::cli_progress_done()
-
-  cli::cli_progress_step("Computing index")
-  n_total <- length(chrom)
-  which_diff <- which(c(1, diff(as.integer(chrom))) != 0)
-  chrom <- as.character(chrom[which_diff])
-
-  index <- tibble::tibble(
-    id = chrom,
-    linum = which_diff + spec_chrom$skip,
-    n_lines = diff(c(which_diff, n_total + 1))
-  )
+  cli::cli_progress_step("Indexing VCF body")
+  index <- do.call(readr::read_delim_chunked, spec_chrom)
+  total_lines <- utils::tail(index$chunk_end, n = 1)
+  index <- index[!.is_repeated(index$id), 1:2]
+  index$n_lines <- diff(c(index$linum, total_lines + 1))
+  index$linum <- index$linum + spec_chrom$skip
 
   # Checks
-  if (anyNA(chrom))
-    warning("Some CHROM fields appear to be empty/NA.")
-  if (any(substr(chrom, 1, 1) == "#"))
+  if (any(nchar(index$id) == 0))
+    warning("Some CHROM fields appear to be empty.")
+  if (any(substr(index$id, 1, 1) == "#"))
     warning("The VCF contains comments. The index likely requires manual filtering.")
-  if (anyDuplicated(chrom) != 0)
+  if (anyDuplicated(index$id) != 0)
     warning("The VCF appears to be unsorted, this could cause errors later.")
 
   # Create index and add additional properties for next_chrom()

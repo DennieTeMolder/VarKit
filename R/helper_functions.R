@@ -40,6 +40,14 @@
   all(duplicated(x)[-1])
 }
 
+.is_repeated <- function(x) {
+  if (is.character(x))
+    x <- as.factor(x)
+  if (is.factor(x))
+    x <- as.integer(x)
+  c(FALSE, diff(x) == 0)
+}
+
 .mutate_all <- function(.tbl, .fns, ...) {
   dplyr::mutate(.tbl, dplyr::across(dplyr::everything(), .fns, ...))
 }
