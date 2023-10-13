@@ -19,6 +19,7 @@ Imports:
     igraph,
     pillar,
     purrr,
+    Rcpp,
     readr,
     RhpcBLASctl,
     rlang,
@@ -31,3 +32,5 @@ Suggests:
 VignetteBuilder: knitr
 Enhances: 
     adegenet
+LinkingTo: 
+    Rcpp
