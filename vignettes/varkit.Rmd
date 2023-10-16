@@ -61,7 +61,7 @@ you know you are not going to use certain fixed fields and want to save memory.
 For example here we exclude the "INFO" and "FILTER" fixed fields and the sample "N2":
 
 ```{r read}
-vcf <- read_vcf(file, skip_cols = c("info", "filter", "N2"))
+vcf <- read_vcf(file, col_select = c(-info, -filter, -N2))
 print(vcf)
 ```
 
@@ -225,7 +225,7 @@ Moreover, masks are also stored in the FILTER column of the resulting VCF file
 if `replace_filter = TRUE`, allowing you to save and load a masked VCF:
 
 ```{r save_masked_vcf}
-temp_file <- tempfile(fileext = ".vcf.bz2")
+temp_file <- tempfile(fileext = ".vcf")
 write_vcf(vcf, file = temp_file, replace_filter = TRUE)
 
 read_vcf(temp_file)
