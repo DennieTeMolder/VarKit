@@ -3,7 +3,7 @@ varkit <- function(vcf, meta = NULL) {
   # Checks
   stopifnot(is.data.frame(vcf), nrow(vcf) > 0)
   if (!is.null(meta))
-    stopifnot(is.data.frame(meta), colnames(meta) == c("name", "value"))
+    .validate_varkit_meta(meta)
 
   # Detect fixed fields
   fixed_idx <- stats::na.omit(match(.fixed_columns(), colnames(vcf)))
@@ -31,15 +31,15 @@ varkit <- function(vcf, meta = NULL) {
   if (!any(use_site))
     use_site <- rep(TRUE, ncol(geno))
 
-  vcf <- list(
-    meta = meta,
-    site = fxd,
-    geno = geno,
-    use_site = use_site
+  structure(
+    list(
+      meta = meta,
+      site = fxd,
+      geno = geno,
+      use_site = use_site
+    ),
+    class = c("varkit", "varkit_header")
   )
-  class(vcf) <- c("varkit", "varkit_header")
-
-  vcf
 }
 
 ##' @export
