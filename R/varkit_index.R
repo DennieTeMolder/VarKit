@@ -24,7 +24,7 @@ varkit_index <- function(index, file, ...) {
   props$curr_line <- 1
   attr(index, "props") <- props
 
-  class(index) <- c("varkit_index", class(index))
+  class(index) <- unique(c("varkit_index", class(index)))
   index
 }
 
@@ -53,14 +53,13 @@ is_open <- function(x) {
 
 ##' @export
 is_open.connection <- function(x) {
-  summ <- tryCatch(summary.connection(x), error = function(e) NULL)
-  !is.null(summ)
+  tryCatch(isOpen(x), error = function(e) FALSE)
 }
 
 ##' @export
 is_open.varkit_index <- function(x) {
   props <- .get_props(x)
-  if (!exists("con", envir = props))
+  if (is.null(props$con))
     return(FALSE)
   is_open(props$con)
 }
@@ -115,29 +114,29 @@ get_current.varkit_index <- function(x) {
 }
 
 ##' @export
-next_lines <- function(x, n = NULL, warn = FALSE, ...) {
+next_lines <- function(x, n = NULL, skip = 0) {
   UseMethod("next_lines", x)
 }
 
 ##' @export
-next_lines.varkit_index <- function(x, n = NULL, warn = FALSE, ...) {
+next_lines.varkit_index <- function(x, n = NULL, skip = 0) {
   if (!is.null(n)) {
     stopifnot(is.numeric(n), length(n) == 1, n > 0)
   } else {
-    n <- get_current(x)$n_lines
+    n <- get_current.varkit_index(x)$n_lines
     if (n < 1)
       n <- utils::tail(x$n_lines)
   }
 
-  open(x)
+  open.varkit_index(x)
   props <- .get_props(x)
-  lines <- readLines(props$con, n = n, warn = FALSE, ...)
+  lines <- .scan_fields(props$con, sep = "\n", nlines = n, skip = skip)
 
   n <- length(lines)
+  props$curr_line <- props$curr_line + n + skip
+
   if (n == 0)
     return(NULL)
-
-  props$curr_line <- props$curr_line + n
   lines
 }
 
@@ -185,14 +184,14 @@ goto.varkit_index <- function(x, where = NULL) {
 
   if (times >= 1) {
     cli::cli_progress_bar(total = n)
-    for (n_lines in by) {
-      if (is.null(next_lines(index, n = n_lines)))
+    for (i in seq_len(times)) {
+      if (is.null(next_lines(index, n = 1, skip = block_size - 1)))
         return(invisible(index))
-      cli::cli_progress_update(inc = n_lines)
+      cli::cli_progress_update(inc = block_size)
     }
   }
-  if (mod > 0) {
-    next_lines(index, n = mod)
+  if (mod >= 1) {
+    next_lines(index, n = 1, skip = mod - 1)
   }
 
   invisible(index)

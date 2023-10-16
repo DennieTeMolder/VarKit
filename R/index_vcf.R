@@ -1,12 +1,14 @@
 ##' @export
 compute_vcf_index <- function(file) {
   file <- path.expand(file)
-  stopifnot(file.exists(file))
+  if (!file.exists(file))
+    stop("Could not locate the provided file: '", file, "'")
   tibble::as_tibble(.index_vcfC(file))
 }
 
 ##' @export
 index_vcf <- function(file, ...) {
+  cli::cli_progress_step("Indexing VCF")
   index <- compute_vcf_index(file)
   if (nrow(index) < 2) {
     stop("The file does not appear to be a VCF or tabular data of any sort!")
@@ -15,8 +17,8 @@ index_vcf <- function(file, ...) {
   index$linum <- cumsum(c(1L, utils::head(index$n_lines, n = -1)))
   index <- index[c(1, 3, 2)]
 
-  # Header line row-index
-  h_idx <- 2
+  cli::cli_progress_step("Validating Index")
+  h_idx <- 2 # Header line row-index
   if (index$id[1] != "##") {
     if (index$n_lines[1] != 1)
       stop("The file is missing a header or column names!")
@@ -34,32 +36,21 @@ index_vcf <- function(file, ...) {
 
   # Check body
   if (any(nchar(index$id) == 0))
-    warning("Some CHROM fields appear to be empty.")
+    warning("Some CHROM fields appear to be empty. These might be skipped when reading, invalidating the index.")
   if (any(substr(index$id, 1, 1) == "#"))
-    warning("The VCF contains comments. The index likely requires manual filtering.")
+    warning("The VCF contains comments. These might be skipped when reading, invalidating the index.")
   if (anyDuplicated(index$id) != 0)
     warning("The VCF appears to be unsorted, this could cause errors later.")
 
-  # Required for next_chrom()
-  header <- read_vcf_header(file)
-  if (!"chrom" %in% col_names(header))
-    stop("Could not detect CHROM field in VCF! Examine the output of `read_vcf_header()`.")
-  spec <- spec_vcf(file = file, col_names = col_names(header), ...)
-
-  # Create index and add additional properties for next_chrom()
-  varkit_index(index, file = file, header = header, spec = spec)
+  varkit_index(index, file = file)
 }
 
 ##' @export
-index_vcf_partial <- function(file, chunk_size = 5e3, header = NULL, ...) {
-  if (!is.null(header)) {
-    stopifnot(is_varkit_header(header))
-  } else {
-    cli::cli_progress_step("Parsing VCF header")
-    header <- read_vcf_header(file)
-    cli::cli_progress_done()
-  }
-  spec <- spec_vcf(file = file, col_names = col_names(header), ...)
-  index <- tibble::tibble(id = "chunk_size", linum = nrow(meta(header)) + 2, n_lines = chunk_size)
-  varkit_index(index, file = file, header = header, spec = spec)
+index_vcf_partial <- function(file, chunk_size = 1e4, ...) {
+  index <- tibble::tibble(
+    id = "chunk_size",
+    linum = find_header_line(file) + 1,
+    n_lines = chunk_size
+  )
+  varkit_index(index, file = file, ...)
 }
