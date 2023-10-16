@@ -2,6 +2,7 @@
 ##'
 ##' @title Load A VCF File From Disk
 ##' @param file String, path to the vcf(.bgz) file to load
+##' @param col_select Columns to include in the results. You can use the same mini-language as ‘dplyr::select()’ to refer to the columns by name. Use ‘c()’ to use more than one selection expression.
 ##' @param header varkit_header object, used to determine the column names of 'file'.
 ##' @param n_max Integer, maximum number of variants to load. Zero or negative will load all.
 ##' @param skip Integer, number of variants to skip before loading 'n_max' variants.
@@ -12,7 +13,7 @@
 ##' @examples
 ##' file <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
 ##' vcf <- read_vcf(file)
-read_vcf <- function(file, header = NULL, n_max = -1, skip = 0, na_geno = c("./.", ".|.")) {
+read_vcf <- function(file, col_select = NULL, header = NULL, n_max = -1, skip = 0, na_geno = c("./.", ".|.")) {
   if (!is.null(header))
     validate_varkit_header(header)
 
@@ -41,6 +42,9 @@ read_vcf <- function(file, header = NULL, n_max = -1, skip = 0, na_geno = c("./.
   body <- .read_vcf_body(con, col_names = header$col_names, n_max = n_max, skip = skip, na_geno = na_geno)
   if (nrow(body) < 1)
     stop("The VCF body appears to be empty!")
+
+  if (!missing(col_select))
+    body <- dplyr::select(body, {{ col_select }})
 
   varkit(body, meta = header$meta)
 }
