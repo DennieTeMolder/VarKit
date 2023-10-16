@@ -8,7 +8,7 @@ example <- "./inst/extdata/celegans.vcf.bgz"
 ## Varkit object ------
 read_vcf_header(example)
 
-vcf <- read_vcf(example, skip_cols = c("id", "filter", "N2"))
+vcf <- read_vcf(example, col_select = c(-id, -filter, -N2))
 print(vcf)
 
 varkit_help(vcf)
@@ -41,7 +41,7 @@ summary(vcf)
 vcf <- import_mask(vcf, my_mask)
 summary(vcf)
 
-temp_file <- tempfile(fileext = ".vcf.bz2")
+temp_file <- tempfile(fileext = ".vcf.gz")
 write_vcf(vcf, temp_file, replace_filter = TRUE)
 read_vcf(temp_file)
 
