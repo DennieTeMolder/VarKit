@@ -3,6 +3,20 @@
   c("chrom", "pos", "id", "ref", "alt", "qual", "filter", "info", "format")
 }
 
+.scan_fields <- function(con, sep = "\t", nlines = 0, skip = 0, na.strings = "") {
+  scan(con,
+    sep = sep,
+    nlines = nlines,
+    skip = skip,
+    na.strings = na.strings,
+    what = character(),
+    quote = "",
+    strip.white = TRUE,
+    blank.lines.skip = FALSE,
+    quiet = TRUE
+  )
+}
+
 .stopifnotsingle <- function(x, class = NULL) {
   if (!is.null(class) && !inherits(x, what = class))
     stop("Argument '", substitute(x), "' should be of class '", class, "'!")

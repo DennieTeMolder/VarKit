@@ -1,39 +1,46 @@
 ##' @export
-varkit_header <- function(x) {
-  stopifnot(is.character(x))
-  stopifnot(length(x) > 1)
+varkit_header <- function(meta = data.frame(), col_names = character()) {
+  meta <- as.data.frame(meta)
+  col_names <- as.character(col_names)
+  header <- new_varkit_header(meta = meta, col_names = col_names)
+  validate_varkit_header(header)
+}
 
-  if (!.str_starts(x[1], "##fileformat=VCF"))
-    warning("No valid VCF fileformat meta information detected on the first line!")
-
-  if (!all(.str_starts(x, "#")))
-    stop("Invalid VCF. Not all meta lines start with a '#'!")
-
-  header <- list(
-    meta = .parse_meta(utils::head(x, n = -1)),
-    col_names = .parse_col_names(utils::tail(x, n = 1))
+##' @export
+new_varkit_header <- function(meta = data.frame(), col_names = character()) {
+  stopifnot(is.null(meta) || is.data.frame(meta))
+  stopifnot(is.character(col_names))
+  structure(
+    list(meta = tibble::as_tibble(meta), col_names = col_names),
+    class = "varkit_header"
   )
-  class(header) <- c("varkit_header", "list")
-  header
 }
 
-.parse_meta <- function(x) {
-  x <- stringr::str_remove(x, "^##")
-  x <- stringr::str_split_fixed(x, "=", n = 2)
-  tibble::tibble(name = x[, 1], value = x[, 2])
+##' @export
+validate_varkit_header <- function(x) {
+  stopifnot(c("meta", "col_names") %in% names(x))
+
+  if (!is.null(x$meta))
+    .validate_varkit_meta(x$meta)
+
+  if (!is.character(x$col_names))
+    stop("The 'col_names' slot must be a character vector!", call. = FALSE)
+  if (anyNA(x$col_names) && any(nchar(x$col_names) < 1))
+    stop("The 'col_names' slot cannot be NA or a zero-length string!")
+  if (anyDuplicated(x$col_names))
+    warning("Duplicate 'col_names' detected.")
+
+  x
 }
 
-.parse_col_names <- function(x) {
-  if (substr(x, 2, 2) == "#")
-    stop("The last line does not appear to be the header line")
-  col_names <- stringr::str_remove(x, "^#")
-  col_names <- stringr::str_split_1(col_names, "\t")
-
-  # Standardise the names of fixed columns
-  fixed_names <- .fixed_columns()
-  fixed_idx <- stats::na.omit(match(fixed_names, tolower(col_names)))
-  col_names[fixed_idx] <- fixed_names[seq_along(fixed_names) %in% fixed_idx]
-  col_names
+.validate_varkit_meta <- function(meta) {
+  if (!tibble::is_tibble(meta))
+    stop("The 'meta' slot must be a tibble!", call. = FALSE)
+  if (all(colnames(meta) != c("name", "value")))
+    stop("The 'meta' slot should only have a 'name' & 'value' column!", call. = FALSE)
+  if (anyNA(meta$name))
+    stop("The 'meta$name' contains NAs!", call. = FALSE)
+  meta
 }
 
 ##' @export

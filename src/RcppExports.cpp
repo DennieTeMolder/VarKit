@@ -33,10 +33,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// find_header_line
+int find_header_line(std::string x);
+RcppExport SEXP _varkit_find_header_line(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(find_header_line(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_varkit_str_splitC", (DL_FUNC) &_varkit_str_splitC, 2},
     {"_varkit_index_vcf", (DL_FUNC) &_varkit_index_vcf, 1},
+    {"_varkit_find_header_line", (DL_FUNC) &_varkit_find_header_line, 1},
     {NULL, NULL, 0}
 };
 

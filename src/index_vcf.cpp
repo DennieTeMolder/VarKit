@@ -136,3 +136,45 @@ DataFrame index_vcf(std::string x) {
 
   return DataFrame::create(Named("id") = id, Named("n_lines") = n_lines);
 }
+
+// [[Rcpp::export(name=".find_header_lineC")]]
+int find_header_line(std::string x) {
+  gzFile file = gzopen(x.c_str(), "r");
+
+  if (! file) {
+    Rcpp::stop("Could not open '" + x + "'! Error: " + strerror(errno));
+  }
+
+  unsigned int n_lines = 1;
+  bool line_start = true;
+  int err;
+  while (1) {
+    Rcpp::checkUserInterrupt();
+    std::string str = next_chunk(file);
+
+    int i_stop = str.length();
+    for (int i = 0; i < i_stop; i++) {
+      if (line_start && (str[i] != '#' || str[i + 1] != '#')) {
+        gzclose(file);
+        return n_lines;
+      } else {
+        if (str[i] == '\n') {
+          line_start = true;
+          n_lines++;
+        } else {
+          line_start = false;
+        }
+      }
+    }
+
+    if (gzeof(file)) {
+      gzclose(file);
+      Rcpp::stop("Reached end of file without encountering any variants!");
+    } else {
+      const char * error_string = gzerror(file, & err);
+      if (err) {
+        Rcpp::stop(std::string("Error: ") + error_string);
+      }
+    }
+  }
+}

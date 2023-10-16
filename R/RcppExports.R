@@ -9,3 +9,7 @@ str_splitC <- function(str, sep) {
     .Call(`_varkit_index_vcf`, x)
 }
 
+.find_header_lineC <- function(x) {
+    .Call(`_varkit_find_header_line`, x)
+}
+

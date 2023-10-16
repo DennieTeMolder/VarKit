@@ -70,6 +70,6 @@ spec_vcf <- function(file, col_names = NULL, skip_cols = NULL, na_geno = c("./."
 
 # HACK readr::spec* always loads the entire file despite 'guess_max', here we force it
 .quick_spec_delim <- function(args) {
-  args$file <- I(readr::read_lines(args$file, skip = .find_header_end(args$file), n_max = args$guess_max))
+  args$file <- I(readr::read_lines(args$file, skip = find_header_line(args$file), n_max = args$guess_max))
   do.call(readr::spec_delim, args)
 }
