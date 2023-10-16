@@ -49,10 +49,11 @@ is_varkit <- function(x) {
 
 ##' @export
 print.varkit <- function(x, ..., n = NULL, n_samples = 10) {
+  n_samples <- min(n_samples, length(samples(x)))
   if (is.null(n)) {
     width <- getOption("width")
     which_show <- utils::head(which(x$use_site), n = max(1, floor(width / 2) - 1))
-    n <- .max_print_col(x$geno[seq_len(n_samples), which_show], width = width)
+    n <- .max_print_col(x$geno[seq_len(n_samples), which_show, drop = FALSE], width = width)
   }
 
   .msg_h1("VarKit Variant Object")
