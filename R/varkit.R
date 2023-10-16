@@ -37,7 +37,7 @@ varkit <- function(vcf, meta = NULL) {
     geno = geno,
     use_site = use_site
   )
-  class(vcf) <- c("varkit", "varkit_header", "list")
+  class(vcf) <- c("varkit", "varkit_header")
 
   vcf
 }

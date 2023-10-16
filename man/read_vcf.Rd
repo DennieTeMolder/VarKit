@@ -4,27 +4,18 @@
 \alias{read_vcf}
 \title{Load A VCF File From Disk}
 \usage{
-read_vcf(
-  file,
-  header = NULL,
-  skip_cols = NULL,
-  na_geno = c("./.", ".|."),
-  spec = NULL,
-  ...
-)
+read_vcf(file, header = NULL, n_max = -1, skip = 0, na_geno = c("./.", ".|."))
 }
 \arguments{
 \item{file}{String, path to the vcf(.bgz) file to load}
 
-\item{header}{Varkit_header}
+\item{header}{varkit_header object, used to determine the column names of 'file'.}
 
-\item{skip_cols}{Character vector, columns to skip loading. Should match names in \code{read_vcf_header(file)$col_names}.}
+\item{n_max}{Integer, maximum number of variants to load. Zero or negative will load all.}
+
+\item{skip}{Integer, number of variants to skip before loading 'n_max' variants.}
 
 \item{na_geno}{Character vector, exact string(s) to convert to NA in the genotype fields}
-
-\item{spec}{A list of args passed to \code{\link[readr:read_delim]{readr::read_delim()}}}
-
-\item{...}{Arguments passed to \code{\link[readr:read_delim]{readr::read_delim()}}, overriding 'spec'}
 }
 \value{
 A VarKit object
@@ -34,7 +25,7 @@ Load A VCF File From Disk
 }
 \examples{
 file <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
-vcf <- read_vcf(file, skip_cols = c("info", "filter", "N2"))
+vcf <- read_vcf(file)
 }
 \author{
 Dennie te Molder

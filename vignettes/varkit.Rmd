@@ -30,9 +30,6 @@ example we will use a block-gzipped VCF:
 ```{r setup}
 library(varkit)
 
-# This might need to be increased for VCFs with long lines
-Sys.setenv("VROOM_CONNECTION_SIZE" = 1e6)
-
 file <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
 ```
 

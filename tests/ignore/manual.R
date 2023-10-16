@@ -1,5 +1,4 @@
 # Setup
-Sys.setenv("VROOM_CONNECTION_SIZE" = 1e6)
 library(devtools)
 load_all()
 example <- "./inst/extdata/celegans.vcf.bgz"

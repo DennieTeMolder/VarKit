@@ -29,7 +29,7 @@ print.varkit_geno <- function(x, ..., n = .max_print_col(x), n_samples = 25) {
     n_samples <- nrow(x)
 
   cat("# A", typeof(x), "matrix:", .frmt_big(nrow(x)), "samples x",
-      .frmt_big(ncol(x)), "sites;", .frmt_big(sum(is.na(x))), "NAs\n")
+      .frmt_big(ncol(x)), "sites;", round(mean(is.na(x)) * 100, 2), "% is NA\n")
 
   print(unclass(x[seq_len(n_samples), seq_len(n), drop = FALSE]), ...)
 
