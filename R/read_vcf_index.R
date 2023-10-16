@@ -1,5 +1,5 @@
 ##' @export
-read_vcf_index <- function(vcf_path, validate = TRUE) {
+read_vcf_index <- function(vcf_path, validate = TRUE, ...) {
   stopifnot(file.exists(vcf_path))
 
   index_path <- paste0(vcf_path, ".index.tsv")
@@ -11,10 +11,8 @@ read_vcf_index <- function(vcf_path, validate = TRUE) {
 
   index <- readr::read_tsv(index_path, skip = 1, col_types = readr::cols(id = "c", linum = "i", n_lines = "i"))
 
-  header <- read_vcf_header(vcf_path)
-  if (validate && origin != digest::sha1(header))
+  if (validate && origin != digest::sha1(read_vcf_header(vcf_path)))
     stop("The VCF seems to have changed since it has been indexed!")
 
-  spec <- spec_vcf(vcf_path, col_names = header$col_names)
-  varkit_index(index, file = vcf_path, header = header, spec = spec)
+  varkit_index(index, file = vcf_path, ...)
 }
