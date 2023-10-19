@@ -3,12 +3,6 @@ library(devtools)
 load_all()
 example <- "./inst/extdata/celegans.vcf.bgz"
 
-vcf_file <- "~/Datasets/Grostochiensis/all_variants.cleaned.aaf.vcf.bgz"
-
-profvis::profvis({
-  vcf <- read_vcf(vcf_file, -info)
-})
-
 ### Examples ------
 ## Varkit object ------
 read_vcf_header(example)
@@ -76,6 +70,8 @@ length(unlist(groups))
 ## Index ------
 index <- index_vcf(example)
 print(index)
+
+str(next_lines(index))
 
 seek(index, "II")
 seek(index)
