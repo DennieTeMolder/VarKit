@@ -4,10 +4,19 @@
 \alias{read_vcf}
 \title{Load A VCF File From Disk}
 \usage{
-read_vcf(file, header = NULL, n_max = -1, skip = 0, na_geno = c("./.", ".|."))
+read_vcf(
+  file,
+  col_select = NULL,
+  header = NULL,
+  n_max = -1,
+  skip = 0,
+  na_geno = c("./.", ".|.")
+)
 }
 \arguments{
 \item{file}{String, path to the vcf(.bgz) file to load}
+
+\item{col_select}{Columns to include in the results. You can use the same mini-language as ‘dplyr::select()’ to refer to the columns by name. Use ‘c()’ to use more than one selection expression.}
 
 \item{header}{varkit_header object, used to determine the column names of 'file'.}
 

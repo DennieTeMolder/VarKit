@@ -3,8 +3,17 @@ concat_vcf <- function(...) {
   dots <- list(...)
   if (length(dots) < 1)
     stop("No arguments provided, there is noting to concatenate!")
-  if (!all(vapply(dots, is_varkit, logical(1))))
-    stop("Not all provided arguments have the 'varkit' class!")
+
+  # The user can provide a mix of varkit objects & lists of varkit objects
+  # Here we ensure all arguments are wrapped in a list so we can unlist() safely
+  dots <- lapply(dots, function(x) {
+    if (is_varkit(x))
+      return(list(x))
+    if (!(is.list(x) && all(vapply(x, is_varkit, logical(1)))))
+      stop("Not all provided arguments are (lists of) 'varkit' objects!", call. = FALSE)
+    x
+  })
+  dots <- unlist(dots, recursive = FALSE, use.names = FALSE)
 
   if (length(dots) == 1)
     return(dots[[1]])
