@@ -1,31 +1,44 @@
 ##' @export
 varkit_index <- function(index, file, ...) {
-  stopifnot(is.data.frame(index), nrow(index) > 0)
-  stopifnot(c("id", "linum", "n_lines") %in% colnames(index))
+  index <- tibble::as_tibble(index)
+  file <- as.character(file)
+  validate_varkit_index(new_varkit_index(index, file = file, con = NA, curr_line = 1, ...))
+}
+
+##' @export
+new_varkit_index <- function(index = data.frame(id = character(), linum = integer(), n_lines = integer()), ...) {
+  stopifnot(is.data.frame(index))
+  index <- tibble::as_tibble(index)
+  structure(index,
+    env = list2env(list(...), parent = rlang::empty_env()),
+    class = unique(c("varkit_index", class(index)))
+  )
+}
+
+##' @export
+validate_varkit_index <- function(index) {
+  if (!(is.data.frame(index) && all(c("id", "linum", "n_lines") %in% colnames(index))))
+    stop("The index should be a data frame with columns 'id', 'linum', and 'n_lines'!")
   if (any(is.na(index$linum)) || any(is.na(index$n_lines)))
     stop("The 'linum' and/or 'n_lines' columns contain NA values!")
   if (is.unsorted(index$linum, strictly = TRUE))
     stop("The provided 'index' appears to be unsorted!")
   if (any(diff(index$linum) != utils::head(index$n_lines, n = -1)))
-    stop("The 'n_lines' column id not congruent with 'linum'!")
-  stopifnot(file.exists(file))
-
-  index <- tibble::as_tibble(index)
-
-  props <- new.env(parent = rlang::empty_env())
-  if (!missing(...)) {
-    args <- list(...)
-    if (is.null(names(args)) || any(names(args) == ""))
-      stop("All additional arguments should be named!")
-    for (current in names(args))
-      props[[current]] <- args[[current]]
-  }
-  props$file <- file
-  props$curr_line <- 1
-  attr(index, "props") <- props
-
-  class(index) <- unique(c("varkit_index", class(index)))
+    stop("The 'n_lines' column is not congruent with 'linum'!")
+  if (is.null(env(index)$file))
+    stop("The index env has no associated 'file'!")
+  if (!file.exists(env(index)$file))
+    stop("The 'file' associated to the index does not seem to exists!")
   index
+}
+
+`env<-` <- function(x, value) {
+  attr(x, "env") <- value
+  x
+}
+
+env <- function(x) {
+  attr(x, "env")
 }
 
 ##' @export
@@ -35,146 +48,86 @@ is_varkit_index <- function(x) {
 
 ##' @export
 print.varkit_index <- function(x, ...) {
-  props <- .get_props(x)
   .msg_h1("VarKit Index Object")
-  .print_tbl(x, ...)
+  NextMethod("print", x)
   if (is_open(x)) {
-    .msg_info("With a pointer at line ", props$curr_line, " in ", props$file)
+    .msg_info("With a pointer at line ", env(x)$curr_line, " in ", env(x)$file)
   } else {
-    .msg_info("For file ", props$file)
+    .msg_info("For file ", env(x)$file)
   }
   invisible(x)
 }
 
 ##' @export
-is_open <- function(x) {
-  UseMethod("is_open", x)
-}
-
-##' @export
-is_open.connection <- function(x) {
-  tryCatch(isOpen(x), error = function(e) FALSE)
-}
-
-##' @export
-is_open.varkit_index <- function(x) {
-  props <- .get_props(x)
-  if (is.null(props$con))
-    return(FALSE)
-  is_open(props$con)
-}
-
-##' @export
 open.varkit_index <- function(con, open = "r", ...) {
   if (!is_open(con)) {
-    props <- .get_props(con)
-    props$con <- file(props$file, open = open, ...)
-    props$curr_line <- 1
+    env(con)$con <- file(env(con)$file, open = open, ...)
+    env(con)$curr_line <- 1
   }
   invisible(con)
 }
 
 ##' @export
 close.varkit_index <- function(con, ...) {
-  if (is_open(con)) {
-    props <- .get_props(con)
-    close(props$con)
-    rm("con", envir = props)
-    props$curr_line <- 1
+  if (is_open(env(con)$con)) {
+    close(env(con)$con)
   }
+  env(con)$con <- NA
+  env(con)$curr_line <- 1
   invisible(con)
 }
 
 ##' @export
-get_current <- function(x) {
-  UseMethod("get_current", x)
+seek.varkit_index <- function(con, where = NA, origin = "start", ...) {
+  if (!is.na(where))
+    stopifnot(is.character(where) || is.numeric(where))
+  origin <- match.arg(origin, c("start", "current", "end"))
+
+  # Handle non-numeric values of WHERE
+  if (is.na(where)) {
+    return(.current_index_position(con))
+  } else if (is.character(where)) {
+    where <- con$linum[match(where, con$id)]
+    if (is.na(where))
+      stop("The value of 'where' is not present in the index's 'id' column!")
+  } else {
+    if (origin == "current") {
+      where <- where + .current_index_position(con)
+    } else if (origin == "end") {
+      last_row <- nrow(con)
+      where <- con$linum[last_row] + con$n_lines[last_row] - where
+    }
+  }
+
+  # Reload file if target line is before current line
+  if (where < env(con)$curr_line)
+    open(close(con))
+
+  # Move pointer if needed
+  if (where > env(con)$curr_line)
+    .skip_lines(con, n = where - env(con)$curr_line)
+
+  invisible(con)
 }
 
-##' @export
-get_current.varkit_index <- function(x) {
-  props <- .get_props(x)
+.current_index_position <- function(index) {
+  if (!is_open.varkit_index(index))
+    env(index)$curr_line <- 1
 
-  if (!is_open.varkit_index(x))
-    props$curr_line <- 1
-
-  i <- max(0, which(x$linum <= props$curr_line))
-  res <- tibble::as_tibble(x[max(i, 1), ])
+  i <- max(0, which(index$linum <= env(index)$curr_line))
+  res <- tibble::as_tibble(index[max(i, 1), ])
 
   # Pointer before start of index
   if (i == 0) {
-    res$n_lines <- res$linum - props$curr_line
+    res$n_lines <- res$linum - env(index)$curr_line
     for (idx in which(!names(res) %in% c("linum", "n_lines")))
       res[[idx]] <- NA
   } else {
-    res$n_lines <- res$linum + res$n_lines - props$curr_line
+    res$n_lines <- res$linum + res$n_lines - env(index)$curr_line
   }
 
-  res$linum <- props$curr_line
+  res$linum <- env(index)$curr_line
   res
-}
-
-##' @export
-next_lines <- function(x, n = NULL, skip = 0) {
-  UseMethod("next_lines", x)
-}
-
-##' @export
-next_lines.varkit_index <- function(x, n = NULL, skip = 0) {
-  if (!is.null(n)) {
-    stopifnot(is.numeric(n), length(n) == 1, n > 0)
-  } else {
-    n <- get_current.varkit_index(x)$n_lines
-    if (n < 1)
-      n <- utils::tail(x$n_lines)
-  }
-
-  open.varkit_index(x)
-  props <- .get_props(x)
-  lines <- .scan_fields(props$con, sep = "\n", nlines = n, skip = skip)
-
-  n <- length(lines)
-  props$curr_line <- props$curr_line + n + skip
-
-  if (n == 0)
-    return(NULL)
-  lines
-}
-
-##' @export
-goto <- function(x, where = NULL) {
-  UseMethod("goto", x)
-}
-
-##' @export
-goto.varkit_index <- function(x, where = NULL) {
-  if (!is.null(where))
-    stopifnot(is.character(where) || is.numeric(where))
-
-  # Handle non-numeric values of WHERE
-  if (is.null(where)) {
-    where <- x$linum[1]
-  } else if (is.character(where)) {
-    where <- x$linum[match(where, x$id)]
-    if (is.na(where))
-      stop("The value of 'where' is not present in the 'id' column!")
-  }
-
-  props <- .get_props(x)
-
-  # Reload file if target line is before current line
-  if (where < props$curr_line)
-    open(close(x))
-
-  # Move pointer if needed
-  if (where > props$curr_line)
-    .skip_lines(x, n = where - props$curr_line)
-
-  invisible(x)
-}
-
-## Helpers ------
-.get_props <- function(x) {
-  attr(x, "props")
 }
 
 .skip_lines <- function(index, n, block_size = 5e3) {

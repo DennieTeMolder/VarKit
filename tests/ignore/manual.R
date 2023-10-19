@@ -3,6 +3,11 @@ library(devtools)
 load_all()
 example <- "./inst/extdata/celegans.vcf.bgz"
 
+vcf_file <- "~/Datasets/Grostochiensis/all_variants.cleaned.aaf.vcf.bgz"
+
+profvis::profvis({
+  vcf <- read_vcf(vcf_file, -info)
+})
 
 ### Examples ------
 ## Varkit object ------
@@ -68,6 +73,19 @@ groups <- igraph::groups(lgraph)
 length(groups)
 length(unlist(groups))
 
+## Index ------
+index <- index_vcf(example)
+print(index)
+
+seek(index, "II")
+seek(index)
+seek(index, 1)
+seek(index)
+
+vcf1 <- next_block(index)
+res <- lapply(1:2, function(i) next_block(index))
+concat_vcf(vcf1, res)
+concat_vcf(vcf1)
 
 ### Tests ------
 ## Geno ------
