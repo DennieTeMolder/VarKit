@@ -27,10 +27,9 @@ Imports:
     tibble,
     tidyselect
 Suggests: 
+    adegenet,
     knitr,
     rmarkdown
 VignetteBuilder: knitr
-Enhances: 
-    adegenet
-LinkingTo: 
+LinkingTo:
     Rcpp
