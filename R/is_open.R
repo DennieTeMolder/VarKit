@@ -10,7 +10,7 @@ is_open.connection <- function(x) {
 
 ##' @export
 is_open.varkit_index <- function(x) {
-  if (is.na(env(x)$con))
+  if (is.null(env(x)$con) || is.na(env(x)$con))
     return(FALSE)
-  is_open(env(x)$con)
+  is_open.connection(env(x)$con)
 }

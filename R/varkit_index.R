@@ -1,14 +1,15 @@
 ##' @export
-varkit_index <- function(index, file, ...) {
+varkit_index <- function(index, file, col_select = NULL, ...) {
   index <- tibble::as_tibble(index)
   file <- as.character(file)
-  validate_varkit_index(new_varkit_index(index, file = file, con = NA, curr_line = 1, ...))
+  dots <- list(...)
+  dots$col_select <- rlang::enexpr(col_select)
+  new_varkit_index(index, file = file, con = NA, curr_line = 1, read_vcf_args = dots)
 }
 
 ##' @export
 new_varkit_index <- function(index = data.frame(id = character(), linum = integer(), n_lines = integer()), ...) {
   stopifnot(is.data.frame(index))
-  index <- tibble::as_tibble(index)
   structure(index,
     env = list2env(list(...), parent = rlang::empty_env()),
     class = unique(c("varkit_index", class(index)))
@@ -19,10 +20,12 @@ new_varkit_index <- function(index = data.frame(id = character(), linum = intege
 validate_varkit_index <- function(index) {
   if (!(is.data.frame(index) && all(c("id", "linum", "n_lines") %in% colnames(index))))
     stop("The index should be a data frame with columns 'id', 'linum', and 'n_lines'!")
-  if (any(is.na(index$linum)) || any(is.na(index$n_lines)))
+  if (anyNA(index$linum) || anyNA(index$n_lines))
     stop("The 'linum' and/or 'n_lines' columns contain NA values!")
   if (is.unsorted(index$linum, strictly = TRUE))
-    stop("The provided 'index' appears to be unsorted!")
+    stop("The provided 'index' should be sorted on 'linum'!")
+  if (!all(index$n_lines >= 1))
+    stop("The index contains entries with zero lines!")
   if (any(diff(index$linum) != utils::head(index$n_lines, n = -1)))
     stop("The 'n_lines' column is not congruent with 'linum'!")
   if (is.null(env(index)$file))
@@ -59,9 +62,15 @@ print.varkit_index <- function(x, ...) {
 }
 
 ##' @export
-open.varkit_index <- function(con, open = "r", ...) {
-  if (!is_open(con)) {
-    env(con)$con <- file(env(con)$file, open = open, ...)
+open.varkit_index <- function(con, open = "r", blocking = TRUE, ...) {
+  if (open != "r")
+    stop("Indexes should be read-only (open = 'r')!")
+  if (!blocking)
+    stop("Indexes should be blocking (blocking = TRUE)!")
+
+  if (!is_open.varkit_index(con)) {
+    validate_varkit_index(con)
+    env(con)$con <- file(env(con)$file, open = open, blocking = blocking, ...)
     env(con)$curr_line <- 1
   }
   invisible(con)
@@ -69,7 +78,7 @@ open.varkit_index <- function(con, open = "r", ...) {
 
 ##' @export
 close.varkit_index <- function(con, ...) {
-  if (is_open(env(con)$con)) {
+  if (is_open.varkit_index(con)) {
     close(env(con)$con)
   }
   env(con)$con <- NA
@@ -83,6 +92,9 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ...) {
     stopifnot(is.character(where) || is.numeric(where))
   origin <- match.arg(origin, c("start", "current", "end"))
 
+  if (!is_open.varkit_index(index))
+    env(index)$curr_line <- 1
+
   # Handle non-numeric values of WHERE
   if (is.na(where)) {
     return(.current_index_position(con))
@@ -92,7 +104,7 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ...) {
       stop("The value of 'where' is not present in the index's 'id' column!")
   } else {
     if (origin == "current") {
-      where <- where + .current_index_position(con)
+      where <- where + env(con)$curr_line
     } else if (origin == "end") {
       last_row <- nrow(con)
       where <- con$linum[last_row] + con$n_lines[last_row] - where
@@ -100,8 +112,10 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ...) {
   }
 
   # Reload file if target line is before current line
-  if (where < env(con)$curr_line)
-    open(close(con))
+  if (where < env(con)$curr_line) {
+    close(con)
+    env(con)$con <- file(env(con)$file, open = "r", blocking = TRUE)
+  }
 
   # Move pointer if needed
   if (where > env(con)$curr_line)
@@ -111,11 +125,9 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ...) {
 }
 
 .current_index_position <- function(index) {
-  if (!is_open.varkit_index(index))
-    env(index)$curr_line <- 1
-
   i <- max(0, which(index$linum <= env(index)$curr_line))
-  res <- tibble::as_tibble(index[max(i, 1), ])
+  res <- as.data.frame(index[max(i, 1), ])
+  rownames(res) <- i
 
   # Pointer before start of index
   if (i == 0) {

@@ -22,9 +22,11 @@ read_vcf_header <- function(file) {
   if (header_linum < 1)
     stop("Could not detect header line! Check the output of `find_header_line(file)`.", call. = FALSE)
 
-  meta <- character()
-  if (header_linum > 1)
+  if (header_linum > 1) {
     meta <- readLines(con, n = header_linum - 1)
+  } else {
+    meta <- NULL
+  }
 
   col_names <- .scan_fields(con, nlines = 1)
   list(meta = meta, col_names = col_names)
@@ -45,7 +47,8 @@ read_vcf_header <- function(file) {
 
   # Standardise the names of fixed columns
   fixed_names <- .fixed_columns()
-  fixed_idx <- stats::na.omit(match(fixed_names, tolower(col_names)))
+  fixed_idx <- match(fixed_names, tolower(col_names))
+  fixed_idx <- fixed_idx[!is.na(fixed_idx)]
   col_names[fixed_idx] <- fixed_names[seq_along(fixed_names) %in% fixed_idx]
   col_names
 }

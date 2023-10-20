@@ -42,7 +42,7 @@ index_vcf <- function(file, ...) {
   if (anyDuplicated(index$id) != 0)
     warning("The VCF appears to be unsorted, this could cause errors later.")
 
-  varkit_index(index, file = file)
+  varkit_index(index, file = file, ...)
 }
 
 ##' @export

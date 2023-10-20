@@ -41,7 +41,7 @@ read_vcf <- function(file, col_select = NULL, header = NULL, n_max = -1, skip = 
 
   body <- .read_vcf_body(con, col_names = header$col_names, n_max = n_max, skip = skip, na_geno = na_geno)
   if (nrow(body) < 1)
-    stop("The VCF body appears to be empty!")
+    return(NULL)
 
   if (!missing(col_select))
     body <- dplyr::select(body, {{ col_select }})

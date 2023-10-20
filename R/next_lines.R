@@ -10,7 +10,7 @@ next_lines.varkit_index <- function(x, n = NULL, skip = 0) {
   } else {
     n <- seek.varkit_index(x)$n_lines
     if (n < 1)
-      n <- utils::tail(x$n_lines)
+      n <- utils::tail(x$n_lines, n = 1)
   }
 
   open.varkit_index(x)

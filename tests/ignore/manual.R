@@ -68,20 +68,29 @@ length(groups)
 length(unlist(groups))
 
 ## Index ------
-index <- index_vcf(example)
+index <- index_vcf(example, col_select = -info)
 print(index)
-
-str(next_lines(index))
 
 seek(index, "II")
 seek(index)
 seek(index, 1)
 seek(index)
 
-vcf1 <- next_block(index)
-res <- lapply(1:2, function(i) next_block(index))
-concat_vcf(vcf1, res)
-concat_vcf(vcf1)
+next_chunk(index)
+next_chunk(index)
+
+res <- apply_index(index, function(vcf) {
+  remove_masked(mask(vcf, site(vcf, "qual") < 1e5))
+})
+concat_vcf(res)
+concat_vcf(res[[1]])
+concat_vcf(res[[1]], res[2:3])
+
+p_index <- index_vcf_partial(example, chunk_size  = 25)
+seek(p_index, 1)
+while (!is.null(vcf <- next_lines(p_index))) {
+  str(vcf)
+}
 
 ### Tests ------
 ## Geno ------
