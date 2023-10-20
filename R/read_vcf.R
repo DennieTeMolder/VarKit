@@ -13,7 +13,13 @@
 ##' @examples
 ##' file <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
 ##' vcf <- read_vcf(file)
-read_vcf <- function(file, col_select = NULL, header = NULL, n_max = -1, skip = 0, na_geno = c("./.", ".|.")) {
+read_vcf <- function(file,
+                     col_select = NULL,
+                     header = NULL,
+                     n_max = -1,
+                     skip = 0,
+                     na_geno = c("./.", ".|.")
+                     ) {
   if (!is.null(header))
     validate_varkit_header(header)
 
@@ -39,25 +45,27 @@ read_vcf <- function(file, col_select = NULL, header = NULL, n_max = -1, skip = 
       stop("At line ", length(header$meta) + 1, ": Invalid VCF, the header has fewer then three tab-separated fields!")
   }
 
-  body <- .read_vcf_body(con, col_names = header$col_names, n_max = n_max, skip = skip, na_geno = na_geno)
+  body <- .read_vcf_body(
+    con, col_names = col_names(header), col_select = {{ col_select }},
+    n_max = n_max, skip = skip, na_geno = na_geno
+  )
   if (nrow(body) < 1)
     return(NULL)
 
-  if (!missing(col_select))
-    body <- dplyr::select(body, {{ col_select }})
-
-  varkit(body, meta = header$meta)
+  varkit(body, meta = meta(header))
 }
 
-.read_vcf_body <- function(con, col_names, n_max = -1, skip = 0, na_geno = c("./.", ".|.")) {
+.read_vcf_body <- function(con, col_names, col_select = NULL, n_max = -1,
+                           skip = 0, na_geno = c("./.", ".|.")) {
   if (!inherits(con, "connection"))
     stop("'con' should be a file connection!")
-
   na_geno <- unique(c("", ".", na_geno))
 
+  col_classes <- .make_col_classes(col_names, col_select = {{ col_select }})
   tibble::as_tibble(utils::read.delim(
     con,
     col.names = col_names,
+    colClasses = col_classes,
     nrow = n_max,
     skip = skip,
     na.strings = na_geno,
@@ -69,4 +77,33 @@ read_vcf <- function(file, col_select = NULL, header = NULL, n_max = -1, skip = 
     strip.white = TRUE,
     comment.char = "#"
   ))
+}
+
+.make_col_classes <- function(col_names, col_select = NULL, default = NA_character_) {
+  stopifnot(is.character(col_names))
+  col_select <- rlang::enquo(col_select)
+
+  fixed_classes <- list(
+    chrom = "character",
+    pos = "integer",
+    id = "character",
+    ref = "character",
+    alt = "character",
+    qual = "numeric",
+    filter = "character",
+    info = "character",
+    format = "character"
+  )
+
+  col_classes <- as.list(rep_len(default, length(col_names)))
+  names(col_classes) <- col_names
+  col_classes <- utils::modifyList(col_classes, fixed_classes)
+  col_classes <- col_classes[col_names]
+
+  if (rlang::quo_is_null(col_select))
+    return(col_classes)
+
+  keep <- colnames(dplyr::select(as.data.frame(col_classes, check.names = FALSE), !!col_select))
+  col_classes[!names(col_classes) %in% keep] <- "NULL"
+  col_classes
 }
