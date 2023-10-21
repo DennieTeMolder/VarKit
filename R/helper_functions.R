@@ -28,6 +28,11 @@
   paste(x, collapse = delim)
 }
 
+.quote_collapse <- function(x, quote = "'", ...) {
+  x <- ifelse(is.na(x), "NA", paste0(quote, x, quote))
+  .collapse(x, ...)
+}
+
 .str_starts <- function(x, what) {
   substr(x, 1, nchar(what)) == what
 }
