@@ -77,7 +77,8 @@ seek(index, 1)
 seek(index)
 
 next_chunk(index)
-next_chunk(index)
+next_chunk(index, col_select = -id)
+next_chunk(index, col_select = NULL)
 
 res <- apply_index(index, function(vcf) {
   remove_masked(mask(vcf, site(vcf, "qual") < 1e5))

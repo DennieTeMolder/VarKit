@@ -2,8 +2,15 @@
 varkit_index <- function(index, file, col_select = NULL, ...) {
   index <- tibble::as_tibble(index)
   file <- as.character(file)
+
   dots <- list(...)
-  dots$col_select <- rlang::enexpr(col_select)
+  if (!rlang::is_named2(dots))
+    stop("All additional arguments must be named!", call. = FALSE)
+
+  col_select <- rlang::enexpr(col_select)
+  if (!is.null(col_select))
+    dots$col_select <- col_select
+
   new_varkit_index(index, file = file, con = NA, curr_line = 1, read_vcf_args = dots)
 }
 
@@ -22,6 +29,8 @@ validate_varkit_index <- function(index) {
     stop("The index should be a data frame with columns 'id', 'linum', and 'n_lines'!")
   if (anyNA(index$linum) || anyNA(index$n_lines))
     stop("The 'linum' and/or 'n_lines' columns contain NA values!")
+  if (min(index$linum, index$n_lines) < 1)
+    stop("The index contains values smaller then 1!")
   if (is.unsorted(index$linum, strictly = TRUE))
     stop("The provided 'index' should be sorted on 'linum'!")
   if (!all(index$n_lines >= 1))
