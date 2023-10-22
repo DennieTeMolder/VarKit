@@ -4,7 +4,6 @@ read_tbl <- function(file,
                      sep = "\t",
                      col_names = NULL,
                      col_types = NA,
-                     row_names = NULL,
                      header = is.null(col_names),
                      as.is = TRUE,
                      na.strings = "NA",
@@ -63,11 +62,23 @@ read_tbl <- function(file,
   if (length(col_types) == 0)
     col_types <- NA
 
-  tibble::as_tibble(utils::read.table(
-    file = con, header = FALSE, sep = sep, col.names = col_names, colClasses = col_types,
-    row.names = row_names, as.is = as.is, na.strings = na.strings, nrows = nrows,
-    skip = skip, strip.white = strip.white, ...
-  ))
+  # HACK read.table() needs col.names to be missing not NULL
+  # Other then that the rest these statements should be identical
+  if (is.null(col_names)) {
+    tbl <- utils::read.table(
+      file = con, header = FALSE, sep = sep,
+      colClasses = col_types, as.is = as.is, na.strings = na.strings,
+      nrows = nrows, skip = skip, strip.white = strip.white, ...
+    )
+  } else {
+    tbl <- utils::read.table(
+      file = con, header = FALSE, sep = sep, col.names = col_names,
+      colClasses = col_types, as.is = as.is, na.strings = na.strings,
+      nrows = nrows, skip = skip, strip.white = strip.white, ...
+    )
+  }
+  tibble::as_tibble(tbl)
+}
 }
 
 .standardize_col_types <- function(col_types, col_names) {
