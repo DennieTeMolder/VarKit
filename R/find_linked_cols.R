@@ -19,8 +19,8 @@ find_linked_cols <- function(mat,
 
   # Split the matrix by COLS_EACH and generate the comparisons according to WINDOW
   mat_list <- splitm(mat, margin = 2, size = cols_each, by_na_pattern = TRUE, min_size = min_ncol)
-  comps <- .generate_comparisons(mat_list, window = window)
+  comps <- compute_comparisons(mat_list, window = window)
 
-  res <- .r2_cutoff_parallel(comps$x, comps$y, cutoff = cutoff, return_r2 = return_r2, cores = cores)
+  res <- .r2_cutoff_parallel(mat_list, comps = comps, cutoff = cutoff, return_r2 = return_r2, cores = cores)
   do.call(rbind, res)
 }

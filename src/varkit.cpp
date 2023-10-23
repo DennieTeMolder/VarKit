@@ -70,7 +70,7 @@ DataFrame index_vcf(std::string x) {
   gzFile file = gzopen(x.c_str(), "r");
 
   if (! file) {
-    Rcpp::stop("Could not open '" + x + "'! Error: " + strerror(errno));
+    stop("Could not open '" + x + "'! Error: " + strerror(errno));
   }
 
   // Vectors to store results
@@ -84,7 +84,7 @@ DataFrame index_vcf(std::string x) {
   unsigned int n_current = 0;
 
   while (1) {
-    Rcpp::checkUserInterrupt();
+    checkUserInterrupt();
     std::string str = next_chunk(file);
     str = last_line + str;
 
@@ -119,7 +119,7 @@ DataFrame index_vcf(std::string x) {
     } else {
       const char * error_string = gzerror(file, & err);
       if (err) {
-        Rcpp::stop(std::string("Error: ") + error_string);
+        stop(std::string("Error: ") + error_string);
       }
     }
   }
@@ -129,7 +129,7 @@ DataFrame index_vcf(std::string x) {
   n_lines.push_back(n_current);
 
   if (last_line.length() != 0) {
-    Rcpp::warning("The file is not terminated by a new line, the index might be off.");
+    warning("The file is not terminated by a new line, the index might be off.");
   }
 
   gzclose(file);
@@ -142,14 +142,14 @@ int find_header_line(std::string x) {
   gzFile file = gzopen(x.c_str(), "r");
 
   if (! file) {
-    Rcpp::stop("Could not open '" + x + "'! Error: " + strerror(errno));
+    stop("Could not open '" + x + "'! Error: " + strerror(errno));
   }
 
   unsigned int n_lines = 1;
   bool line_start = true;
   int err;
   while (1) {
-    Rcpp::checkUserInterrupt();
+    checkUserInterrupt();
     std::string str = next_chunk(file);
 
     int i_stop = str.length();
@@ -169,12 +169,39 @@ int find_header_line(std::string x) {
 
     if (gzeof(file)) {
       gzclose(file);
-      Rcpp::stop("Reached end of file without encountering any variants!");
+      stop("Reached end of file without encountering any variants!");
     } else {
       const char * error_string = gzerror(file, & err);
       if (err) {
-        Rcpp::stop(std::string("Error: ") + error_string);
+        stop(std::string("Error: ") + error_string);
       }
     }
   }
+}
+
+// [[Rcpp::export(name=".run_r2_cutoff_parallelC")]]
+List run_r2_cutoff_parallel(List mat_list, std::vector<int> i, std::vector<int> j, double cutoff, bool return_r2 = false) {
+  Rcpp::Environment varkit("package:varkit");
+  Rcpp::Function r2_cutoff = varkit["r2_cutoff"];
+
+  List results(i.size());
+  for (int n = 0; n < i.size(); n++) {
+    if (i == j) {
+      results[n] = r2_cutoff(
+        _["x"] = mat_list[i[n] - 1],
+        _["cutoff"] = cutoff,
+        _["return_r2"] = return_r2,
+        _["check_colnames"] = false
+      );
+    } else {
+      results[n] = r2_cutoff(
+        _["x"] = mat_list[i[n] - 1],
+        _["y"] = mat_list[j[n] - 1],
+        _["cutoff"] = cutoff,
+        _["return_r2"] = return_r2,
+        _["check_colnames"] = false
+      );
+    }
+  }
+  return results;
 }

@@ -37,9 +37,3 @@ compute_comparisons <- function(x, y = NULL, window = -1, use = FALSE) {
 
   idx
 }
-
-.generate_comparisons <- function(mat_list, window) {
-  which_comp <- compute_comparisons(mat_list, window = window)
-  which_comp$j[with(which_comp, i == j)] <- NA
-  tibble::tibble(x = mat_list[which_comp$i], y = mat_list[which_comp$j])
-}
