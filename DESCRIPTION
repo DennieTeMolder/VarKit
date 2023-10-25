@@ -14,8 +14,6 @@ Imports:
     digest,
     dplyr,
     forcats,
-    furrr,
-    future,
     igraph,
     parallel,
     pillar,

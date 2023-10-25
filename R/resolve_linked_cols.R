@@ -22,25 +22,35 @@ resolve_links <- function(links,
     return(varkit_linkage_graph(results, origin = get_origin(links)))
   }
 
+  cores <- min(floor(cores), length(links))
+
   # If links is a list we can solve each element individually (and in parallel)
-  if (cores > 1) {
-    restore_cores <- .set_cores(cores)
-    on.exit(restore_cores())
-    res <- furrr::future_map(
-      links, .resolve_links_internal,
-      strategy = strategy, cluster_fn = cluster_fn,
-      .progress = TRUE
-    )
-  } else {
+  if (cores < 2) {
     res <- purrr::map(
       links, .resolve_links_internal,
       strategy = strategy, cluster_fn = cluster_fn,
       .progress = TRUE
     )
+  } else {
+    # Optimal ordering for core utilisation
+    size_order <- order(sapply(links, nrow), decreasing = TRUE)
+    size_order <- .split_load_balance(size_order, cores = cores)
+    chunk_size <- length(size_order[[1]])
+    size_order <- unlist(size_order)
+
+    cl <- parallel::makeCluster(cores, type = "PSOCK")
+    on.exit(tryCatch(parallel::stopCluster(cl), error = function(e) NULL))
+
+    res <- parallel::parLapplyLB(cl,
+      links[size_order], .resolve_links_internal,
+      strategy = strategy, cluster_fn = cluster_fn,
+      chunk.size = chunk_size
+    )
+    parallel::stopCluster(cl)
   }
 
-  results <- do.call(igraph::disjoint_union, res)
-  varkit_linkage_graph(results, origin = get_origin(links))
+  res <- do.call(igraph::disjoint_union, res)
+  varkit_linkage_graph(res, origin = get_origin(links))
 }
 
 .resolve_links_internal <- function(links, strategy, cluster_fn) {

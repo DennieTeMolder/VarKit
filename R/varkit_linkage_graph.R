@@ -8,7 +8,7 @@ varkit_linkage_graph <- function(graph, origin = NULL) {
     graph <- set_origin(graph, origin)
   }
 
-  class(graph) <- c("varkit_linkage_graph", class(graph))
+  class(graph) <- unique(c("varkit_linkage_graph", class(graph)))
   graph
 }
 
@@ -45,7 +45,7 @@ groups.varkit_linkage_graph <- function(x) {
   }, simplify = FALSE)
 }
 
-# NOTE using save() also seems to work and uses 10x less disk space (binary format).
+# NOTE using saveRDS() also seems to work and uses 10x less disk space (binary format).
 ##' @export
 write_graph <- function(graph, file, format = "xml") {
   if (!format[1] %in% c("xml", "graphml"))

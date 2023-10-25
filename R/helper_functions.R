@@ -93,20 +93,6 @@
   do.call(utils::getS3method("print", "tbl", envir = getNamespace("pillar")), c(list(x), ...))
 }
 
-# Use with on.exit(restore_fn())
-.set_cores <- function(cores) {
-  stopifnot(cores > 1)
-  old_blas_threads <- RhpcBLASctl::blas_get_num_procs()
-  RhpcBLASctl::blas_set_num_threads(1)
-  old_plan <- future::plan(future::multisession, workers = cores)
-
-  restore_fn <- function() {
-    RhpcBLASctl::blas_set_num_threads(old_blas_threads)
-    future::plan(old_plan)
-  }
-  restore_fn
-}
-
 .max_print_col <- function(mat, width = getOption("width")) {
   stopifnot(is.matrix(mat))
 
@@ -148,6 +134,28 @@
   max(which_fit)
 }
 
+# X should be ordered from large to small (computationally)
+.split_load_balance <- function(x, cores, each = 4L) {
+  stopifnot(is.vector(x))
+  len <- length(x)
+  stopifnot(len >= cores)
+
+  n <- min(cores * each, len)
+  size <- floor(len / n)
+
+  seq_mat <- seq_len(size * n)
+  res <- as.vector(matrix(x[seq_mat], ncol = n, byrow = TRUE))
+
+  # If LEN cannot be divided neatly by N, some values end up an additional bin
+  if (len %% n != 0) {
+    n <- n + 1
+    res <- c(res, x[-seq_mat])
+  }
+
+  splitm(res, size = ceiling(len / n))
+}
+
+## Unused functions ------
 .middle <- function(x, on_even = "left") {
   stopifnot(is.vector(x))
   len <- length(x)
@@ -159,7 +167,6 @@
   x[ceiling(len / 2)]
 }
 
-## Unused functions ------
 .bi_gt2dosage <- function(mat) {
   stopifnot(is.matrix(mat))
   stopifnot(is.character(mat))
