@@ -17,6 +17,8 @@ Imports:
     furrr,
     future,
     igraph,
+    parallel,
+    parallelly,
     pillar,
     purrr,
     Rcpp,

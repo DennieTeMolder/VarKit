@@ -116,18 +116,3 @@ r2_cutoff <- function(x, y = NULL, cutoff, return_r2 = FALSE, check_colnames = T
   })
   tibble::as_tibble(do.call(rbind, total))
 }
-
-.r2_cutoff_parallel <- function(mat_list, comps, cutoff, return_r2, cores) {
-  if (cores > 1) {
-    # TODO RcppParallel based implementation
-    stop("Multi-core functionality is not implemented")
-    restore_cores <- .set_cores(cores)
-    on.exit(restore_cores())
-  }
-
-  purrr::map2(comps$i, comps$j, function(i, j) {
-    x <- mat_list[[i]]
-    y <- if (i == j) NULL else mat_list[[j]]
-    r2_cutoff(x, y, cutoff = cutoff, return_r2 = return_r2, check_colnames = FALSE,)
-  }, .progress = TRUE)
-}
