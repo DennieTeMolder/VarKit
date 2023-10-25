@@ -269,7 +269,7 @@ have an R^2^ above the specified cutoff for each CHROM. Then we call
 remove as many of the detected links as possible (very few links could remain).
 
 ```{r linked_sites, results = 'hide'}
-links <- find_linked_sites(vcf, cutoff = 0.9, window_size_bp = 1e5, n_window = 2, by_chrom = TRUE, cores = 1)
+links <- find_linked_sites(vcf, cutoff = 0.9, size_bp = 1e5, windows = 2, by_chrom = TRUE, cores = 1)
 lgraph <- resolve_links(links, cores = 1)
 ```
 

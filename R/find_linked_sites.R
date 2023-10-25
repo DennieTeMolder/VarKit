@@ -1,8 +1,8 @@
 ##' @export
 find_linked_sites <- function(x,
                               cutoff = 0.9,
-                              window_size_bp = 1e5,
-                              n_window = 1,
+                              windows = 1,
+                              size_bp = 1e5,
                               by_chrom = TRUE,
                               return_r2 = FALSE,
                               cores = 1,
@@ -14,16 +14,16 @@ find_linked_sites <- function(x,
 ##' @export
 find_linked_sites.varkit <- function(x,
                                      cutoff = 0.9,
-                                     window_size_bp = 1e5,
-                                     n_window = 1,
+                                     windows = 1,
+                                     size_bp = 1e5,
                                      by_chrom = TRUE,
                                      return_r2 = FALSE,
                                      cores = 1,
                                      min_ncol = 20
                                      ) {
   stopifnot(is.numeric(cutoff), length(cutoff) == 1)
-  stopifnot(is.numeric(window_size_bp), length(window_size_bp) == 1)
-  stopifnot(is.numeric(n_window), length(n_window) == 1)
+  stopifnot(is.numeric(size_bp), length(size_bp) == 1)
+  stopifnot(is.numeric(windows), length(windows) == 1)
   stopifnot(is.numeric(min_ncol), length(min_ncol) == 1)
   if (!(is.matrix(x$geno) && is.numeric(x$geno)))
     stop("geno(x) should be a numeric matrix!")
@@ -35,9 +35,9 @@ find_linked_sites.varkit <- function(x,
     f = if (by_chrom) site(x, "chrom") else NULL, # Split by CHROM
     margin = 2,                                   # Split over the columns
     distances = site(x, "pos"),                   # Further split based on bp distance
-    size = window_size_bp,                        # Max bases covered by a split
+    size = size_bp,                               # Max bases covered by a split
     by_na_pattern = TRUE,                         # Further split by NA pattern across samples
-    min_size = min_ncol
+    min_size = min_ncol                           # Merge NA splits with fewer then MIN_NCOL
   )
 
   if (by_chrom) {
@@ -47,7 +47,7 @@ find_linked_sites.varkit <- function(x,
   }
 
   # Compute the required comparisons
-  comps <- compute_comparisons(mat_list, window = n_window)
+  comps <- compute_comparisons(mat_list, windows = windows)
 
   if (by_chrom) {
     # Get the CHROM of each comparison, exclude cross-CHROM comparisons

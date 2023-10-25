@@ -1,8 +1,8 @@
 # Intended for use with splitm(by_na_pattern = TRUE)
 ##' @export
-compute_comparisons <- function(x, y = NULL, window = -1, use = FALSE) {
-  if (!is.null(y) && window >= 0)
-    stop("A positive 'window' argument produces nonsensical results if 'y' is supplied.")
+compute_comparisons <- function(x, y = NULL, windows = -1, use = FALSE) {
+  if (!is.null(y) && windows >= 0)
+    stop("A positive 'windows' argument produces nonsensical results if 'y' is supplied.")
 
   seq_x <- seq_along(x)
   seq_y <- if (is.null(y)) seq_x else seq_along(y)
@@ -11,8 +11,8 @@ compute_comparisons <- function(x, y = NULL, window = -1, use = FALSE) {
   if (is.null(y))
     idxs <- idxs[idxs[[1]] >= idxs[[2]], ]
 
-  if (window >= 0)
-    idxs <- idxs[idxs[[1]] - idxs[[2]] <= window, ]
+  if (windows >= 0)
+    idxs <- idxs[idxs[[1]] - idxs[[2]] <= windows, ]
 
   rownames(idxs) <- NULL
   idx <- tibble::as_tibble(idxs[, 2:1])
