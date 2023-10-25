@@ -18,7 +18,6 @@ Imports:
     future,
     igraph,
     parallel,
-    parallelly,
     pillar,
     purrr,
     Rcpp,

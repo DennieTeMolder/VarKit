@@ -1,5 +1,5 @@
 .r2_cutoff_parallel <- function(mat_list, comps, cutoff, return_r2, cores) {
-  cores <- min(cores, nrow(comps))
+  cores <- min(floor(cores), nrow(comps))
 
   cli::cli_alert_info(c("Running ", .frmt_big(nrow(comps)), " comparisons between ", .frmt_big(length(mat_list)), " windows"))
 
@@ -29,41 +29,48 @@
     split_comp[[i]] <- setNames(df, names(curr))
   }
 
-  # Start workers
-  cl <- parallel::makeCluster(cores, type = if (parallelly::supportsMulticore()) "FORK" else "PSOCK")
-  on.exit(parallel::stopCluster(cl))
+  # Start workers, PSOCK is much more memory efficient then FORK
+  cl <- parallel::makeCluster(cores, type = "PSOCK")
+  on.exit(tryCatch(parallel::stopCluster(cl), error = function(e) NULL))
 
-  # Setup worker envs
-  blas_threads <- max(floor(RhpcBLASctl::blas_get_num_procs() / cores), 1)
-  parallel::clusterExport(cl, c("cutoff", "return_r2", "blas_threads"), envir = rlang::current_env())
-  parallel::clusterEvalQ(cl, RhpcBLASctl::blas_set_num_threads(blas_threads))
-  parallel::clusterEvalQ(cl, library(varkit))
-  ## parallel::clusterEvalQ(cl, devtools::load_all())
+  # Setup BLAS threads on worker env
+  total_threads <- max(1, parallel::detectCores(), na.rm = TRUE)
+  blas_threads <- max(floor(total_threads / cores), 1)
+  parallel::clusterExport(cl, "blas_threads", envir = rlang::current_env())
+  parallel::clusterEvalQ(cl, varkit::blas_threads(blas_threads))
 
   cli::cli_progress_done()
 
-  # Inform the user about memory usage is needed
-  session_size <- 2e8
-  mem_usage <- sum(sapply(split_comp, function(x) {
-    length(unique(as.vector(unlist(x, use.names = FALSE))))
-  })) / length(mat_list) + 2
-  mem_usage <- mem_usage * utils::object.size(mat_list) + cores * session_size
+  # Inform the user about memory usage if above 1 Gb
+  session_size <- 100e6
+  mem_usage <- sum(sapply(split_mat_list, utils::object.size))
+  mem_usage <- mem_usage * 2 + cores * session_size
   class(mem_usage) <- "object_size"
-  if (mem_usage > 5e8) # 0.5 Gb
-    cli::cli_alert_warning(c("Estimated memory usage: ", format(mem_usage, units = "Gb", digits = 2L)))
+  if (mem_usage > 1074e6) {
+    cli::cli_alert_warning(c(
+      "A minimum ", format(mem_usage, units = "Gb", digits = 2L),
+      " of RAM will be needed for parallel computations"))
+  }
 
   cli::cli_progress_step("Running parallel computations")
 
-  res <- parallel::clusterMap(cl, function(data, comp) {
-    lapply_rowwise(comp, function(i, j) {
-      x <- data[[i]]
-      y <- if (i == j) NULL else data[[j]]
-      r2_cutoff(x, y, cutoff = cutoff, return_r2 = return_r2, check_colnames = FALSE)
-    })
-  }, split_mat_list, split_comp, RECYCLE = FALSE, .scheduling = "static")
+  # NOTE Using an anonymous function here will copy the enclosing env to the workers, using a lot of memory
+  res <- parallel::clusterMap(cl, .r2_cutoff_worker,
+    split_mat_list, split_comp, MoreArgs = list(cutoff = cutoff, return_r2 = return_r2),
+    RECYCLE = FALSE, USE.NAMES = FALSE
+  )
 
   cli::cli_progress_done()
 
+  parallel::stopCluster(cl)
   res <- unlist(res, recursive = FALSE, use.names = FALSE)
   res[order(comps$i, comps$j)]
+}
+
+.r2_cutoff_worker <- function(data, comp, cutoff, return_r2) {
+  lapply_rowwise(comp, function(i, j) {
+    x <- data[[i]]
+    y <- if (i == j) NULL else data[[j]]
+    r2_cutoff(x, y, cutoff = cutoff, return_r2 = return_r2, check_colnames = FALSE)
+  })
 }
