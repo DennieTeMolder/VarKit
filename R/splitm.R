@@ -2,13 +2,13 @@
 ##' @export
 splitm <- function(x,
                    f = NULL,
-                   margin = 1,
-                   keep_f = TRUE,
-                   distances = NULL,
                    size = NULL,
+                   distances = NULL,
                    by_na_pattern = FALSE,
-                   min_size = 20
-                   ) {
+                   margin = 1,
+                   min_size = 20,
+                   keep_f = FALSE,
+                   ...) {
   # Ensure margin is correct
   stopifnot(margin %in% 1:2)
   if (is.null(dim(x))) {
@@ -44,11 +44,13 @@ splitm <- function(x,
   }
 
   .extract <- function(ind, data, margin) {
-    len <- length(ind)
-    if (len == 1 && ind == 0)
+    if (identical(ind, 0))
       return(data)
-    if (ind[1] == 1 && len == .get_size(data) && all(ind == 1))
-      return(data)
+    if (ind[1] == 1) {
+      total <- switch(margin + 1, length, nrow, ncol)(data)
+      if (total == length(ind))
+        return(data)
+    }
 
     split <- switch(margin + 1,
       data[ind],
@@ -94,7 +96,7 @@ splitm <- function(x,
         )
       }
     }
-    f_split_ind <- split(seq_len(n), f = f)
+    f_split_ind <- split(seq_len(n), f = f, ...)
   }
 
   # Split by f
@@ -114,11 +116,12 @@ splitm <- function(x,
         size_split_ind <- findInterval(dist, size_split_ind)
       }
       size_split_ind <- split(seq_along(size_split_ind), size_split_ind)
+      names(size_split_ind) <- NULL
     }
 
     # Split by size
     # NOTE Using indices is 10x faster then using unique() & ==
-    size_splits <- lapply(size_split_ind, function(ind2) {
+    lapply(size_split_ind, function(ind2) {
       split2 <- .extract(ind2, split, margin)
 
       if (!by_na_pattern)
@@ -149,7 +152,6 @@ splitm <- function(x,
       # Split such that each subset has the same pattern of NAs (except below_min_size)
       lapply(split(seq_along(is_na), is_na), .extract, split2, margin)
     })
-    setNames(size_splits, NULL)
   })
 
   # Un-nest list if specific arguments were omitted
