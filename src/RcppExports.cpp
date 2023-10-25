@@ -33,38 +33,10 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// find_header_line
-int find_header_line(std::string x);
-RcppExport SEXP _varkit_find_header_line(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(find_header_line(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// run_r2_cutoff_parallel
-List run_r2_cutoff_parallel(List mat_list, std::vector<int> i, std::vector<int> j, double cutoff, bool return_r2);
-RcppExport SEXP _varkit_run_r2_cutoff_parallel(SEXP mat_listSEXP, SEXP iSEXP, SEXP jSEXP, SEXP cutoffSEXP, SEXP return_r2SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type mat_list(mat_listSEXP);
-    Rcpp::traits::input_parameter< std::vector<int> >::type i(iSEXP);
-    Rcpp::traits::input_parameter< std::vector<int> >::type j(jSEXP);
-    Rcpp::traits::input_parameter< double >::type cutoff(cutoffSEXP);
-    Rcpp::traits::input_parameter< bool >::type return_r2(return_r2SEXP);
-    rcpp_result_gen = Rcpp::wrap(run_r2_cutoff_parallel(mat_list, i, j, cutoff, return_r2));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_varkit_str_splitC", (DL_FUNC) &_varkit_str_splitC, 2},
     {"_varkit_index_vcf", (DL_FUNC) &_varkit_index_vcf, 1},
-    {"_varkit_find_header_line", (DL_FUNC) &_varkit_find_header_line, 1},
-    {"_varkit_run_r2_cutoff_parallel", (DL_FUNC) &_varkit_run_r2_cutoff_parallel, 5},
     {NULL, NULL, 0}
 };
 

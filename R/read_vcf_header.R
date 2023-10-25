@@ -3,33 +3,38 @@ read_vcf_header <- function(file) {
   header <- .read_vcf_header_internal(file)
   new_varkit_header(
     meta = .parse_meta(header$meta),
-    col_names = .parse_col_names(header$col_names)
+    col_names = .parse_header_line(header$header_line)
   )
 }
 
-.read_vcf_header_internal <- function(file) {
+.read_vcf_header_internal <- function(file, max_lines = 1e5) {
   if (inherits(file, "connection")) {
     if (!is_open(file))
       stop("The provided 'file' connection is invalid!", call. = FALSE)
+    if (isSeekable(file) && seek(file) != 0)
+      warning("The provided connection is not at the start of 'file'\n",
+              ("If this was not intentional, the header will be incorrect"))
     con <- file
-    file <- summary(con)$description
   } else {
     con <- file(file, "r")
     on.exit(close(con))
   }
 
-  header_linum <- find_header_line(file)
-  if (header_linum < 1)
-    stop("Could not detect header line! Check the output of `find_header_line(file)`.", call. = FALSE)
-
-  if (header_linum > 1) {
-    meta <- readLines(con, n = header_linum - 1)
-  } else {
-    meta <- NULL
+  meta_lines <- vector("list", length = max_lines)
+  for (i in seq_along(meta_lines)) {
+    line <- readLines(con, n = 1)
+    if (!isTRUE(.str_starts(line, "##")))
+      break()
+    meta_lines[[i]] <- line
   }
 
-  col_names <- .scan_fields(con, nlines = 1)
-  list(meta = meta, col_names = col_names)
+  if (length(line) < 1 || .str_starts(line, "##"))
+    stop("At line ", i, ": could not detect header line!")
+
+  list(
+    meta = unlist(meta_lines),
+    header_line = line
+  )
 }
 
 .parse_meta <- function(meta) {
@@ -42,8 +47,11 @@ read_vcf_header <- function(file) {
   tibble::tibble(name = meta[, 1], value = meta[, 2])
 }
 
-.parse_col_names <- function(col_names) {
-  col_names[1] <- stringr::str_remove(col_names[1], "^#")
+.parse_header_line <- function(header_line) {
+  col_names <- stringr::str_split_1(
+    stringr::str_remove(header_line, "^#"),
+    pattern = stringr::fixed("\t")
+  )
 
   # Standardise the names of fixed columns
   fixed_names <- .fixed_columns()
@@ -52,3 +60,4 @@ read_vcf_header <- function(file) {
   col_names[fixed_idx] <- fixed_names[seq_along(fixed_names) %in% fixed_idx]
   col_names
 }
+

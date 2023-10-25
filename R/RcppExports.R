@@ -9,11 +9,3 @@ str_splitC <- function(str, sep) {
     .Call(`_varkit_index_vcf`, x)
 }
 
-.find_header_lineC <- function(x) {
-    .Call(`_varkit_find_header_line`, x)
-}
-
-.run_r2_cutoff_parallelC <- function(mat_list, i, j, cutoff, return_r2 = FALSE) {
-    .Call(`_varkit_run_r2_cutoff_parallel`, mat_list, i, j, cutoff, return_r2)
-}
-

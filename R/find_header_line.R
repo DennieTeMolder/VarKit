@@ -1,7 +1,12 @@
 ##' @export
 find_header_line <- function(file) {
-  file <- path.expand(file)
-  if (!file.exists(file))
-    stop("Could not locate the provided file: '", file, "'")
-  .find_header_lineC(file)
+  con <- file(file, "r")
+  on.exit(close(con))
+  i <- 0L
+  while (length(line <- readLines(con, n = 1)) > 0) {
+    i <- i + 1L
+    if (!isTRUE(.str_starts(line, "##")))
+      return(i)
+  }
+  0L
 }
