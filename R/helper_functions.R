@@ -88,11 +88,6 @@
   print(cli::rule(left = paste0(...), line = 1))
 }
 
-.print_tbl <- function(x, ...) {
-  if (FALSE) pillar::pillar() # Silence imports checker
-  do.call(utils::getS3method("print", "tbl", envir = getNamespace("pillar")), c(list(x), ...))
-}
-
 .max_print_col <- function(mat, width = getOption("width")) {
   stopifnot(is.matrix(mat))
 

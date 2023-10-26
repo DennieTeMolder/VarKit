@@ -9,19 +9,20 @@ License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
+Depends:
+    R (>= 3.5.0)
 Imports: 
     cli,
-    digest,
-    dplyr,
-    forcats,
+    digest (>= 0.6.23),
+    dplyr (>= 1.1.0),
+    forcats (>= 1.0.0),
     igraph,
     parallel,
-    pillar,
-    purrr,
+    purrr (>= 1.0.0),
     Rcpp,
     RhpcBLASctl,
     rlang,
-    stringr,
+    stringr (>= 1.5.0),
     tibble,
     tidyselect
 Suggests: 
