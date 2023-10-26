@@ -15,5 +15,5 @@ write_bcftools_samples <- function(x, file) {
 
 ##' @export
 write_bcftools_samples.varkit <- function(x, file) {
-  writeLines(samples(x), con = file)
+  write_lines2(samples(x), file = file)
 }

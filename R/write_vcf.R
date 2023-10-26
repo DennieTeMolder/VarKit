@@ -9,9 +9,10 @@ write_vcf.varkit <- function(x, file, append = FALSE, replace_filter = FALSE) {
   if (inherits(file, "connection")) {
     if (!is_open.connection(file))
       stop("The provided 'file' connection is invalid!")
-    append <- FALSE
-  } else if (!append || !file.exists(file)) {
-    file <- file(file, "w")
+    if (isSeekable(file) && seek(file) == 0L)
+      append <- FALSE
+  } else {
+    file <- file_con(file, if (append) "a" else "w")
     on.exit(close(file))
     append <- FALSE
   }
@@ -26,7 +27,7 @@ write_vcf.varkit <- function(x, file, append = FALSE, replace_filter = FALSE) {
   # Ensure all sites are included
   x <- unmask_all(x)
 
-  if (!append && seek(file) == 0L) {
+  if (!append) {
     cli::cli_progress_step("Writing VCF header")
     write_vcf_header(x, file)
     cli::cli_progress_done()
