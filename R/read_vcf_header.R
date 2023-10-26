@@ -9,7 +9,7 @@ read_vcf_header <- function(file) {
 
 .read_vcf_header_internal <- function(file, max_lines = 1e5) {
   if (inherits(file, "connection")) {
-    if (!is_open(file))
+    if (!is_open.connection(file))
       stop("The provided 'file' connection is invalid!", call. = FALSE)
     if (isSeekable(file) && seek(file) != 0)
       warning("The provided connection is not at the start of 'file'\n",

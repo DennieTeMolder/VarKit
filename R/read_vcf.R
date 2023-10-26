@@ -25,7 +25,7 @@ read_vcf <- function(file,
 
   # Open the file if needed
   if (inherits(file, "connection")) {
-    if (!is_open(file))
+    if (!is_open.connection(file))
       stop("The provided 'file' connection is invalid!")
     con <- file
   } else {

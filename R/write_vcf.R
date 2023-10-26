@@ -7,7 +7,7 @@ write_vcf <- function(x, file, append = FALSE, replace_filter = FALSE) {
 write_vcf.varkit <- function(x, file, append = FALSE, replace_filter = FALSE) {
   # Open a connection for writing, unless we want to append
   if (inherits(file, "connection")) {
-    if (!is_open(file))
+    if (!is_open.connection(file))
       stop("The provided 'file' connection is invalid!")
     append <- FALSE
   } else if (!append || !file.exists(file)) {
