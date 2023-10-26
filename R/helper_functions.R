@@ -137,22 +137,20 @@
 # X should be ordered from large to small (computationally)
 .split_load_balance <- function(x, cores, each = 4L) {
   stopifnot(is.vector(x))
+  cores <- as.integer(cores)
+  each <- as.integer(each)
+
   len <- length(x)
-  stopifnot(len >= cores)
+  stopifnot(isTRUE(len >= cores))
 
   n <- min(cores * each, len)
   size <- floor(len / n)
+  group <- c(
+    rep(seq_len(n), times = size),
+    rep(n + 1L, len %% n)
+  )
 
-  seq_mat <- seq_len(size * n)
-  res <- as.vector(matrix(x[seq_mat], ncol = n, byrow = TRUE))
-
-  # If LEN cannot be divided neatly by N, some values end up an additional bin
-  if (len %% n != 0) {
-    n <- n + 1
-    res <- c(res, x[-seq_mat])
-  }
-
-  splitm(res, size = ceiling(len / n))
+  setNames(split.default(x, f = group), nm = NULL)
 }
 
 ## Unused functions ------
