@@ -1,16 +1,16 @@
 ##' @export
-check_window <- function(vcf, window, cols_each, probs = c(0, 0.025, 0.5, 0.975, 1)) {
+check_window <- function(vcf, windows, cols_each, probs = c(0, 0.025, 0.5, 0.975, 1)) {
   stopifnot(is_varkit(vcf))
   stopifnot(is.numeric(cols_each), length(cols_each) == 1, cols_each > 0)
-  stopifnot(is.numeric(window), length(window) == 1)
+  stopifnot(is.numeric(windows), length(windows) == 1)
 
   locs <- split(site(vcf, "pos"), site(vcf, "chrom"))
   locs <- lapply(locs, sort)
 
   # Check number of observations per chromosome
   n <- sapply(locs, length)
-  min_n <- cols_each * (window + 1)
-  if (window < 0 || max(n) <= min_n) {
+  min_n <- cols_each * (windows + 1)
+  if (windows < 0 || max(n) <= min_n) {
     # Only report statistics for the largest chromosome
     locs <- locs[which.max(n)]
     dist <- diff(range(locs[[which.max(n)]]))
@@ -23,7 +23,7 @@ check_window <- function(vcf, window, cols_each, probs = c(0, 0.025, 0.5, 0.975,
       loc <- loc[sapply(loc, nrow) == cols_each]
 
       # Only compare the extremes
-      comps <- tibble::tibble(mid = seq_along(loc), left = .data$mid - window, right = .data$mid + window)
+      comps <- tibble::tibble(mid = seq_along(loc), left = .data$mid - windows, right = .data$mid + windows)
 
       ind_max <- length(loc)
       res <- lapply_rowwise(comps, function(mid, left, right) {
@@ -47,5 +47,5 @@ check_window <- function(vcf, window, cols_each, probs = c(0, 0.025, 0.5, 0.975,
 
   res <- c(mean = mean(dist), quantile(dist, probs = probs))
   res <- .frmt_big(round(res))
-  data.frame(quantile = names(res), bp_distance = setNames(res, NULL))
+  data.frame(quantile = names(res), bp_size = setNames(res, NULL))
 }
