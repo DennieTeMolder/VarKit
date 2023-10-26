@@ -1,4 +1,4 @@
-# NOTE Leiden provides faster clustering, good quality clustering, but the solution is not stable
+# NOTE Leiden provides faster clustering, high quality clustering, but the solution is not stable
 ##' @export
 cluster_fast <- function(graph) {
   igraph::groups(igraph::cluster_leiden(graph, objective_function = "modularity", n_iterations = 1))
@@ -16,12 +16,25 @@ resolve_links <- function(links,
                           cores = 1
                           ) {
   strategy <- strategy[1]
+  origin <- get_origin(links)
 
   if (is.data.frame(links) || !is.list(links)) {
     results <- .resolve_links_internal(links, strategy = strategy, cluster_fn = cluster_fn)
-    return(varkit_linkage_graph(results, origin = get_origin(links)))
+    return(varkit_linkage_graph(results, origin = origin))
+  } else if (!isTRUE(all(sapply(links, is.data.frame)))) {
+    stop("Not all elements of 'links' are a data frame!")
   }
 
+  # Remove zero length elements
+  sizes <- sapply(links, nrow)
+  if (all(sizes < 1)) {
+    return(NULL)
+  } else if (any(sizes < 1)) {
+    links <- links[sizes >= 1L]
+    sizes <- sizes[sizes >= 1L]
+  }
+
+  # Adjust cores
   cores <- min(floor(cores), length(links))
 
   # If links is a list we can solve each element individually (and in parallel)
@@ -32,25 +45,27 @@ resolve_links <- function(links,
       .progress = TRUE
     )
   } else {
+    cli::cli_progress_step("Setting up parallel workers")
     # Optimal ordering for core utilisation
-    size_order <- order(sapply(links, nrow), decreasing = TRUE)
-    size_order <- .split_load_balance(size_order, cores = cores)
-    chunk_size <- length(size_order[[1]])
-    size_order <- unlist(size_order)
+    lb_order <- .split_load_balance(order(sizes, decreasing = TRUE), cores = cores)
+    chunk_size <- length(lb_order[[1]])
+    lb_order <- unlist(lb_order)
 
     cl <- parallel::makeCluster(cores, type = "PSOCK")
     on.exit(tryCatch(parallel::stopCluster(cl), error = function(e) NULL))
 
+    cli::cli_progress_step("Running parallel computations")
     res <- parallel::parLapplyLB(cl,
-      links[size_order], .resolve_links_internal,
+      links[lb_order], .resolve_links_internal,
       strategy = strategy, cluster_fn = cluster_fn,
       chunk.size = chunk_size
     )
     parallel::stopCluster(cl)
+    cli::cli_progress_done()
   }
 
   res <- do.call(igraph::disjoint_union, res)
-  varkit_linkage_graph(res, origin = get_origin(links))
+  varkit_linkage_graph(res, origin = origin)
 }
 
 .resolve_links_internal <- function(links, strategy, cluster_fn) {
