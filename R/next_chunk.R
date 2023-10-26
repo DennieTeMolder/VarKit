@@ -22,7 +22,7 @@ next_chunk.varkit_index <- function(x, col_select = NULL, ...) {
   }
 
   # NOTE Keep repeating the last element when outside of the index
-  # This allows for "open ended" indexes like from index_vcf_partial()
+  # This allows for "open ended" indexes like from index_vcf_header()
   n_max <- seek.varkit_index(x)$n_lines
   if (n_max < 1)
     n_max <- utils::tail(x$n_lines, n = 1)

@@ -87,9 +87,9 @@ concat_vcf(res)
 concat_vcf(res[[1]])
 concat_vcf(res[[1]], res[2:3])
 
-p_index <- index_vcf_partial(example, chunk_size  = 25)
-seek(p_index, 1)
-while (!is.null(vcf <- next_lines(p_index))) {
+h_index <- index_vcf_header(example, chunk_size  = 25)
+seek(h_index, 1)
+while (!is.null(vcf <- next_lines(h_index))) {
   str(vcf)
 }
 

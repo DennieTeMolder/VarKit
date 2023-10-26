@@ -46,7 +46,7 @@ index_vcf <- function(file, ...) {
 }
 
 ##' @export
-index_vcf_partial <- function(file, chunk_size = 1e4, ...) {
+index_vcf_header <- function(file, chunk_size = 1e4, ...) {
   index <- tibble::tibble(
     id = "chunk_size",
     linum = find_header_line(file) + 1,
