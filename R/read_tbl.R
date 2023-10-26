@@ -37,7 +37,7 @@ read_tbl <- function(file,
 
   # Open the file if needed
   if (inherits(file, "connection")) {
-    if (!is_open(file))
+    if (!is_open.connection(file))
       stop("The provided 'file' connection is invalid!")
     con <- file
   } else {
@@ -56,7 +56,8 @@ read_tbl <- function(file,
       if (anyNA(col_names))
         stop("\nSome of the header fields are NA, detected fields:\n", .quote_collapse(col_names))
     } else {
-      # We will always provide 'header = FALSE', so we must adjust 'skip' accordingly
+      # NOTE We want the header arg to be missing in read.table() to correctly handle rownames,
+      # Therefore we must adjust 'skip' accordingly
       skip <- max(0, skip) + 1
     }
   }
@@ -74,15 +75,15 @@ read_tbl <- function(file,
   # Other then that the rest these statements should be identical
   if (is.null(col_names)) {
     tbl <- utils::read.table(
-      file = con, header = FALSE, sep = sep,
-      colClasses = col_types, as.is = as.is, na.strings = na.strings,
-      nrows = nrows, skip = skip, strip.white = strip.white, ...
+      file = con, sep = sep,                        colClasses = col_types,
+      as.is = as.is, na.strings = na.strings, nrows = nrows, skip = skip,
+      strip.white = strip.white, ...
     )
   } else {
     tbl <- utils::read.table(
-      file = con, header = FALSE, sep = sep, col.names = col_names,
-      colClasses = col_types, as.is = as.is, na.strings = na.strings,
-      nrows = nrows, skip = skip, strip.white = strip.white, ...
+      file = con, sep = sep, col.names = col_names, colClasses = col_types,
+      as.is = as.is, na.strings = na.strings, nrows = nrows, skip = skip,
+      strip.white = strip.white, ...
     )
   }
   tibble::as_tibble(tbl)
