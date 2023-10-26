@@ -98,3 +98,30 @@ summary.varkit <- function(object, ...) {
     visible_frac = mean(object$use_site)
   )
 }
+
+##' @export
+split.varkit <- function(x, f, drop = FALSE, keep_f = FALSE, ...) {
+  if (missing(drop))
+    drop <- TRUE
+
+  # Add indexes so we can retrace the splits
+  x$site$idx <- seq_len(nrow(x$site))
+
+  # Split sites and determine grouping using the index
+  split_site <- splitm(x$site, f = f, drop = drop, margin = 1, keep_f = keep_f, ...)
+  groups <- purrr::list_rbind(lapply(split_site, function(xx) xx[, "idx"]), names_to = "label")
+  groups <- groups$label[order(groups$idx)]
+
+  # Split the other parts of the varkit object in the same way
+  split_geno <- splitm(x$geno, f = groups, margin = 2)
+  split_use <- split(x$use_site, f = groups)
+
+  # Recreate the varkit object for each split
+  splits <- lapply(names(split_geno), function(name) {
+    structure(
+      list(meta = x$meta, site = split_site[[name]], geno = split_geno[[name]], use_site = split_use[[name]]),
+      class = class(x)
+    )
+  })
+  setNames(splits, nm = names(split_geno))
+}
