@@ -28,8 +28,10 @@ print.varkit_geno <- function(x, ..., n = .max_print_col(x), n_samples = 25) {
   if (!sample_trunc)
     n_samples <- nrow(x)
 
-  cat("# A", typeof(x), "matrix:", .frmt_big(nrow(x)), "samples x",
-      .frmt_big(ncol(x)), "sites;", round(mean(is.na(x)) * 100, 2), "% is NA\n")
+  cat(sprintf(
+    "# A matrix<%s>: %s samples x %s sites; %.2f%% is NA\n",
+    typeof(x), .frmt_big(nrow(x)), .frmt_big(ncol(x)), mean(is.na(x)) * 100
+  ))
 
   print(unclass(x[seq_len(n_samples), seq_len(n), drop = FALSE]), ...)
 
