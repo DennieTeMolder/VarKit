@@ -10,11 +10,13 @@ splitm <- function(x,
                    keep_f = FALSE,
                    ...) {
   # Ensure margin is correct
-  stopifnot(margin %in% 1:2)
+  stopifnot(identical(1L, length(margin)), margin %in% 1:2)
   if (is.null(dim(x))) {
-    if (!isTRUE(length(x) >= 0))
+    if (!isTRUE(length(x) >= 0L))
       stop("Argument 'x' lacks either a dim() or length() property!")
     margin <- 0
+  } else if (length(dim(x)) != 2L) {
+    stop("'x' should be a one- or two- dimensional object")
   }
 
   ## Internal Functions ------
@@ -44,9 +46,9 @@ splitm <- function(x,
   }
 
   .extract <- function(ind, data, margin) {
-    if (identical(ind, 0))
+    if (identical(ind, 0L))
       return(data)
-    if (ind[1] == 1) {
+    if (ind[1] == 1L) {
       total <- switch(margin + 1, length, nrow, ncol)(data)
       if (total == length(ind))
         return(data)
@@ -65,9 +67,7 @@ splitm <- function(x,
   n <- .get_size(x)
 
   # Required
-  if (margin != 0)
-    stopifnot(length(dim(x)) == 2)
-  stopifnot(is.numeric(min_size), length(min_size) == 1)
+  stopifnot(is.numeric(min_size), length(min_size) == 1L)
   if (!missing(min_size) && !by_na_pattern)
     warning("The argument 'min_size' is ignored when 'by_na_pattern = FALSE'.")
   if (by_na_pattern && margin == 0) {
@@ -82,9 +82,10 @@ splitm <- function(x,
     stopifnot(is.numeric(size), length(size) == 1)
 
   ## Code ------
+  # Split by f
   # Implement base::split() with support for margins
   if (is.null(f)) {
-    f_split_ind <- list(0) # Instruct .extract to return the full object
+    f_split_ind <- list(0L) # Instruct .extract to return the full object
   } else {
     if (inherits(f, "formula")) {
       f <- .apply_formula(f, x, margin)
@@ -99,15 +100,15 @@ splitm <- function(x,
     f_split_ind <- split(seq_len(n), f = f, ...)
   }
 
-  # Split by f
   res <- lapply(f_split_ind, function(ind) {
     split <- .extract(ind, x, margin)
     dist <- if (is.null(distances)) NULL else .extract(ind, distances, margin = 0)
 
+    # Split by size
     max_size <- if (is.null(dist)) .get_size(split) else diff(range(dist))
 
     if (is.null(size) || size >= max_size) {
-      size_split_ind <- list(0)
+      size_split_ind <- list(0L)
     } else {
       if (is.null(dist)) {
         size_split_ind <- rep(seq(0, max_size / size), each = size, length.out = max_size)
@@ -119,7 +120,6 @@ splitm <- function(x,
       names(size_split_ind) <- NULL
     }
 
-    # Split by size
     # NOTE Using indices is 10x faster then using unique() & ==
     lapply(size_split_ind, function(ind2) {
       split2 <- .extract(ind2, split, margin)
@@ -131,7 +131,7 @@ splitm <- function(x,
 
       # Split the current matrix further based on pattern of NA values if any
       if (!anyNA(split2))
-        return(setNames(list(split2), paste(rep(0, nrow(split2)), collapse = "")))
+        return(setNames(list(split2), paste(rep(0L, nrow(split2)), collapse = "")))
 
       # Paste together missing values as a pattern of 0/1s
       is_na <- is.na(split2)
