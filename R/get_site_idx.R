@@ -26,9 +26,12 @@ get_site_idx.data.frame <- function(site, vcf) {
 
 ##' @export
 get_site_idx.varkit_linkage_graph <- function(site, vcf) {
-  if (!originates_from(site, origin = vcf)) {
+  if (is.null(get_origin(site))) {
+    stop("The linkage graph 'site' does not have a 'varkit_origin' attribute!\n",
+         "The linkage graph is most likely corrupted.")
+  } else if (!originates_from(site, origin = vcf)) {
     stop("The provided linkage graph does not originate from 'vcf'!\n",
-         "Most likely either the mask or samples(vcf) differs between the two.")
+         "Likely either the mask or samples(vcf) differs between the two.")
   }
 
   # All nodes that should be removed have a single in-going edge
