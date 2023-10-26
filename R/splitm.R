@@ -22,27 +22,21 @@ splitm <- function(x,
   ## Internal Functions ------
   .get_size <- switch(margin + 1, length, nrow, ncol)
 
-  # Based on base::.formula2varlist(), but supports margin
-  .apply_formula <- function(f, data, margin) {
-    if (length(f) == 3)
-      warning("Unexpected LHS in 'f' has been combined with RHS.")
+  .split_ind_formula <- function(x, f, margin, ...) {
+    stopifnot(margin %in% 1:2)
 
-    vars <- all.vars(f)
-    if (length(vars) == 0)
-      stop("Could not extract named variables from 'f'!")
+    if (margin == 2)
+      x <- t(x)
 
-    fun_name <- switch(margin + 1, "names", "colnames", "rownames")
-    d_names <- do.call(fun_name, list(data), envir = baseenv())
+    if (length(all.vars(f)) == 0) {
+      x <- data.frame(.IDX = seq_len(nrow(x)))
+    } else {
+      x <- x[, unique(all.vars(f)), drop = FALSE]
+      x <- cbind(x, .IDX = seq_len(nrow(x)))
+    }
 
-    if (is.null(d_names))
-      stop("Cannot apply formula, ", fun_name, "(x) is NULL!")
-    if (!all(vars %in% d_names))
-      stop("Formula 'f' contains terms not found in ", fun_name, "(x)!")
-
-    names(vars) <- vars
-    lapply(vars, function(var) {
-      unlist(switch(margin + 1, data[[var]], data[, var], data[var, ]), use.names = TRUE)
-    })
+    x <- split.data.frame(x = x, f = f, ...)
+    lapply(x, function(xx) as.integer(xx[, ".IDX", drop = TRUE]))
   }
 
   .extract <- function(ind, data, margin) {
@@ -86,17 +80,16 @@ splitm <- function(x,
   # Implement base::split() with support for margins
   if (is.null(f)) {
     f_split_ind <- list(0L) # Instruct .extract to return the full object
-  } else {
-    if (inherits(f, "formula")) {
-      f <- .apply_formula(f, x, margin)
-      if (!keep_f) {
-        x <- switch(margin + 1,
-          x <- x[!names(x) %in% names(f)],
-          x <- x[, !colnames(x) %in% names(f), drop = FALSE],
-          x <- x[!rownames(x) %in% names(f), , drop = FALSE]
-        )
+  } else if (inherits(f, "formula") && margin != 0) {
+    f_split_ind <- .split_ind_formula(x = x, f = f, margin = margin, ...)
+    if (!keep_f) {
+      if (margin == 1) {
+        x <- x[, !colnames(x) %in% all.vars(f), drop = FALSE]
+      } else {
+        x <- x[!rownames(x) %in% all.vars(f), , drop = FALSE]
       }
     }
+  } else {
     f_split_ind <- split(seq_len(n), f = f, ...)
   }
 
