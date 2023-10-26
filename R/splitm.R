@@ -48,13 +48,11 @@ splitm <- function(x,
         return(data)
     }
 
-    split <- switch(margin + 1,
+    switch(margin + 1,
       data[ind],
       data[ind, , drop = FALSE],
       data[, ind, drop = FALSE]
     )
-    class(split) <- class(data)
-    split
   }
 
   ## Argument checks ------
