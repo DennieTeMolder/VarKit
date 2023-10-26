@@ -5,11 +5,10 @@ write_vcf_header <- function(x, file) {
 
 ##' @export
 write_vcf_header.varkit_header <- function(x, file) {
-  .stopifnotsingle(file, class = "character")
-  if (stringr::str_ends(file, "\\.gz(ip)?"))
-    warning("Varkit writes regular g-zipped files, not the block g-zip format ",
-            "expected by many tools!\n If the latter is desired, write to plain ",
-            "vcf and convert using an external tool like 'bgzip'.")
+  if (stringr::str_ends(file, "\\.gz(ip)?")) {
+    cli::cli_alert_warning("Varkit writes regular g-zipped files, not the block g-zip format expected by many tools!")
+    cli::cli_alert_warning("If the latter is desired, write to plain vcf and convert using an external tool like 'bgzip'.")
+  }
 
   header <- meta(x)
   # Replace fileformat and add info
@@ -34,5 +33,5 @@ write_vcf_header.varkit_header <- function(x, file) {
     paste0("#", .collapse(x$col_names, "\t"))
   )
 
-  readr::write_lines(header, file)
+  writeLines(header, con = file)
 }

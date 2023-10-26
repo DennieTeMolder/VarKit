@@ -19,7 +19,6 @@ Imports:
     pillar,
     purrr,
     Rcpp,
-    readr,
     RhpcBLASctl,
     rlang,
     stringr,

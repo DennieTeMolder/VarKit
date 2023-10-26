@@ -5,7 +5,7 @@ write_bcftools_regions <- function(x, file) {
 
 ##' @export
 write_bcftools_regions.varkit <- function(x, file) {
-  readr::write_tsv(site(x, cols = c("chrom", "pos")), file = file, col_names = FALSE)
+  write_tbl(site(x, cols = c("chrom", "pos")), file = file, col_names = FALSE)
 }
 
 ##' @export
@@ -15,5 +15,5 @@ write_bcftools_samples <- function(x, file) {
 
 ##' @export
 write_bcftools_samples.varkit <- function(x, file) {
-  readr::write_lines(samples(x), file = file)
+  writeLines(samples(x), con = file)
 }

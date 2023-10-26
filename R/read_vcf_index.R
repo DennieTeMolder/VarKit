@@ -8,12 +8,12 @@ read_vcf_index <- function(vcf_path, validate = TRUE, ...) {
   if (!file.exists(index_path))
     stop("The provided 'vcf_path' has no associated index!")
 
-  origin <- readr::read_lines(index_path, n_max = 1)
+  origin <- readLines(index_path, n = 1)
   if (!stringr::str_starts(origin, "#varkit_header_sha1="))
     stop("The first line of the index is missing the 'varkit_header_sha1' attribute!")
   origin <- stringr::str_sub(origin, start = 21)
 
-  index <- readr::read_tsv(index_path, skip = 1, col_types = readr::cols(id = "c", linum = "i", n_lines = "i"))
+  index <- read_tbl(index_path, skip = 1, col_types = c(id = "c", linum = "i", n_lines = "i"))
 
   if (validate && origin != digest::sha1(read_vcf_header(vcf_path)))
     stop("The VCF seems to have changed since it has been indexed!")

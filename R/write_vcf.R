@@ -5,6 +5,17 @@ write_vcf <- function(x, file, append = FALSE, replace_filter = FALSE) {
 
 ##' @export
 write_vcf.varkit <- function(x, file, append = FALSE, replace_filter = FALSE) {
+  # Open a connection for writing, unless we want to append
+  if (inherits(file, "connection")) {
+    if (!is_open(file))
+      stop("The provided 'file' connection is invalid!")
+    append <- FALSE
+  } else if (!append || !file.exists(file)) {
+    file <- file(file, "w")
+    on.exit(close(file))
+    append <- FALSE
+  }
+
   # Ensure all columns adhere to spec
   x <- standardize_cols(x)
   x <- .replace_na_geno(x)
@@ -15,14 +26,21 @@ write_vcf.varkit <- function(x, file, append = FALSE, replace_filter = FALSE) {
   # Ensure all sites are included
   x <- unmask_all(x)
 
-  if (!append || !file.exists(file)) {
+  if (!append && seek(file) == 0L) {
     cli::cli_progress_step("Writing VCF header")
     write_vcf_header(x, file)
     cli::cli_progress_done()
   }
 
   cli::cli_progress_step("Writing VCF body")
-  readr::write_tsv(to_tibble.varkit(x), file, append = TRUE, col_names = FALSE, na = ".")
+  write_tbl(
+    to_tibble.varkit(x),
+    file = file,
+    append = append,
+    col_names = FALSE,
+    row_names = FALSE,
+    na = ".",
+  )
 }
 
 .replace_na_geno <- function(x) {
