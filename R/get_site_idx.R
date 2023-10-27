@@ -38,5 +38,5 @@ get_site_idx.varkit_linkage_graph <- function(site, vcf) {
   deg <- igraph::degree(site, mode = "in", loops = FALSE)
   if (any(deg >= 2))
     stop("The linkage graph appears to be corrupted!")
-  as.integer(names(deg)[deg == 1])
+  sort(as.integer(names(deg)[deg == 1L]))
 }
