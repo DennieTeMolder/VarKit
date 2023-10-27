@@ -26,6 +26,8 @@ get_site_idx.data.frame <- function(site, vcf) {
 
 ##' @export
 get_site_idx.varkit_linkage_graph <- function(site, vcf) {
+  .ensure_igraph()
+
   if (is.null(get_origin(site))) {
     stop("The linkage graph 'site' does not have a 'varkit_origin' attribute!\n",
          "The linkage graph is most likely corrupted.")

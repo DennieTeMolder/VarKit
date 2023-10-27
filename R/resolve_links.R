@@ -15,6 +15,7 @@ resolve_links <- function(links,
                           cluster_fn = cluster_fast,
                           cores = 1
                           ) {
+  .ensure_igraph()
   strategy <- strategy[1]
   origin <- get_origin(links)
 

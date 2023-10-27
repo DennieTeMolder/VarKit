@@ -1,12 +1,11 @@
 ##' @export
 as_genind <- function(x, ploidy, type = c("codom", "PA"), check_geno = TRUE) {
-  if (!nchar(system.file(package = "adegenet")) > 0)
-    stop("This function requires the 'adegenet' package to be installed!")
   UseMethod("as_genind", x)
 }
 
 ##' @export
 as_genind.varkit <- function(x, ploidy, type = c("codom", "PA"), check_geno = TRUE) {
+  .ensure_pkg("adegenet")
   stopifnot(is.numeric(x$geno))
   ploidy <- as.integer(ploidy)
   stopifnot(length(ploidy) == 1, ploidy >= 1)

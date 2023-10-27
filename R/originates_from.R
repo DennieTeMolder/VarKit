@@ -5,7 +5,8 @@ set_origin <- function(x, origin) {
   } else {
     sha1 <- digest::sha1(origin)
   }
-  if (igraph::is_igraph(x)) {
+  if (inherits(x, "igraph")) {
+    .ensure_igraph()
     igraph::graph_attr(x, "varkit_origin") <- sha1
   } else {
     attr(x, "varkit_origin") <- sha1
@@ -15,7 +16,8 @@ set_origin <- function(x, origin) {
 
 ##' @export
 get_origin <- function(x, ensure = FALSE) {
-  if (igraph::is_igraph(x)) {
+  if (inherits(x, "igraph")) {
+    .ensure_igraph()
     origin <- igraph::graph_attr(x, "varkit_origin")
   } else {
     origin <- attr(x, "varkit_origin", exact = TRUE)
