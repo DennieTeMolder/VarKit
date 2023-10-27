@@ -73,15 +73,24 @@ resolve_links <- function(links,
   stopifnot(!is.null(colnames(links)), colnames(links)[1:2] == c("row", "col"))
 
   # Simple cases
-  if (nrow(links) < 1) {
+  if (nrow(links) < 1L) {
     return(NULL)
-  } else if (nrow(links) == 1) {
-    return(igraph::graph_from_data_frame(links))
+  } else if (nrow(links) == 1L) {
+    return(igraph::graph_from_data_frame(links[, 1:2, drop = FALSE], directed = TRUE))
   }
 
-  # Assume third column to contain weights (higher == stronger connection)
-  if (ncol(links) > 2) {
-    colnames(links)[3] <- "weight"
+  # Add weights if available (higher == stronger connection)
+  if (all(c("r2", "n") %in% colnames(links))) {
+    # Multiply the r-squared with the number of observations to obtain weights
+    links <- cbind(
+      links[, 1:2, drop = FALSE],
+      weight = links[, "r2", drop = TRUE] * links[, "n", drop = TRUE]
+    )
+  } else if (ncol(links) > 2) {
+    # Non standard data type, notify the user
+    cli::cli_alert_info("Using the third column as weights")
+    links <- links[, 1:3, drop = FALSE]
+    colnames(links)[3L] <- "weight"
   }
 
   # Handle more complex cases with a network approach
@@ -101,17 +110,17 @@ resolve_links <- function(links,
 
   res <- lapply(clusters, function(cl) {
     len <- length(cl)
-    if (len == 1)
+    if (len == 1L)
       return(NULL)
-    if (len == 2)
-      return(data.frame(from = cl[1], to = cl[2]))
+    if (len == 2L)
+      return(data.frame(from = cl[1L], to = cl[2L]))
     deg <- compute_degree(igraph::induced_subgraph(graph, cl))
     cl_keep <- names(which.max(deg))
     data.frame(from = cl_keep, to = setdiff(cl, cl_keep))
   })
   res <- do.call(rbind, res)
 
-  igraph::graph_from_data_frame(res)
+  igraph::graph_from_data_frame(res, directed = TRUE)
 }
 
 .resolve_links_safe <- function(links, cluster_fn) {
@@ -131,18 +140,18 @@ resolve_links <- function(links,
     # Iterate through each unique cluster membership
     res <- lapply(clusters, function(cl) {
       len <- length(cl)
-      if (len == 1)
+      if (len == 1L)
         return(NULL)
 
       cl_protected <- if (is.null(protected)) NULL else cl %in% protected
       if (!is.null(cl_protected) && all(cl_protected))
         return(NULL)
 
-      if (len == 2) {
+      if (len == 2L) {
         if (!is.null(cl_protected) && any(cl_protected)) {
           return(setNames(list(cl[!cl_protected]), cl[cl_protected]))
         } else {
-          return(setNames(list(cl[2]), cl[1]))
+          return(setNames(list(cl[2L]), cl[1L]))
         }
       }
 
@@ -151,7 +160,7 @@ resolve_links <- function(links,
       if (is.null(cl_protected) || !any(cl_protected)) {
         deg <- compute_degree(sg)
         cl_keep <- names(which.max(deg))
-      } else if (sum(cl_protected) == 1) {
+      } else if (sum(cl_protected) == 1L) {
         cl_keep <- cl[cl_protected]
       } else {
         deg <- compute_degree(sg, cl[cl_protected])
@@ -177,11 +186,11 @@ resolve_links <- function(links,
     protected <- c(protected, names(new))
 
     graph <- igraph::delete_vertices(graph, unlist(new, use.names = FALSE))
-    v_is_unconnected <- setNames(igraph::degree(graph), NULL) == 0
+    v_is_unconnected <- setNames(igraph::degree(graph), nm = NULL) == 0L
     if (any(v_is_unconnected))
       graph <- igraph::delete_vertices(graph, which(v_is_unconnected))
 
-    if (igraph::ecount(graph) == 0 || all(igraph::V(graph)$name %in% protected))
+    if (igraph::ecount(graph) == 0L || all(igraph::V(graph)$name %in% protected))
       break()
   }
 
