@@ -10,7 +10,7 @@ splitm <- function(x,
                    keep_f = FALSE,
                    ...) {
   # Ensure margin is correct
-  stopifnot(identical(1L, length(margin)), margin %in% 1:2)
+  stopifnot(is.numeric(margin), length(margin) == 1L, margin %in% 1:2)
   if (is.null(dim(x))) {
     if (!isTRUE(length(x) >= 0L))
       stop("Argument 'x' lacks either a dim() or length() property!")
@@ -71,7 +71,7 @@ splitm <- function(x,
   if (!is.null(distances))
     stopifnot(is.numeric(distances), length(distances) == n)
   if (!is.null(size))
-    stopifnot(is.numeric(size), length(size) == 1)
+    stopifnot(is.numeric(size), length(size) == 1L)
 
   ## Code ------
   # Split by f
