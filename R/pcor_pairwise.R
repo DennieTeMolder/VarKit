@@ -84,9 +84,9 @@ pcor_pairwise <- function(x, y = NULL, min_ncol = 20) {
 
   } else if (use %in% c("complete.obs", "na.or.complete")) {
     if (is.null(y)) {
-      not_na <- !is.na(x[, 1])
+      not_na <- !is.na(x[, 1L])
     } else {
-      not_na <- !(is.na(x[, 1]) | is.na(y[, 1]))
+      not_na <- !(is.na(x[, 1L]) | is.na(y[, 1L]))
     }
 
     if (sum(not_na) < 2) {
@@ -95,7 +95,7 @@ pcor_pairwise <- function(x, y = NULL, min_ncol = 20) {
 
       cor_mat <- matrix(NA_real_, nrow = ncol(x), ncol = if (!is.null(y)) ncol(y) else ncol(x))
       dimnames(cor_mat) <- list(colnames(x), if (is.null(y)) colnames(x) else colnames(y))
-      attr(cor_mat, "n") <- 0
+      attr(cor_mat, "n") <- 0L
       return(cor_mat)
     }
 

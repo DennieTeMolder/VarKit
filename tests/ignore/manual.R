@@ -53,7 +53,7 @@ geno(vcf) <- .bi_gt2dosage(parse_geno(vcf, type = "GT"))
 
 as_genind(vcf, ploidy = 2)
 
-links <- find_linked_sites(vcf, n_window = -1, cores = 1)
+links <- find_linked_sites(vcf, windows = -1, return_r2 = TRUE, cores = 1)
 lgraph <- resolve_links(links, cores = 1)
 summary(lgraph, vcf = vcf)
 

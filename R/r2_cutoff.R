@@ -1,15 +1,15 @@
 # This function re-implements pcor_pairwise() to forego building the matrix for speed
 ##' @export
-r2_cutoff <- function(x, y = NULL, cutoff, return_r2 = FALSE, check_colnames = TRUE, min_ncol = 20) {
+r2_cutoff <- function(x, y = NULL, cutoff, return_r2 = FALSE, use_colnames = FALSE, min_ncol = 20) {
   use_y <- !is.null(y)
 
-  if (check_colnames && is.list(x))
-    stop("Lists are only supported if `check_colnames = FALSE`!\n",
+  if (!use_colnames && is.list(x))
+    stop("Lists are only supported if `use_colnames = TRUE`!\n",
          "Enabling this option is an advanced feature, you should know what you are doing.")
 
-  # HACK by providing x & y as list and disabling check_colnames calling functions
+  # HACK by providing x & y as list and disabling use_colnames calling functions
   #      can supply matrices already split 'by_na_pattern', for a 10% speed gain
-  pre_splitted <- !check_colnames && is.list(x)
+  pre_splitted <- use_colnames && is.list(x)
 
   if (pre_splitted) {
     if (!all(sapply(x, is.matrix)))
@@ -29,19 +29,11 @@ r2_cutoff <- function(x, y = NULL, cutoff, return_r2 = FALSE, check_colnames = T
     if (!anyNA(x) && !(use_y && anyNA(y)))
       return(.pcor_pairwise_internal(x, y, use = "everything"))
 
-    # Ensure colnames are present to reconstruct matrix
-    if (is.null(colnames(x))) {
+    # Ensure colnames are present to reconstruct the matrix
+    if (!use_colnames || is.null(colnames(x)))
       colnames(x) <- seq_len(ncol(x))
-    } else if (check_colnames) {
-      stopifnot(!anyDuplicated(colnames(x)))
-    }
-    if (use_y) {
-      if (is.null(colnames(y))) {
-        colnames(y) <- seq_len(ncol(y))
-      } else if (check_colnames) {
-        stopifnot(!anyDuplicated(colnames(y)))
-      }
-    }
+    if (use_y && (!use_colnames || is.null(colnames(y))))
+      colnames(y) <- seq_len(ncol(y))
 
     # Split by NA pattern
     x <- splitm(x, margin = 2, by_na_pattern = TRUE, min_size = min_ncol)
@@ -59,9 +51,9 @@ r2_cutoff <- function(x, y = NULL, cutoff, return_r2 = FALSE, check_colnames = T
     if (is.null(yy)) {
       if (anyNA(xx)) {
         n_na <- is.na(xx)
-        n_na <- colSums(n_na[, res[,"row"], drop = FALSE] | n_na[, res[, "col"], drop = FALSE])
+        n_na <- colSums(n_na[, res[, "row"], drop = FALSE] | n_na[, res[, "col"], drop = FALSE])
       } else {
-        n_na <- 0
+        n_na <- 0L
       }
     } else {
       xx_has_na <- anyNA(xx)
@@ -73,11 +65,11 @@ r2_cutoff <- function(x, y = NULL, cutoff, return_r2 = FALSE, check_colnames = T
       } else if (yy_has_na) {
         n_na <- colSums(is.na(yy))[res[,"col"]]
       } else {
-        n_na <- 0
+        n_na <- 0L
       }
     }
     # Number of observations
-    nrow(xx) - n_na
+    setNames(nrow(xx) - as.integer(n_na), nm = NULL)
   }
 
   # Find which splits need to be compared for a full comparison
@@ -93,10 +85,10 @@ r2_cutoff <- function(x, y = NULL, cutoff, return_r2 = FALSE, check_colnames = T
     dimnames(r2) <- NULL
 
     res <- which(r2 > cutoff, arr.ind = TRUE)
-    if (nrow(res) == 0)
-      return(NULL)
     if (self_comp)
       res <- res[res[, 2] > res[, 1], , drop = FALSE]
+    if (nrow(res) == 0L)
+      return(NULL)
 
     if (return_r2) {
       n <- .get_n_observations(r2, res, xx, yy)
@@ -109,8 +101,9 @@ r2_cutoff <- function(x, y = NULL, cutoff, return_r2 = FALSE, check_colnames = T
     }
 
     # Retrieve indexes to reflect position in overall matrix
-    res$row <- colnames(xx)[res$row]
-    res$col <- if (self_comp) colnames(xx)[res$col] else colnames(yy)[res$col]
+    .get_idx <- function(a) as.integer(colnames(a))
+    res$row <- .get_idx(xx)[res$row]
+    res$col <- if (self_comp) .get_idx(xx)[res$col] else .get_idx(yy)[res$col]
 
     res
   })

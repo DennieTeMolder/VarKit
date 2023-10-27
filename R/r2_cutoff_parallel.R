@@ -7,7 +7,7 @@
     return(purrr::map2(comps$i, comps$j, function(i, j) {
       x <- mat_list[[i]]
       y <- if (i == j) NULL else mat_list[[j]]
-      r2_cutoff(x, y, cutoff = cutoff, return_r2 = return_r2, check_colnames = FALSE)
+      r2_cutoff(x, y, cutoff = cutoff, return_r2 = return_r2, use_colnames = TRUE)
     }, .progress = TRUE))
   }
 
@@ -82,6 +82,6 @@
   lapply_rowwise(comp, function(i, j) {
     x <- data[[i]]
     y <- if (i == j) NULL else data[[j]]
-    r2_cutoff(x, y, cutoff = cutoff, return_r2 = return_r2, check_colnames = FALSE)
+    r2_cutoff(x, y, cutoff = cutoff, return_r2 = return_r2, use_colnames = TRUE)
   })
 }
