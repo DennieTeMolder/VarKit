@@ -31,14 +31,14 @@ read_vcf_header <- function(file) {
     stop("At line ", i, ": could not detect header line!")
 
   list(
-    meta = unlist(meta_lines),
+    meta = do.call(c, meta_lines[seq_len(i - 1)]),
     header_line = line
   )
 }
 
 .parse_meta <- function(meta) {
-  if (is.null(meta))
-    return(meta)
+  if (length(meta) == 0L)
+    return(NULL)
   if (!.str_starts(meta[1], "##fileformat=VCF"))
     warning("No valid VCF 'fileformat' description detected on the first line!", call. = FALSE)
   meta <- stringr::str_remove(meta, "^##")
