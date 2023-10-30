@@ -28,7 +28,7 @@ samples.varkit_header <- function(x) {
     stop("The length of the new value should match `samples()`!")
   rownames(gt) <- value
 
-  if (anyDuplicated(rownames(gt)))
+  if (anyDuplicated(rownames(gt)) != 0L)
     stop("The new value contains duplicates!")
 
   if (is_varkit_geno(x))

@@ -22,12 +22,12 @@ read_tbl <- function(file,
     stopifnot(is.character(col_names))
     if (anyNA(col_names))
       stop("'col_names' contains missing values!")
-    if (any(nchar(col_names) < 1))
+    if (any(nchar(col_names) < 1L))
       stop("'col_names' contains empty strings!")
-    if (anyDuplicated(col_names))
+    if (anyDuplicated(col_names) != 0L)
       stop("'col_names' contains duplicated values!")
   }
-  if (is.null(col_types) || length(col_types) == 0 || all(is.na(col_types))) {
+  if (is.null(col_types) || length(col_types) == 0L || all(is.na(col_types))) {
     col_types <- NULL
   } else {
     stopifnot(is.vector(col_types), is.character(col_types))
@@ -123,7 +123,7 @@ read_tbl <- function(file,
   if (rlang::is_named(col_types)) {
     # For named vectors we do some validation to provide more informative errors then read.table()
     if (is.null(col_names)) stop("An unexpected error occurred!")
-    if (anyDuplicated(names(col_types)))
+    if (anyDuplicated(names(col_types)) != 0L)
       stop("The names of 'col_types' are not unique!")
 
     # All named elements should match with col_names

@@ -18,7 +18,7 @@ new_varkit_header <- function(meta = data.frame(), col_names = character()) {
 
 ##' @export
 validate_varkit_header <- function(x) {
-  stopifnot(c("meta", "col_names") %in% names(x))
+  stopifnot(is.list(x), "col_names" %in% names(x))
 
   if (!is.null(x$meta))
     .validate_varkit_meta(x$meta)
@@ -27,7 +27,7 @@ validate_varkit_header <- function(x) {
     stop("The 'col_names' slot must be a character vector!", call. = FALSE)
   if (anyNA(x$col_names) && any(nchar(x$col_names) < 1))
     stop("The 'col_names' slot cannot be NA or a zero-length string!")
-  if (anyDuplicated(x$col_names))
+  if (anyDuplicated(x$col_names) != 0L)
     warning("Duplicate 'col_names' detected.")
 
   x
