@@ -27,28 +27,24 @@ read_vcf <- function(file,
   if (inherits(file, "connection")) {
     if (!is_open.connection(file))
       stop("The provided 'file' connection is invalid!")
-    con <- file
   } else {
-    con <- file(file, "r")
-    on.exit(close(con))
+    file <- file(file, "r")
+    on.exit(close(file))
   }
 
-  # Handle the VCF header
-  if (isSeekable(con) && seek(con) != 0) {
-    if (is.null(header))
+  # Handle the VCF header, it will be skipped by "comment.char" if the header is provided
+  if (is.null(header)) {
+    if (isSeekable(file) && seek.connection(file) != 0)
       stop("A header should be supplied if connection 'file' is not at the start!")
-  } else if (!is.null(header)) {
-    skip <- skip + find_header_line(summary(con)$description)
-  } else {
-    header <- read_vcf_header(con)
+    header <- read_vcf_header(file)
     if (length(header$col_names) < 3)
-      stop("At line ", length(header$meta) + 1, ": Invalid VCF, the header has fewer then three tab-separated fields!")
+      stop("At line ", length(meta(header)) + 1, ": Invalid VCF, the header has fewer then three tab-separated fields!")
   }
 
   # Read the VCF body
-  body <- read_tbl(con,
+  body <- read_tbl(file,
     col_select = {{ col_select }},
-    col_names = col_names(header),
+    col_names = header$col_names,
     nrows = n_max,
     skip = skip,
     na.strings = unique(c("", ".", na_geno)),
