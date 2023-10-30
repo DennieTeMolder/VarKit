@@ -11,7 +11,7 @@ varkit_index <- function(index, file, col_select = NULL, ...) {
   if (!is.null(col_select))
     dots$col_select <- col_select
 
-  new_varkit_index(index, file = file, con = NA, curr_line = 1, read_vcf_args = dots)
+  new_varkit_index(index = index, file = file, con = NA, curr_line = 1, read_vcf_args = dots)
 }
 
 ##' @export
