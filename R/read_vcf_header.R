@@ -14,15 +14,14 @@ read_vcf_header <- function(file) {
     if (isSeekable(file) && seek(file) != 0)
       warning("The provided connection is not at the start of 'file'\n",
               ("If this was not intentional, the header will be incorrect"))
-    con <- file
   } else {
-    con <- file(file, "r")
-    on.exit(close(con))
+    file <- file(file, "r")
+    on.exit(close(file))
   }
 
   meta_lines <- vector("list", length = max_lines)
   for (i in seq_along(meta_lines)) {
-    line <- readLines(con, n = 1)
+    line <- readLines(file, n = 1)
     if (!isTRUE(.str_starts(line, "##")))
       break()
     meta_lines[[i]] <- line
