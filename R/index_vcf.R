@@ -1,5 +1,9 @@
 ##' @export
-index_vcf <- function(file, chunk_size = 1e5, ...) {
+index_vcf <- function(file, size_bp = -1, chunk_size = 1e5, ...) {
+  stopifnot(length(size_bp) == 1L, is.numeric(size_bp))
+  stopifnot(length(chunk_size) == 1L, is.numeric(chunk_size), chunk_size > 1)
+
+  # Open the file for reading
   file_path <- file
   file <- file(file, "r")
   on.exit(close(file))
@@ -9,8 +13,17 @@ index_vcf <- function(file, chunk_size = 1e5, ...) {
 
   if (!any(header$col_names == "chrom"))
     stop("Could not detect the CHROM column! Check the output of `read_vcf_header(file)`.")
+  if (size_bp >= 2 && !any(header$col_names == "pos"))
+    stop("Could not detect the POS column! Check the output of `read_vcf_header(file)`.")
 
-  cli::cli_progress_step("Indexing VCF body")
+  # Select only the necessary columns of the VCF body
+  col_types <- c(chrom = "c", pos = if (size_bp >= 2) "i" else NULL, .default = "_")
+
+  # Report progress during indexing
+  total <- 0L
+  frmt <- function(x) .frmt_big(x)
+  cli::cli_progress_step("Indexing VCF body... [{frmt(total)} lines]", "Indexed {frmt(total)} lines")
+
   max_results <- 1e5L
   index <- vector("list", max_results)
   i <- 1L
@@ -19,7 +32,7 @@ index_vcf <- function(file, chunk_size = 1e5, ...) {
       col_names = header$col_names,
       nrows = chunk_size,
       na.strings = c("", "."),
-      col_types = c(chrom = "c", .default = "_"),
+      col_types = col_types,
       sep = "\t",
       header = FALSE,
       check.names = FALSE,
@@ -30,11 +43,22 @@ index_vcf <- function(file, chunk_size = 1e5, ...) {
       comment.char = "#"
     )
 
-    if (nrow(tbl) < 1)
+    n_row <- nrow(tbl)
+    if (n_row < 1)
       break()
 
-    index[[i]] <- do.call(tibble::tibble, rle(tbl$chrom))
+    if (size_bp >= 2) {
+      tbl <- paste0(tbl$chrom, ":", tbl$pos %/% size_bp)
+    } else {
+      tbl <- tbl$chrom
+    }
+
+    index[[i]] <- do.call(tibble::tibble, rle(tbl))
     rm(tbl)
+
+    # Update progress bar
+    total <- total + n_row
+    cli::cli_progress_update()
 
     i <- i + 1L
     if (i == max_results)
@@ -58,7 +82,7 @@ index_vcf <- function(file, chunk_size = 1e5, ...) {
     (nrow(meta(header)) + 2L)
   index <- dplyr::select(index, id = .data$values, linum = .data$linum, n_lines = .data$lengths)
 
-  cli::cli_progress_step("Validating index")
+  # Warn user about undesirable index properties
   if (anyNA(index$id))
     warning("Some CHROM fields appear to be empty/NA. The index requires manual filtering.")
   if (anyDuplicated(index$id) != 0)
