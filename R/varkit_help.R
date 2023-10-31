@@ -7,19 +7,21 @@ varkit_help <- function(x, varkit_only = TRUE) {
       stop("'x' is not a varkit class. To get help use `varkit_only = FALSE`.")
     classes <- classes[is_varkit_class]
   }
+
   # Retrieve and format
   methods <- sapply(classes, function(class) {
     stringr::str_remove(
       methods(class = class),
-      pattern = stringr::fixed(paste0("\\.", class, "$"))
+      pattern = paste0("\\.", class, "$")
     )
   })
-  methods <- sort(unique(unlist(methods, use.names = FALSE)))
-  if (length(methods) == 0)
+  methods <- sort(unique(do.call(c, methods)))
+  if (length(methods) == 0L)
     stop("There are no methods associated with 'x'.")
+
   # Print
-  cat("# Available methods:\n")
+  .msg_h2("Available methods")
   cli::cat_bullet(paste0(methods, "(", substitute(x), ")"))
-  cat("# Use `?function_name` for more info (e.g. ?samples).\n")
+  .msg_info("Use `?function_name` for more info (e.g. ?samples)")
   invisible(methods)
 }
