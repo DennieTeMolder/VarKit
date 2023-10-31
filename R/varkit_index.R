@@ -11,7 +11,7 @@ varkit_index <- function(index, file, col_select = NULL, ...) {
   if (!is.null(col_select))
     dots$col_select <- col_select
 
-  new_varkit_index(index = index, file = file, con = NA, curr_line = 1, read_vcf_args = dots)
+  new_varkit_index(index = index, file = file, con = NA, curr_line = 1L, read_vcf_args = dots)
 }
 
 ##' @export
@@ -80,7 +80,7 @@ open.varkit_index <- function(con, open = "r", blocking = TRUE, ...) {
   if (!is_open.varkit_index(con)) {
     validate_varkit_index(con)
     env(con)$con <- file(env(con)$file, open = open, blocking = blocking, ...)
-    env(con)$curr_line <- 1
+    env(con)$curr_line <- 1L
   }
   invisible(con)
 }
@@ -91,7 +91,7 @@ close.varkit_index <- function(con, ...) {
     close(env(con)$con)
   }
   env(con)$con <- NA
-  env(con)$curr_line <- 1
+  env(con)$curr_line <- 1L
   invisible(con)
 }
 
@@ -102,7 +102,7 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ...) {
   origin <- match.arg(origin, c("start", "current", "end"))
 
   if (!is_open.varkit_index(index))
-    env(index)$curr_line <- 1
+    env(index)$curr_line <- 1L
 
   # Handle non-numeric values of WHERE
   if (is.na(where)) {
@@ -134,12 +134,12 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ...) {
 }
 
 .current_index_position <- function(index) {
-  i <- max(0, which(index$linum <= env(index)$curr_line))
-  res <- as.data.frame(index[max(i, 1), ])
+  i <- max(0L, which(index$linum <= env(index)$curr_line))
+  res <- as.data.frame(index[max(i, 1L), ])
   rownames(res) <- i
 
   # Pointer before start of index
-  if (i == 0) {
+  if (i == 0L) {
     res$n_lines <- res$linum - env(index)$curr_line
     for (idx in which(!names(res) %in% c("linum", "n_lines")))
       res[[idx]] <- NA
