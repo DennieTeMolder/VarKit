@@ -1,5 +1,7 @@
 ##' @export
 write_lines2 <- function(text, file, sep = "\n", na = "NA", append = FALSE, ...) {
+  stopifnot(is.character(na), length(na) == 1)
+
   if (inherits(file, "connection")) {
     if (!is_open.connection(file))
       stop("The provided 'file' connection is invalid!")
@@ -7,7 +9,6 @@ write_lines2 <- function(text, file, sep = "\n", na = "NA", append = FALSE, ...)
     file <- file_con(file, if (append) "a" else "w")
     on.exit(close(file))
   }
-  stopifnot(is.character(na), length(na) == 1)
 
   if (anyNA(text))
     text[is.na(text)] <- na

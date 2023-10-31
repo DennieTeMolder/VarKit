@@ -26,5 +26,5 @@ get_info_col_types.varkit_header <- function(x, meta_type = "INFO", ...) {
     }
     "c"
   })
-  setNames(col_types, nm = meta_info$ID)
+  setNames(do.call(c, col_types), nm = meta_info$ID)
 }
