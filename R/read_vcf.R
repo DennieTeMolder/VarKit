@@ -67,5 +67,25 @@ read_vcf <- function(file,
   if (nrow(body) < 1)
     return(NULL)
 
-  varkit(body, meta = meta(header))
+  cli::cli_progress_step("Collecting results")
+
+  # Detect fixed fields
+  fixed_idx <- match(.fixed_columns(), colnames(body))
+  fixed_idx <- fixed_idx[!is.na(fixed_idx)]
+
+  if (length(fixed_idx) == 0)
+    stop("No fixed columns detected in VCF, ensure they are lower case in col_names(header)!")
+  if (ncol(body) == length(fixed_idx))
+    stop("Only fixed columns detected in VCF, missing genotypes!")
+  if (!all(c("chrom", "pos") %in% colnames(body)[fixed_idx]))
+    stop("Missing 'chrom' and/or 'pos' columns in VCF!")
+
+  # Move fixed fields to a separate df
+  fxd <- body[, fixed_idx]
+  body <- body[, -fixed_idx]
+
+  # The remaining fields are genotype calls
+  body <- varkit_geno(body)
+
+  varkit(site = fxd, geno = body, meta = meta(header))
 }

@@ -21,6 +21,7 @@ find_linked_sites.varkit <- function(x,
                                      cores = 1,
                                      min_ncol = 20
                                      ) {
+  validate_varkit(x)
   stopifnot(is.numeric(cutoff), length(cutoff) == 1)
   stopifnot(is.numeric(size_bp), length(size_bp) == 1)
   stopifnot(is.numeric(windows), length(windows) == 1)

@@ -5,6 +5,7 @@ parse_geno <- function(x, type = NULL, allow_missing = FALSE) {
 
 ##' @export
 parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
+  validate_varkit(x)
   if (!is.null(type)) {
     .stopifnotsingle(type, class = "character")
   } else {
@@ -25,7 +26,7 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
     res <- as.matrix(apply_samples(geno(x), .str_split_i, on = ":", i = idx))
   } else {
     idxs <- unname(frmt[site(x, cols = "format")])
-    gt <- geno(x)
+    gt <- geno.varkit(x)
     res <- vapply(seq_along(idxs), function(i) {
       .str_split_i(gt[, i], on = ":", i = idxs[i])
     }, character(length(samples(x))))
@@ -48,8 +49,8 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
 
   # Split the unique combinations and check if specific types appear at a fixed position/index
   uniq <- stringr::str_split(uniq, ":")
-  uniq_mat <- sapply(uniq, `[`, 1:min(sapply(uniq, length)))
-  fixed_position <- uniq_mat[apply(uniq_mat, 1, .not_variable), 1]
+  uniq_mat <- sapply(uniq, `[`, seq_len(min(sapply(uniq, length))))
+  fixed_position <- uniq_mat[apply(uniq_mat, 1, .not_variable), 1L]
   types <- sort(unique(unlist(uniq)))
   results <- tibble::tibble(type = types, index = match(types, fixed_position))
 

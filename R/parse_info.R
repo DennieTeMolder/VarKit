@@ -5,6 +5,7 @@ parse_info <- function(x, type = NULL, use_meta = TRUE) {
 
 ##' @export
 parse_info.varkit <- function(x, type = NULL, use_meta = TRUE) {
+  validate_varkit(x)
   if (!is.null(type)) {
     .stopifnotsingle(type, class = "character")
   } else {
@@ -22,7 +23,7 @@ parse_info.varkit <- function(x, type = NULL, use_meta = TRUE) {
     meta_info <- NULL
   }
 
-  info <- site(x, "info")
+  info <- site.varkit(x, "info")
   if (all(is.na(info)))
     stop("The INFO column only contains NAs!")
 
@@ -39,13 +40,13 @@ parse_info.varkit <- function(x, type = NULL, use_meta = TRUE) {
 
   # If the second column is all NA, type is likely a flag and we report presence/absence
   is_na <- is.na(matches)
-  if (all(is_na[, 2])) {
-    if (all(is_na[, 1]))
-      return(matches[, 2])
-    return(!is_na[, 1])
+  if (all(is_na[, 2L])) {
+    if (all(is_na[, 1L]))
+      return(matches[, 2L])
+    return(!is_na[, 1L])
   }
 
-  utils::type.convert(matches[, 2], as.is = TRUE, na.strings = "")
+  utils::type.convert(matches[, 2L], as.is = TRUE, na.strings = "")
 }
 
 .collect_all_keys <- function(str) {
@@ -58,18 +59,18 @@ parse_info.varkit <- function(x, type = NULL, use_meta = TRUE) {
 
 .convert_using_meta <- function(info, meta_info, info_type) {
   meta_info <- meta_info[meta_info$ID == info_type, , drop = FALSE]
-  convert_to <- .get_info_col_types(meta_info)[[1]]
+  convert_to <- .get_info_col_types(meta_info)[[1L]]
 
   if (convert_to == "l") {
-    return(!is.na(info[, 1]))
+    return(!is.na(info[, 1L]))
   } else if (convert_to == "i") {
-    return(as.integer(info[, 2]))
+    return(as.integer(info[, 2L]))
   } else if (convert_to == "d") {
-    return(as.double(info[, 2]))
+    return(as.double(info[, 2L]))
   }
 
   # Return as character, replace NAs for parity w/ type.convert()
-  info <- info[, 2]
+  info <- info[, 2L]
   info[info == ""] <- NA
   info
 }

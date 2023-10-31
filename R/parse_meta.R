@@ -5,7 +5,7 @@ parse_meta <- function(x, type = NULL, na = ".") {
 
 ##' @export
 parse_meta.varkit_header <- function(x, type = NULL, na = ".") {
-  stopifnot(colnames(meta(x)) == c("name", "value"))
+  .validate_varkit_meta(meta(x))
   stopifnot(is.character(na))
   if (!is.null(type)) {
     .stopifnotsingle(type, class = "character")
@@ -14,7 +14,7 @@ parse_meta.varkit_header <- function(x, type = NULL, na = ".") {
     return(.get_meta_types(x))
   }
 
-  values <- meta(x)$value[meta(x)$name == type]
+  values <- with(meta(x), value[name == type])
 
   if (length(values) == 0)
     stop("The type '", type, "' could not be found in meta(x)$name!")
@@ -24,7 +24,7 @@ parse_meta.varkit_header <- function(x, type = NULL, na = ".") {
     return(tibble::tibble(value = values))
 
   # Strip <...>
-  values <- stringr::str_sub(values, 2, -2)
+  values <- stringr::str_sub(values, 2L, -2L)
 
   # First group of the regex should match the key, second should match the corresponding value
   values <- .match_key_value(values, pattern = '([^="]+)=("(?:[^"\\\\]|\\\\.)+"|[^,]+)(?:,|$)')
@@ -42,8 +42,8 @@ parse_meta.varkit_header <- function(x, type = NULL, na = ".") {
   res <- stringr::str_match_all(str, pattern)
   # Unpack
   res <- lapply(res, function(mat) {
-    vec <- mat[, 3]
-    names(vec) <- mat[, 2]
+    vec <- mat[, 3L]
+    names(vec) <- mat[, 2L]
     vec
   })
   do.call(dplyr::bind_rows, res)
@@ -55,7 +55,7 @@ parse_meta.varkit_header <- function(x, type = NULL, na = ".") {
   n_char <- nchar(col)
   res <- ifelse(
     .str_starts(col, '"') & .str_ends(col, '"', n_char = n_char),
-    substr(col, 2, n_char - 1),
+    substr(col, 2L, n_char - 1L),
     col
   )
   utils::type.convert(res, as.is = TRUE, na.strings = na)

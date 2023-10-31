@@ -3,10 +3,11 @@ ad2aaf <- function(vcf, type = "AD") {
   stopifnot(is_varkit(vcf))
 
   if (is.null(type)) {
-    ad <- geno(vcf)
+    validate_varkit(vcf)
+    ad <- geno.varkit(vcf)
   } else {
     # Extract allelic depth (AD)
-    ad <- parse_geno(vcf, type)
+    ad <- parse_geno.varkit(vcf, type = type, allow_missing = FALSE)
   }
 
   if (storage.mode(ad) != "character")

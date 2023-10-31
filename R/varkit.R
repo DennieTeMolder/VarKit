@@ -1,45 +1,94 @@
 ##' @export
-varkit <- function(vcf, meta = NULL) {
-  # Checks
-  stopifnot(is.data.frame(vcf), nrow(vcf) > 0)
+varkit <- function(site, geno, meta = NULL) {
+  site <- tibble::as_tibble(site)
+  stopifnot(nrow(site) > 0L)
+  geno <- varkit_geno(geno)
+  stopifnot(ncol(geno) == nrow(site))
   if (!is.null(meta))
-    .validate_varkit_meta(meta)
-
-  # Detect fixed fields
-  fixed_idx <- stats::na.omit(match(.fixed_columns(), colnames(vcf)))
-
-  if (length(fixed_idx) == 0)
-    stop("No fixed columns detected in VCF, ensure fixed column names are lower case!")
-  if (ncol(vcf) <= length(fixed_idx))
-    stop("Only fixed columns detected in VCF, missing genotypes!")
-  if (!all(c("chrom", "pos") %in% colnames(vcf)[fixed_idx]))
-    stop("Missing 'chrom' and/or 'pos' columns in VCF!")
-
-  # Move fixed fields to a separate df
-  fxd <- vcf[, fixed_idx]
-  vcf[, fixed_idx] <- NULL
-
-  # The remaining fields are the genotype calls, which are stored as a
-  # transposed matrix w/ a custom class
-  geno <- varkit_geno(vcf)
-  rm(vcf)
+    meta <- tibble::as_tibble(meta)
 
   # Apply initial mask based on the FILTER column
   use_site <- FALSE
-  if ("filter" %in% names(fxd))
-    use_site <- fxd$filter == "PASS" | is.na(fxd$filter)
+  if ("filter" %in% rownames(site))
+    use_site <- site$filter == "PASS" | is.na(site$filter)
   if (!any(use_site))
-    use_site <- rep(TRUE, ncol(geno))
+    use_site <- rep(TRUE, nrow(site))
 
+  vcf <- new_varkit(meta = meta, site = site, geno = geno, use_site = use_site)
+  validate_varkit(vcf)
+}
+
+new_varkit <- function(meta = data.frame(), site = data.frame(), geno = matrix(), use_site = logical()) {
+  stopifnot(is.data.frame(meta))
+  stopifnot(is.data.frame(site))
+  stopifnot(is.matrix(geno))
+  stopifnot(is.logical(use_site))
   structure(
     list(
       meta = meta,
-      site = fxd,
+      site = site,
       geno = geno,
       use_site = use_site
     ),
     class = c("varkit", "varkit_header")
   )
+}
+
+validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
+  # Site
+  if (is.null(x$site))
+    stop("The 'site' slot is missing!")
+  if (!tibble::is_tibble(x$site))
+    stop("The 'site' slot should be a tibble!")
+  if (!any(colnames(x$site) == "chrom"))
+    stop("The 'site' slot should contain the 'chrom' column!")
+  if (!is.character(x$site$chrom))
+    stop("The 'chrom' column in the 'site' slot should be of type character!")
+  if (!any(colnames(x$site) == "pos"))
+    stop("The 'site' slot should contain the 'pos' column!")
+  if (!is.numeric(x$site$pos))
+    stop("The 'pos' column in the 'site' slot should be numeric!")
+  if (check_info && !any(colnames(site) == "info"))
+    stop("The 'site' slot is missing the 'info' column!")
+  if (check_format && !any(colnames(site) == "format"))
+    stop("The 'site' slot is missing the 'format' column!")
+
+  # Meta
+  if (!is.null(x$meta)) {
+    .validate_varkit_meta(x$meta)
+    if (check_info && !"INFO" %in% meta$name)
+      warning("The 'meta' slot has no INFO entry, functionality is impaired.")
+    if (check_format &&!"FORMAT" %in% meta$name)
+      warning("The 'meta' slot has no FORMAT entry, functionality is impaired.")
+  } else if (check_info || check_format) {
+    warning("The 'meta' slot is empty, functionality is impaired")
+  }
+
+  # Geno
+  if (is.null(x$geno))
+    stop("The 'geno' slot is missing!")
+  if (!is.matrix(x$geno))
+    stop("The 'geno' slot should be a matrix!")
+  if (nrow(x$geno) < 1L)
+    stop("The 'geno' slot should contain at least a single sample/row!")
+  if (is.null(rownames(x$geno)) || any(nchar(rownames(x$geno)) == 0L))
+    stop("The 'geno' slot cannot have missing/zero-length rownames!")
+
+  # Use_site
+  if (is.null(x$use_site))
+    stop("The 'use_site' slot is missing!")
+  if (!is.vector(x$use_site) || !is.logical(x$use_site))
+    stop("The 'use_site' slot should be a boolean vector!")
+  if (all(!x$use_site))
+    stop("All elements of slot 'use_site' are FALSE!")
+
+  # Equal dimensions
+  if (nrow(x$site) != ncol(x$geno))
+    stop("The number of rows in slot 'site' should match the number of column in 'geno'!")
+  if (nrow(x$site) != length(x$use_site))
+    stop("The length of slot 'use_site' should match the number of rows of 'site'!")
+
+  x
 }
 
 ##' @export
@@ -118,10 +167,7 @@ split.varkit <- function(x, f, drop = FALSE, keep_f = FALSE, ...) {
 
   # Recreate the varkit object for each split
   splits <- lapply(names(split_geno), function(name) {
-    structure(
-      list(meta = x$meta, site = split_site[[name]], geno = split_geno[[name]], use_site = split_use[[name]]),
-      class = class(x)
-    )
+    new_varkit(meta = x$meta, site = split_site[[name]], geno = split_geno[[name]], use_site = split_use[[name]])
   })
   setNames(splits, nm = names(split_geno))
 }
