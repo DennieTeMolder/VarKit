@@ -12,10 +12,13 @@ next_chunk.varkit_index <- function(x, col_select = NULL, ...) {
   open.varkit_index(x)
 
   # Read the header when possible
-  if (env(x)$curr_line < x$linum[1] && x$linum[1] > 1) {
+  if (env(x)$curr_line < x$linum[1L] && x$linum[1L] > 1L) {
+    cli::cli_progress_step("Reading VCF header")
     vcf_header <- read_vcf_header(env(x)$con)
-    env(x)$curr_line <- env(x)$curr_line + nrow(meta(vcf_header)) + 1
-    if (x$linum[1] != env(x)$curr_line)
+    cli::cli_progress_done()
+
+    env(x)$curr_line <- env(x)$curr_line + nrow(meta(vcf_header)) + 1L
+    if (x$linum[1L] != env(x)$curr_line)
       stop("The index should start right below the header line! Expected start: ", env(x)$curr_line)
   } else {
     vcf_header <- NULL

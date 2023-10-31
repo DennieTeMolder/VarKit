@@ -36,12 +36,15 @@ read_vcf <- function(file,
   if (is.null(header)) {
     if (isSeekable(file) && seek.connection(file) != 0)
       stop("A header should be supplied if connection 'file' is not at the start!")
+
+    cli::cli_progress_step("Reading VCF header")
     header <- read_vcf_header(file)
+
     if (length(header$col_names) < 3)
       stop("At line ", length(meta(header)) + 1, ": Invalid VCF, the header has fewer then three tab-separated fields!")
   }
 
-  # Read the VCF body
+  cli::cli_progress_step("Reading VCF body")
   body <- read_tbl(file,
     col_select = {{ col_select }},
     col_names = header$col_names,
@@ -59,6 +62,7 @@ read_vcf <- function(file,
     strip.white = TRUE,
     comment.char = "#"
   )
+  cli::cli_progress_done()
 
   if (nrow(body) < 1)
     return(NULL)

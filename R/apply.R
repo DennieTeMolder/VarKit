@@ -42,10 +42,10 @@ apply_index <- function(x, FUN, ...) {
 }
 
 ##' @export
-apply_index.varkit_index <- function(x, FUN, ..., FROM.START = TRUE) {
+apply_index.varkit_index <- function(x, FUN, ..., FROM.START = TRUE, .progress = TRUE) {
   if (FROM.START)
     seek.varkit_index(x, 1)
-  lapply(seq_index.varkit_index(x), function(i, ...) {
-    FUN(next_chunk.varkit_index(x), ...)
-  }, ...)
+  purrr::map(seq_index.varkit_index(x), function(i, ...) {
+    FUN(suppressMessages(next_chunk.varkit_index(x)), ...)
+  }, ..., .progress = .progress)
 }
