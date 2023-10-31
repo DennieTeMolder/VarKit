@@ -101,8 +101,8 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ...) {
     stopifnot(is.character(where) || is.numeric(where))
   origin <- match.arg(origin, c("start", "current", "end"))
 
-  if (!is_open.varkit_index(index))
-    env(index)$curr_line <- 1L
+  if (!is_open.varkit_index(con))
+    env(con)$curr_line <- 1L
 
   # Handle non-numeric values of WHERE
   if (is.na(where)) {
