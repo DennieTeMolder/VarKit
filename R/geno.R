@@ -30,9 +30,7 @@ geno.varkit <- function(x, by_chrom = FALSE) {
     stop("The new value should have an equal number of columns!\n",
          "Use `mask()/retain()` (+ `remove_masked()`) to remove columns/sites.")
   }
-  if (is.null(rownames(value)))
-    stop("The new value should have `rownames()`!")
 
   x$geno <- varkit_geno(value)
-  x
+  validate_varkit(x)
 }

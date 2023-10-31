@@ -48,17 +48,17 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
     stop("The 'site' slot should contain the 'pos' column!")
   if (!is.numeric(x$site$pos))
     stop("The 'pos' column in the 'site' slot should be numeric!")
-  if (check_info && !any(colnames(site) == "info"))
+  if (check_info && !any(colnames(x$site) == "info"))
     stop("The 'site' slot is missing the 'info' column!")
-  if (check_format && !any(colnames(site) == "format"))
+  if (check_format && !any(colnames(x$site) == "format"))
     stop("The 'site' slot is missing the 'format' column!")
 
   # Meta
   if (!is.null(x$meta)) {
     .validate_varkit_meta(x$meta)
-    if (check_info && !"INFO" %in% meta$name)
+    if (check_info && !"INFO" %in% x$meta$name)
       warning("The 'meta' slot has no INFO entry, functionality is impaired.")
-    if (check_format &&!"FORMAT" %in% meta$name)
+    if (check_format &&!"FORMAT" %in% x$meta$name)
       warning("The 'meta' slot has no FORMAT entry, functionality is impaired.")
   } else if (check_info || check_format) {
     warning("The 'meta' slot is empty, functionality is impaired")

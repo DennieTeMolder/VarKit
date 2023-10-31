@@ -5,7 +5,7 @@ parse_geno <- function(x, type = NULL, allow_missing = FALSE) {
 
 ##' @export
 parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
-  validate_varkit(x)
+  validate_varkit(x, check_format = TRUE)
   if (!is.null(type)) {
     .stopifnotsingle(type, class = "character")
   } else {

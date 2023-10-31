@@ -5,7 +5,7 @@ parse_info <- function(x, type = NULL, use_meta = TRUE) {
 
 ##' @export
 parse_info.varkit <- function(x, type = NULL, use_meta = TRUE) {
-  validate_varkit(x)
+  validate_varkit(x, check_info = TRUE)
   if (!is.null(type)) {
     .stopifnotsingle(type, class = "character")
   } else {
