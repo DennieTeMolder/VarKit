@@ -18,7 +18,6 @@ Imports:
     forcats (>= 1.0.0),
     parallel,
     purrr (>= 1.0.0),
-    Rcpp,
     RhpcBLASctl,
     rlang,
     stringr (>= 1.5.0),
@@ -30,5 +29,3 @@ Suggests:
     knitr,
     rmarkdown
 VignetteBuilder: knitr
-LinkingTo:
-    Rcpp
