@@ -15,7 +15,7 @@ get_site_idx.logical <- function(site, vcf) {
 get_site_idx.data.frame <- function(site, vcf) {
   if (!all(c("chrom", "pos") %in% colnames(site)))
     stop("The data frame 'site' should contain columns 'chrom' and 'pos'!")
-  current <- site(vcf, cols = c("chrom", "pos"), add_index = TRUE)
+  current <- site(vcf, "chrom", "pos", .add_index = TRUE)
   current <- dplyr::semi_join(current, site, by = c("chrom", "pos"))
   if (nrow(site) != nrow(current)) {
     warning("Not all of the provided sites could be found, ",

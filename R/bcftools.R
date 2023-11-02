@@ -5,7 +5,7 @@ write_bcftools_regions <- function(x, file) {
 
 ##' @export
 write_bcftools_regions.varkit <- function(x, file) {
-  write_tbl(site(x, cols = c("chrom", "pos")), file = file, col_names = FALSE)
+  write_tbl(site(x, "chrom", "pos"), file = file, col_names = FALSE)
 }
 
 ##' @export

@@ -41,7 +41,7 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
 }
 
 .get_format_types <- function(x) {
-  frmt <- site(x, cols = "format")
+  frmt <- site(x, "format")
   if (any(is.na(frmt)))
     stop("The FORMAT column contains missing values!")
 
@@ -64,7 +64,7 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
 }
 
 .index_format <- function(x, type) {
-  frmt <- site(x, cols = "format")
+  frmt <- site(x, "format")
   if (any(is.na(frmt)))
     stop("The FORMAT column contains missing values!")
 
