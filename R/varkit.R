@@ -159,6 +159,19 @@ summary.varkit <- function(object, ...) {
 }
 
 ##' @export
+as.data.frame.varkit <- function(x, row.names = NULL, optional = FALSE, ...) {
+  cbind(
+    as.data.frame(site(x), row.names = row.names, optional = optional, ...),
+    as.data.frame(t(geno(x)), optional = optional)
+  )
+}
+
+##' @exportS3Method tibble::as_tibble
+as_tibble.varkit <- function(x, ..., optional = TRUE) {
+  tibble::as_tibble(as.data.frame.varkit(x, optional = optional), ...)
+}
+
+##' @export
 split.varkit <- function(x, f, drop = FALSE, keep_f = FALSE, ...) {
   if (missing(drop))
     drop <- TRUE

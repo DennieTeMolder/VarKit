@@ -37,7 +37,7 @@ write_vcf.varkit <- function(x, file, append = FALSE, replace_filter = FALSE) {
 
   cli::cli_progress_step("Writing VCF body")
   write_tbl(
-    to_tibble.varkit(x),
+    as.data.frame.varkit(x, optional = TRUE),
     file = file,
     append = append,
     col_names = FALSE,
