@@ -6,6 +6,8 @@ parse_geno <- function(x, type = NULL, allow_missing = FALSE) {
 ##' @export
 parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
   validate_varkit(x, check_format = TRUE)
+  if (!is.character(x$geno))
+    stop("The matrix in the `geno()` slot should be of type character!")
   if (!is.null(type)) {
     .stopifnotsingle(type, class = "character")
   } else {
@@ -17,7 +19,6 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
   frmt <- .index_format(x, type)
   if (!allow_missing && any(is.na(frmt)))
     stop("The type '", type, "' is not found in all FORMAT fields! If this is expected use `allow_missing = TRUE`.")
-
 
   # Parse type from genotype fields
   if (all(frmt == frmt[[1]])) {
