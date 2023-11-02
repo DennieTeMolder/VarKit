@@ -50,12 +50,14 @@ write_vcf.varkit <- function(x, file, append = FALSE, replace_filter = FALSE) {
   if (!anyNA(x$geno))
     return(x)
 
-  cli::cli_alert_info("Reformatting missing values according to VCF spec")
+  cli::cli_progress_step("Reformatting missing values according to VCF spec")
 
   # Build an index of possible NA replacements, one for each value of FORMAT
   frmt <- x$site$format
-  if (any(is.na(frmt)))
-    stop("The FORMAT column contains missing values!")
+  if (is.null(frmt))
+    stop("Conversion of NA values requires the FORMAT column to be present!", call. = FALSE)
+  if (anyNA(frmt))
+    stop("The FORMAT column contains missing values!", call. = FALSE)
 
   uniq <- as.character(unique(frmt))
   match_uniq <- match(uniq, frmt)
@@ -67,9 +69,10 @@ write_vcf.varkit <- function(x, file, append = FALSE, replace_filter = FALSE) {
     site[which.min(is_na)]
   })
 
-  if (any(is.na(non_na)))
+  if (any(is.na(non_na))) {
     stop("\nError at index: ", .collapse(match_uniq[is.na(non_na)]),
-         "\nCannot determine replacement as all sites are NA!")
+         "\nCannot determine replacement as all sites are NA!", call. = FALSE)
+  }
 
   replace_na <- stringr::str_replace_all(non_na, "[^|/:;,]+", ".")
   names(replace_na) <- uniq
