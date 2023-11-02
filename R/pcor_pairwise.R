@@ -13,9 +13,8 @@ pcor_pairwise <- function(x, y = NULL, min_ncol = 20) {
 
   # Matrix for storing results
   cor_mat <- matrix(NA_real_, nrow = ncol(x), ncol = if (use_y) ncol(y) else ncol(x))
-  dimnames(cor_mat) <- list(colnames(x), if (use_y) colnames(y) else colnames(x))
-  if (all(sapply(dimnames(cor_mat), is.null)))
-    dimnames(cor_mat) <- NULL
+  if (!is.null(colnames(x)) || (use_y && !is.null(colnames(y))))
+    dimnames(cor_mat) <- list(colnames(x), if (use_y) colnames(y) else colnames(x))
 
   # Use colnames to track column origin
   colnames(x) <- seq_len(ncol(x))
