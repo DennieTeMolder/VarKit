@@ -29,8 +29,7 @@ ad2aaf <- function(vcf, type = "AD") {
   # Split into one matrix per site of [samples x alleles]
   ad <- stringr::str_split_fixed(ad, stringr::fixed(","), n = n_allele)
   storage.mode(ad) <- "integer"
-  ad <- split.data.frame(ad, rep(seq_len(n_sites), each = n_samples))
-  names(ad) <- NULL
+  ad <- splitm(ad, size = n_samples)
 
   for (i in seq_along(ad)) {
     current <- ad[[i]]
