@@ -18,6 +18,7 @@ varkit <- function(site, geno, meta = NULL) {
   validate_varkit(vcf)
 }
 
+##' @export
 new_varkit <- function(meta = data.frame(), site = data.frame(), geno = matrix(), use_site = logical()) {
   stopifnot(is.data.frame(meta))
   stopifnot(is.data.frame(site))
@@ -34,6 +35,7 @@ new_varkit <- function(meta = data.frame(), site = data.frame(), geno = matrix()
   )
 }
 
+##' @export
 validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
   # Site
   if (is.null(x$site))
