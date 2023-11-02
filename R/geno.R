@@ -1,11 +1,30 @@
 ##' @export
-geno <- function(x) {
+geno <- function(x, ..., .drop = FALSE) {
   UseMethod("geno", x)
 }
 
 ##' @export
-geno.varkit <- function(x) {
-  varkit_filter(x$geno, site = x$use_site)
+geno.varkit <- function(x, ..., .drop = FALSE) {
+  select_sites <- !all(x$use_site)
+  select_samples <- ...length() > 0L
+  if (select_samples) {
+    .data <- samples.varkit(x)
+    .data <- setNames(seq_along(.data), nm = .data)
+    loc <- tidyselect::eval_select(rlang::expr(c(...)), data = .data)
+  }
+
+  if (select_samples && select_sites) {
+    out <- x$geno[loc, x$use_site, drop = .drop]
+    rownames(out) <- names(loc)
+    return(out)
+  } else if (select_samples) {
+    out <- x$geno[loc, , drop = .drop]
+    rownames(out) <- names(loc)
+    return(out)
+  } else if (select_sites) {
+    return(x$geno[, x$use_site, drop = .drop])
+  }
+  x$geno
 }
 
 ##' @export
