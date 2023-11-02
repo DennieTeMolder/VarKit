@@ -27,5 +27,6 @@ Suggests:
     adegenet,
     igraph,
     knitr,
-    rmarkdown
+    rmarkdown,
+    vcfR
 VignetteBuilder: knitr
