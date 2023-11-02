@@ -27,6 +27,7 @@ parse_geno(vcf, type = "DP")
 
 parse_info(vcf)
 str(parse_info(vcf, type = "DP"))
+parse_info_all(vcf)
 
 hide_site <- site(vcf)$chrom == "I"
 vcf <- mask(vcf, site = hide_site)
@@ -49,7 +50,7 @@ summary(remove_masked(vcf))
 
 ## Linked sites ------
 vcf <- unmask_all(read_vcf(example))
-geno(vcf) <- .bi_gt2dosage(parse_geno(vcf, type = "GT"))
+geno(vcf) <- round(ad2aaf(vcf)$aaf) * 2L
 
 as_genind(vcf, ploidy = 2)
 
