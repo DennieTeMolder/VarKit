@@ -8,7 +8,12 @@ as_vcfR.varkit <- function(x) {
   .ensure_pkg("vcfR")
   validate_varkit(x, check_format = TRUE)
 
-  vcfr <- new(Class = "vcfR")
+  if (requireNamespace("vcfR")) {
+    vcfr <- methods::new(Class = "vcfR")
+  } else {
+    stop("vcfR is not installed!")
+  }
+
   vcfr@meta <- paste0("##", x$meta$name, "=", x$meta$value)
 
   x <- standardize_cols.varkit(x)

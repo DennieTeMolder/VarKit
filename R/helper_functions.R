@@ -149,7 +149,7 @@
 }
 
 .ensure_pkg <- function(pkg, version = "0.0.0") {
-  if (nchar(find.package(pkg, quiet = TRUE)) > 0) {
+  if (length(find.package(pkg, quiet = TRUE)) > 0) {
     if (utils::packageVersion(pkg) < version) {
       message("This function requires a newer version of the following package:")
       utils::update.packages(oldPkgs = pkg)
