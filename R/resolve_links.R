@@ -104,8 +104,7 @@ resolve_links <- function(links,
   graph <- igraph::graph_from_data_frame(links, directed = FALSE)
   stopifnot(igraph::is_named(graph))
 
-  clusters <- cluster_fn(graph)
-  names(clusters) <- NULL
+  clusters <- unname(cluster_fn(graph))
 
   compute_degree <- if (igraph::is_weighted(graph)) igraph::strength else igraph::degree
 
@@ -133,8 +132,7 @@ resolve_links <- function(links,
   # are not creating links that fall below the correlation threshold
   protected <- NULL
   .resolve_links_safe_internal <- function(graph) {
-    clusters <- cluster_fn(graph)
-    names(clusters) <- NULL
+    clusters <- unname(cluster_fn(graph))
 
     compute_degree <- if (igraph::is_weighted(graph)) igraph::strength else igraph::degree
 
@@ -187,7 +185,7 @@ resolve_links <- function(links,
     protected <- c(protected, names(new))
 
     graph <- igraph::delete_vertices(graph, unlist(new, use.names = FALSE))
-    v_is_unconnected <- setNames(igraph::degree(graph), nm = NULL) == 0L
+    v_is_unconnected <- unname(igraph::degree(graph)) == 0L
     if (any(v_is_unconnected))
       graph <- igraph::delete_vertices(graph, which(v_is_unconnected))
 

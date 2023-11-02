@@ -47,5 +47,5 @@ check_window <- function(vcf, windows, cols_each, probs = c(0, 0.025, 0.5, 0.975
 
   res <- c(mean = mean(dist), quantile(dist, probs = probs))
   res <- .frmt_big(round(res))
-  data.frame(quantile = names(res), bp_size = setNames(res, NULL))
+  data.frame(quantile = names(res), bp_size = unname(res))
 }

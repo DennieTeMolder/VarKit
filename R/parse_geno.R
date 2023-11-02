@@ -25,7 +25,7 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
     idx <- frmt[[1]]
     res <- as.matrix(apply_samples(geno(x), .str_split_i, on = ":", i = idx))
   } else {
-    idxs <- unname(frmt[site(x, cols = "format")])
+    idxs <- unname(frmt[site(x, "format")])
     gt <- geno.varkit(x)
     res <- vapply(seq_along(idxs), function(i) {
       .str_split_i(gt[, i], on = ":", i = idxs[i])

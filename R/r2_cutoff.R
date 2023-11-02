@@ -69,7 +69,7 @@ r2_cutoff <- function(x, y = NULL, cutoff, return_r2 = FALSE, use_colnames = FAL
       }
     }
     # Number of observations
-    setNames(nrow(xx) - as.integer(n_na), nm = NULL)
+    unname(nrow(xx) - as.integer(n_na))
   }
 
   # Find which splits need to be compared for a full comparison
@@ -81,8 +81,7 @@ r2_cutoff <- function(x, y = NULL, cutoff, return_r2 = FALSE, use_colnames = FAL
     yy <- if (self_comp) NULL else if (use_y) y[[j]] else x[[j]]
 
     # Returns an [i x j] matrix (i as rows, j as cols)
-    r2 <- .pcor_pairwise_internal(xx, yy, use = use)^2
-    dimnames(r2) <- NULL
+    r2 <- unname(.pcor_pairwise_internal(xx, yy, use = use))^2
 
     res <- which(r2 > cutoff, arr.ind = TRUE)
     if (self_comp)

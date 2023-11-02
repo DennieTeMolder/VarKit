@@ -145,7 +145,7 @@
     rep(n + 1L, len %% n)
   )
 
-  setNames(split.default(x, f = group), nm = NULL)
+  unname(split.default(x, f = group))
 }
 
 .ensure_pkg <- function(pkg, version = "0.0.0") {
