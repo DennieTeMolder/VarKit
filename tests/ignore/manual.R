@@ -82,7 +82,7 @@ next_chunk(index, col_select = -id)
 next_chunk(index, col_select = NULL)
 
 res <- apply_index(index, function(vcf) {
-  remove_masked(mask(vcf, site(vcf, "qual") < 1e5))
+  mask(vcf, site(vcf, "qual") < 1e5)
 })
 concat_vcf(res)
 concat_vcf(res[[1]])

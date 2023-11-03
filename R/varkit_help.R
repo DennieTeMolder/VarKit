@@ -4,18 +4,19 @@ varkit_help <- function(x, varkit_only = TRUE) {
   if (varkit_only) {
     is_varkit_class <- stringr::str_starts(classes, "varkit(_|$)")
     if (!any(is_varkit_class))
-      stop("'x' is not a varkit class. To get help use `varkit_only = FALSE`.")
+      stop("'", substitute(x), "' is not a VarKit class! To get help use `varkit_only = FALSE`.")
     classes <- classes[is_varkit_class]
   }
 
   # Retrieve and format
-  methods <- sapply(classes, function(class) {
+  methods <- lapply(classes, function(class) {
     stringr::str_remove(
       methods(class = class),
       pattern = paste0("\\.", class, "$")
     )
   })
   methods <- sort(unique(do.call(c, methods)))
+
   if (length(methods) == 0L)
     stop("There are no methods associated with 'x'.")
 
