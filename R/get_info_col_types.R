@@ -4,7 +4,7 @@ get_info_col_types <- function(x, meta_type = "INFO", ...) {
 }
 
 ##' @export
-get_info_col_types.varkit_header <- function(x, meta_type = "INFO", ...) {
+get_info_col_types.varkit <- function(x, meta_type = "INFO", ...) {
   meta_info <- parse_meta(x, type = meta_type)
   if (!all(c("ID", "Number", "Type") %in% colnames(meta_info)))
     stop("Parsing error: `parse_meta(vcf, meta_type)` does not have columns ID, Number, and Type!")
@@ -28,3 +28,6 @@ get_info_col_types.varkit_header <- function(x, meta_type = "INFO", ...) {
   })
   setNames(do.call(c, col_types), nm = meta_info$ID)
 }
+
+##' @export
+get_info_col_types.varkit_header <- get_info_col_types.varkit

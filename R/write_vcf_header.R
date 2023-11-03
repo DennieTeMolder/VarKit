@@ -11,7 +11,7 @@ write_vcf_header.varkit_header <- function(x, file) {
     cli::cli_alert_warning("If the latter is desired, write to plain vcf and convert using an external tool like 'bgzip'.")
   }
 
-  header <- meta(x)
+  header <- meta.varkit_header(x)
   # Replace fileformat and add info
   if (!is.null(header))
     header <- header[header$name != "fileformat", ]
@@ -35,4 +35,14 @@ write_vcf_header.varkit_header <- function(x, file) {
   )
 
   write_lines2(header, file = file)
+}
+
+write_vcf_header.varkit <- function(x, file) {
+  write_vcf_header.varkit_header(
+    new_varkit_header(
+      meta = meta.varkit(x),
+      col_names = c(colnames(x$site), samples.varkit(x))
+    ),
+    file = file
+  )
 }

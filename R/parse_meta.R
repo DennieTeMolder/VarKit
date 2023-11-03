@@ -4,7 +4,7 @@ parse_meta <- function(x, type = NULL, na = ".") {
 }
 
 ##' @export
-parse_meta.varkit_header <- function(x, type = NULL, na = ".") {
+parse_meta.varkit <- function(x, type = NULL, na = ".") {
   .validate_varkit_meta(meta(x))
   stopifnot(is.character(na))
   if (!is.null(type)) {
@@ -60,3 +60,6 @@ parse_meta.varkit_header <- function(x, type = NULL, na = ".") {
   )
   utils::type.convert(res, as.is = TRUE, na.strings = na)
 }
+
+##' @export
+parse_meta.varkit_header <- parse_meta.varkit

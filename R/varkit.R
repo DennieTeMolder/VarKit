@@ -31,7 +31,7 @@ new_varkit <- function(meta = data.frame(), site = data.frame(), geno = matrix()
       geno = geno,
       use_site = use_site
     ),
-    class = c("varkit", "varkit_header")
+    class = "varkit"
   )
 }
 
@@ -118,21 +118,21 @@ print.varkit <- function(x, ..., n = NULL, n_samples = 10) {
   .msg_h1("VarKit Variant Object")
   if (!is.null(x$meta)) {
     .msg_h2("Header metadata, `meta(vcf)`")
-    print(meta(x), ..., verbose = FALSE)
+    print(meta.varkit(x), ..., verbose = FALSE)
     cat("\n")
   }
 
   .msg_h2("Sample names, `samples(vcf)`")
-  samp <- cli::cli_vec(samples(x), style = list("vec-sep" = ", ", "vec-last" = ", ", "vec-trunc" = 100))
+  samp <- cli::cli_vec(samples.varkit(x), style = list("vec-sep" = ", ", "vec-last" = ", ", "vec-trunc" = 100))
   cli::cli_text("{samp}")
   cat("\n")
 
   .msg_h2("Site information, `site(vcf)`")
-  print(site(x), ..., n = n)
+  print(site.varkit(x), ..., n = n)
   cat("\n")
 
   .msg_h2("Transposed genotype matrix, `geno(vcf)`")
-  print(geno(x), ..., n = n, n_samples = n_samples)
+  print(geno.varkit(x), ..., n = n, n_samples = n_samples)
   cat("\n")
 
   if (all(x$use_site)) {

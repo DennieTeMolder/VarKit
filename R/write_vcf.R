@@ -19,25 +19,26 @@ write_vcf.varkit <- function(x, file, append = FALSE, replace_filter = FALSE) {
     append <- FALSE
   }
 
-  # Ensure all columns adhere to spec
-  x <- standardize_cols(x)
+  # Ensure all columns & values adhere to VCF spec
+  x <- standardize_cols.varkit(x)
   x <- .replace_na_geno(x)
 
-  # Check if filter column reflects current state, and replace if indicated
-  x$site$filter <- .check_filter(x$site$filter, x$use_site, replace_filter)
-
-  # Ensure all sites are included
-  x <- unmask_all(x)
+  # Check if filter column reflects current state, replace if indicated
+  x$site$filter <- .check_filter(x$site$filter, use_site = x$use_site, replace_filter = replace_filter)
 
   if (!append) {
     cli::cli_progress_step("Writing VCF header")
-    write_vcf_header(x, file)
+    write_vcf_header.varkit(x, file = file)
     cli::cli_progress_done()
   }
 
   cli::cli_progress_step("Writing VCF body")
+
+  # Convert all sites to a data frame by unmasking
+  x <- as.data.frame.varkit(unmask_all.varkit(x), optional = TRUE)
+
   write_tbl(
-    as.data.frame.varkit(x, optional = TRUE),
+    x,
     file = file,
     append = append,
     col_names = FALSE,

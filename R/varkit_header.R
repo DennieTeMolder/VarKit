@@ -56,8 +56,8 @@ print.varkit_header <- function(x, ..., n = NULL) {
     print(meta(x), ..., n = n)
     cat("\n")
   }
-  .msg_h2("Column names (for 'skip_cols'), `col_names(header)`")
-  cnames <- cli::cli_vec(col_names(x), style = list("vec-sep" = ", ", "vec-last" = ", ", "vec-trunc" = 100))
+  .msg_h2("Column names (for 'col_select'), `header$col_names`")
+  cnames <- cli::cli_vec(x$col_names, style = list("vec-sep" = ", ", "vec-last" = ", ", "vec-trunc" = 100))
   cli::cli_text("{cnames}")
   .msg_info("Use `samples(header)` to get only columns recognised as sample names")
 }

@@ -5,7 +5,7 @@ standardize_cols <- function(x, message = TRUE) {
 
 ##' @export
 standardize_cols.varkit <- function(x, message = TRUE) {
-  missing <- .find_missing_cols(x, message)
+  missing <- .find_missing_cols(colnames(x$site), message = message)
 
   if (length(missing) > 0) {
     x$site[, missing] <- rep(NA, nrow(x$site))
@@ -17,19 +17,15 @@ standardize_cols.varkit <- function(x, message = TRUE) {
 
 ##' @export
 standardize_cols.varkit_header <- function(x, message = TRUE) {
-  .find_missing_cols(x, message)
-  x$col_names <- c(.fixed_columns(), samples(x))
+  .find_missing_cols(x$col_names, message = message)
+  x$col_names <- c(.fixed_columns(), samples.varkit_header(x))
   x
 }
 
-.find_missing_cols <- function(x, message) {
-  fxd_cols <- .fixed_columns()
-  missing <- fxd_cols[!fxd_cols %in% tolower(col_names(x))]
+.find_missing_cols <- function(col_names, message) {
+  missing <- setdiff(.fixed_columns(), tolower(col_names))
 
-  if (length(missing) == 0)
-    return(character())
-
-  if (message)
+  if (message && length(missing) > 0L)
     cli::cli_alert_info(c("Creating missing columns: ", toupper(.collapse(missing))))
 
   missing

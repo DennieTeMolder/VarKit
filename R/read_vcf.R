@@ -74,7 +74,7 @@ read_vcf <- function(file,
   fixed_idx <- fixed_idx[!is.na(fixed_idx)]
 
   if (length(fixed_idx) == 0)
-    stop("No fixed columns detected in VCF, ensure they are lower case in col_names(header)!")
+    stop("No fixed columns detected in VCF, ensure they are lower case in `read_vcf_header(...)$col_names`!")
   if (ncol(body) == length(fixed_idx))
     stop("Only fixed columns detected in VCF, missing genotypes!")
   if (!all(c("chrom", "pos") %in% colnames(body)[fixed_idx]))
