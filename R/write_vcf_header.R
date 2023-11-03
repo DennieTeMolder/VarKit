@@ -37,6 +37,7 @@ write_vcf_header.varkit_header <- function(x, file) {
   write_lines2(header, file = file)
 }
 
+##' @export
 write_vcf_header.varkit <- function(x, file) {
   write_vcf_header.varkit_header(
     new_varkit_header(
