@@ -20,12 +20,12 @@ is_varkit_geno <- function(x) {
 
 ##' @export
 print.varkit_geno <- function(x, ..., n = .max_print_col(x), n_samples = 25) {
-  site_trunc <- n < ncol(x)
-  sample_trunc <- n_samples < nrow(x)
+  site_trunc <- n < n_sites.varkit_geno(x)
+  sample_trunc <- n_samples < n_samples.varkit_geno(x)
   if (!site_trunc)
-    n <- ncol(x)
+    n <- n_sites.varkit_geno(x)
   if (!sample_trunc)
-    n_samples <- nrow(x)
+    n_samples <- n_samples.varkit_geno(x)
 
   cat(sprintf(
     "# A matrix<%s>: %s samples x %s sites; %.2f%% is NA\n",
@@ -35,7 +35,7 @@ print.varkit_geno <- function(x, ..., n = .max_print_col(x), n_samples = 25) {
   print(unclass(x[seq_len(n_samples), seq_len(n), drop = FALSE]), ...)
 
   if (sample_trunc)
-    .msg_info(nrow(x) - n_samples, " more samples")
+    .msg_info(n_samples.varkit_geno(x) - n_samples, " more samples")
 
   if (site_trunc && sample_trunc) {
     .msg_info("Use `print(n = ..., n_samples = ...)` to see more sites and samples respectively.")

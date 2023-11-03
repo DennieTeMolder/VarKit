@@ -108,7 +108,7 @@ is_varkit <- function(x) {
 
 ##' @export
 print.varkit <- function(x, ..., n = NULL, n_samples = 10) {
-  n_samples <- min(n_samples, length(samples(x)))
+  n_samples <- min(n_samples, n_samples.varkit(x))
   if (is.null(n)) {
     width <- getOption("width")
     which_show <- utils::head(which(x$use_site), n = max(1, floor(width / 2) - 1))
@@ -139,8 +139,8 @@ print.varkit <- function(x, ..., n = NULL, n_samples = 10) {
     total <- .frmt_big(length(x$use_site))
     cli::cli_alert_success("No mask is active, using all {total} sites. See `summary(vcf)`")
   } else {
-    total <- length(x$use_site)
-    current <- sum(x$use_site)
+    total <- n_sites.varkit(x, mask = FALSE)
+    current <- n_sites.varkit(x, mask = TRUE)
     cli::cli_alert_warning(sprintf(
       "A mask is active, using %s%% of all sites (%s/%s). See `summary(vcf)`",
       round(current / total * 100, digits = 1), .frmt_big(current), .frmt_big(total)
@@ -151,10 +151,10 @@ print.varkit <- function(x, ..., n = NULL, n_samples = 10) {
 ##' @export
 summary.varkit <- function(object, ...) {
   tibble::tibble(
-    samples = length(samples(object)),
-    sites_visible = sum(object$use_site),
-    sites_total = length(object$use_site),
-    visible_frac = mean(object$use_site)
+    samples = n_samples.varkit(object),
+    sites_visible = n_sites.varkit(object, mask = TRUE),
+    sites_total = n_sites.varkit(object, mask = FALSE),
+    visible_frac = .data$sites_visible / .data$sites_total
   )
 }
 
