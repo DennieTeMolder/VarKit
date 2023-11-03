@@ -6,12 +6,13 @@ write_tbl <- function(x,
                       col_names = !append,
                       row_names = FALSE,
                       quote = FALSE,
+                      compression = NULL,
                       ...) {
   if (inherits(file, "connection")) {
     if (!is_open.connection(file))
       stop("The provided 'file' connection is invalid!")
   } else {
-    file <- file_con(file, if (append) "a" else "w")
+    file <- file_con(file, open = if (append) "a" else "w", compression = compression)
     on.exit(close(file))
   }
 

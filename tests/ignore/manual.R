@@ -41,7 +41,7 @@ summary(vcf)
 vcf <- import_mask(vcf, my_mask)
 summary(vcf)
 
-temp_file <- tempfile(fileext = ".vcf.bz2")
+temp_file <- tempfile(fileext = ".vcf.gz")
 write_vcf(vcf, temp_file, replace_filter = TRUE)
 read_vcf(temp_file)
 

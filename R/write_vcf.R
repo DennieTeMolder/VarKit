@@ -1,10 +1,10 @@
 ##' @export
-write_vcf <- function(x, file, append = FALSE, replace_filter = FALSE) {
+write_vcf <- function(x, file, append = FALSE, replace_filter = FALSE, compression = NULL) {
   UseMethod("write_vcf", x)
 }
 
 ##' @export
-write_vcf.varkit <- function(x, file, append = FALSE, replace_filter = FALSE) {
+write_vcf.varkit <- function(x, file, append = FALSE, replace_filter = FALSE, compression = NULL) {
   validate_varkit(x)
 
   # Open a connection for writing, unless we want to append
@@ -14,7 +14,7 @@ write_vcf.varkit <- function(x, file, append = FALSE, replace_filter = FALSE) {
     if (isSeekable(file) && seek(file) == 0L)
       append <- FALSE
   } else {
-    file <- file_con(file, if (append) "a" else "w")
+    file <- file_con(file, open = if (append) "a" else "w", compression = compression)
     on.exit(close(file))
     append <- FALSE
   }

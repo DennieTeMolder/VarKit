@@ -1,23 +1,23 @@
 ##' @export
-write_vcf_header <- function(x, file) {
+write_vcf_header <- function(x, file, compression = NULL) {
   UseMethod("write_vcf_header", x)
 }
 
 ##' @export
-write_vcf_header.varkit_header <- function(x, file) {
+write_vcf_header.varkit_header <- function(x, file, compression = NULL) {
+  # Warn users about the use of .gz(ip) compressed files
   description <- if (inherits(file, "connection")) summary.connection(file)$description else file
   if (any(tools::file_ext(description) == c("gz", "gzip"))) {
-    cli::cli_alert_warning("Varkit writes regular g-zipped files, not the block g-zip format expected by many tools!")
-    cli::cli_alert_warning("If the latter is desired, write to plain vcf and convert using an external tool like 'bgzip'.")
+    cli::cli_alert_warning("Varkit writes regular non-block g-zipped files, which often cannot be indexed by external tools.")
+    message("  If you need this functionality, write to plain '.vcf' and compress using an external tool like 'bgzip'.")
   }
 
   header <- meta.varkit_header(x)
+
   # Replace fileformat and add info
-  if (!is.null(header))
-    header <- header[header$name != "fileformat", ]
   header <- rbind(
     data.frame(name = "fileformat", value = "VCFv4.2"),
-    header,
+    header[header$name != "fileformat", ],
     data.frame(
       name = "VarKit",
       value = paste0("Modified and written to file by 'write_vcf()';Date=", date())
@@ -34,16 +34,17 @@ write_vcf_header.varkit_header <- function(x, file) {
     paste0("#", .collapse(x$col_names, "\t"))
   )
 
-  write_lines2(header, file = file)
+  write_lines2(header, file = file, compression = compression)
 }
 
 ##' @export
-write_vcf_header.varkit <- function(x, file) {
+write_vcf_header.varkit <- function(x, file, compression = NULL) {
   write_vcf_header.varkit_header(
     new_varkit_header(
       meta = meta.varkit(x),
       col_names = c(colnames(x$site), samples.varkit(x))
     ),
-    file = file
+    file = file,
+    compression = compression
   )
 }
