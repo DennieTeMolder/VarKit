@@ -29,7 +29,8 @@ parse_meta.varkit <- function(x, type = NULL, na = ".") {
   # First group of the regex should match the key, second should match the corresponding value
   values <- .match_key_value(values, pattern = '([^="]+)=("(?:[^"\\\\]|\\\\.)+"|[^,]+)(?:,|$)')
 
-  .mutate_all(values, .cleanup_meta_col, na = na)
+  values <- lapply(values, .cleanup_meta_col, na = na)
+  do.call(tibble::tibble, values)
 }
 
 .get_meta_types <- function(vcf) {

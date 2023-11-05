@@ -75,10 +75,6 @@
   c(FALSE, diff(x) == 0)
 }
 
-.mutate_all <- function(.tbl, .fns, ...) {
-  dplyr::mutate(.tbl, dplyr::across(dplyr::everything(), .fns, ...))
-}
-
 .frmt_big <- function(x, scientific = FALSE, ...) {
   big.mark <- if (getOption("OutDec", ".") == ".") "," else "."
   format(x, big.mark = big.mark, scientific = scientific, ...)
