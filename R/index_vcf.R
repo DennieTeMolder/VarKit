@@ -68,10 +68,10 @@ index_vcf <- function(file, size_bp = -1, chunk_size = 1e5, ...) {
   i <- 1L
   repeat {
     tbl <- read_tbl(file,
-      col_names = col_names,
+      col.names = col_names,
       nrows = chunk_size,
       na.strings = c("", "."),
-      col_types = col_types,
+      colClasses = col_types,
       sep = "\t",
       header = FALSE,
       check.names = FALSE,

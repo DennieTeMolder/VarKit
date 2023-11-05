@@ -1,171 +1,130 @@
 ## This is a wrapper of utils::read.table() that supports Readr style
-## 'col_select' & 'col_types' arguments. In contrast to Readr it does not
+## 'col.select' & 'colClasses' arguments. In contrast to Readr it does not
 ## extract zipped files to the tempdir(), leaves passed connections open,
 ## and is more memory efficient (Vroom seems to leaks memory, mainly when
-## using *_chunked() functions). Unlike read.table's colClasses, col_types
+## using *_chunked() functions). Unlike utils::read.table(), colClasses
 ## are not recycled, instead c(.default = ...) can be specified.
 ##' @export
 read_tbl <- function(file,
-                     col_select = NULL,
+                     col.select = NULL,
                      sep = "\t",
-                     col_names = NULL,
-                     col_types = NA,
-                     header = is.null(col_names),
-                     as.is = TRUE,
-                     na.strings = "NA",
+                     col.names = NULL,
+                     colClasses = NA,
+                     header = !is.null(col.names),
                      nrows = -1,
                      skip = 0,
-                     strip.white = TRUE,
+                     guess.max = 1000,
                      ...) {
   # Check args
-  if (!is.null(col_names)) {
-    stopifnot(is.character(col_names))
-    if (anyNA(col_names))
-      stop("'col_names' contains missing values!")
-    if (any(nchar(col_names) < 1L))
-      stop("'col_names' contains empty strings!")
-    if (anyDuplicated(col_names) != 0L)
-      stop("'col_names' contains duplicated values!")
-  }
-  if (is.null(col_types) || length(col_types) == 0L || all(is.na(col_types))) {
-    col_types <- NULL
-  } else {
-    stopifnot(is.vector(col_types), is.character(col_types))
-    if (.col_names_required(col_types) && !header && is.null(col_names))
-        stop("If 'col_types' is named, either 'header' should be TRUE or 'col_names' should be provided!")
-  }
+  if (!is.null(col.names))
+    stopifnot(is.character(col.names), length(col.names) > 0)
+  stopifnot(is.numeric(nrows), length(nrows) == 1)
+  stopifnot(is.numeric(guess.max), length(guess.max) == 1)
+  col.select <- rlang::enquo(col.select)
 
-  # Open the file if needed
-  if (inherits(file, "connection")) {
-    if (!is_open.connection(file))
-      stop("The provided 'file' connection is invalid!")
-    con <- file
-  } else {
-    con <- file(file, "r")
-    on.exit(close(con))
-  }
+  # Disable guessing if fewer rows are requested
+  if (nrows > 0L && guess.max >= nrows)
+    guess.max <- -1L
 
-  # Detect column names
-  if (header) {
-    if (is.null(col_names)) {
-      # NOTE as we are passing ..., we must 'catch' all arguments below in read_tbl()
-      col_names <- unlist(utils::read.table(
-        file = con, header = FALSE, sep = sep, as.is = TRUE, na.strings = "",
-        colClasses = "character", nrows = 1, strip.white = TRUE, ...
-      ), use.names = FALSE)
-      if (anyNA(col_names))
-        stop("\nSome of the header fields are NA, detected fields:\n", .quote_collapse(col_names))
+  # if col.names is a named vector it doubles as the colClasses argument
+  if (!is.null(names(col.names))) {
+    if (!missing(colClasses))
+      warning("If 'col.names' is a named vector, 'colClasses' is ignored")
+    colClasses <- col.names
+
+    if (rlang::is_named(col.names)) {
+      col.names <- names(col.names)
+      if (any(col.names == ".default"))
+        stop("The use of '.default' is not allowed in 'col.names'! Use 'colClasses' instead")
     } else {
-      # NOTE We want the header arg to be missing in read.table() to correctly handle rownames,
-      # Therefore we must adjust 'skip' accordingly
-      skip <- max(0, skip) + 1
+      col.names <- NULL
     }
   }
 
-  # If col_names is not NULL col_types will be named, can be zero length 
-  col_types <- .standardize_col_types(col_types, col_names = col_names)
+  # We handle SKIP here to save us from figuring out which of the functions below gets to skip
+  if (skip > 0L) {
+    if (!.is_connection(file)) {
+      file <- file(file, "r")
+      on.exit(close(file))
+    }
+    readLines(file, skip)
+  }
 
-  # Instruct read.delim to ignore cols that are not selected
-  col_types[.removed_cols(col_names, col_select = {{ col_select }})] <- "NULL"
+  # If missing extract the col.names from the start of the file
+  if (is.null(col.names)) {
+    col.names <- names(guess_col_classes(
+      file = file, nmax = header + 1L, sep = sep, header = header, colClasses = "character", ...
+    ))
 
-  if (length(col_types) == 0)
-    col_types <- NA
+    # If no col.names are found the file must be an invalid
+    if (!is.character(col.names))
+      return(NULL)
+  }
 
-  # HACK read.table() needs col.names to be missing not NULL
-  # Other then that the rest these statements should be identical
-  if (is.null(col_names)) {
-    tbl <- utils::read.table(
-      file = con, sep = sep,                        colClasses = col_types,
-      as.is = as.is, na.strings = na.strings, nrows = nrows, skip = skip,
-      strip.white = strip.white, ...
+  # Expand colClasses using readr::cols() style shorthands and store the ".default" value
+  default <- NA_character_
+  if (length(colClasses) > 0L) {
+    colClasses <- .expand_col_classes(colClasses)
+    if (any(names(colClasses) == ".default")) {
+      default <- colClasses[".default"]
+      colClasses <- colClasses[names(colClasses) != ".default"]
+    }
+
+    if (rlang::is_named(colClasses)) {
+      # Ensure colClasses matches with col.names
+      colClasses <- .check_col_classes(colClasses, col.names = col.names)
+    } else {
+      # read.table will recycle unnamed colClasses vectors which is not desired
+      names(colClasses) <- col.names[seq_along(colClasses)]
+    }
+  }
+
+  # Incorporate the ".default" value in a way that read.table() recognises
+  missing <- setdiff(col.names, names(colClasses))
+  colClasses <- c(colClasses, rlang::rep_named(missing, default))[col.names]
+
+  # Apply col.select to colClasses & allow columns to be renamed
+  colClasses <- .col_select_classes(colClasses, col.select = col.select)
+  col.names <- names(colClasses)
+
+  # If any col.names have an unknown class we guess their classes based on guess.max
+  # Unknown colClasses are read as character, which inflates the string cache
+  # Using a smaller portion of the file improves memory consumption & is up to 33% faster
+  if (guess.max >= 1L && anyNA(colClasses)) {
+    skip_cols <- names(colClasses)[!is.na(colClasses)]
+    skip_cols <- rlang::rep_named(skip_cols, "NULL")
+    guessed_classes <- guess_col_classes(
+      file = file, nmax = guess.max, sep = sep, header = header,
+      col.names = col.names, colClasses = skip_cols, ...
     )
-  } else {
-    tbl <- utils::read.table(
-      file = con, sep = sep, col.names = col_names, colClasses = col_types,
-      as.is = as.is, na.strings = na.strings, nrows = nrows, skip = skip,
-      strip.white = strip.white, ...
+    colClasses[names(guessed_classes)] <- guessed_classes
+  }
+
+  tibble::as_tibble(
+    .read_tbl_internal(file, col.names = col.names, colClasses = colClasses,
+                       sep = sep, header = header, nrows = nrows, ...),
+    .name_repair = "minimal"
+  )
+}
+
+.expand_col_classes <- function(colClasses) {
+  stopifnot(is.vector(colClasses), length(colClasses) > 0L)
+  # Convert to character but keep colnames
+  storage.mode(colClasses) <- "character"
+
+  non_default <- colClasses[rlang::names2(colClasses) != ".default"]
+  if (.is_shorthand(non_default)) {
+    colClasses <- c(
+      strsplit(non_default, "", fixed = TRUE)[[1L]],
+      colClasses[match(".default", rlang::names2(colClasses), 0L)]
     )
   }
-  tibble::as_tibble(tbl)
-}
 
-.col_names_required <- function(col_types) {
-  rlang::is_named(col_types) && !identical(names(col_types), ".default")
-}
+  try_expand <- nchar(colClasses) == 1L & !is.na(colClasses)
+  if (!any(try_expand))
+    return(colClasses)
 
-.standardize_col_types <- function(col_types, col_names) {
-  if (is.null(col_types))
-    return(character())
-
-  # This is a special case in which col_types is 'recycled' to the table size
-  if (identical(names(col_types), ".default")) {
-    if (is.null(col_names)) {
-      names(col_types) <- NULL
-    } else {
-      col_types <- rep(col_types, length(col_names))
-      names(col_types) <- col_names
-    }
-
-    # Expand readr::read_* style single character col_type abbreviations
-    return(.expand_col_types(col_types))
-  }
-
-  # The name '.default' can be used to specify a default type, only works when colnames are known
-  if (".default" %in% names(col_types)) {
-    if (is.null(col_names)) stop("An unexpected error occurred!")
-    default_type <- col_types[".default"]
-    col_types <- col_types[names(col_types) != ".default"]
-  } else {
-    default_type <- NULL
-  }
-
-  # When not recycling, the result is always named
-  if (rlang::is_named(col_types)) {
-    # For named vectors we do some validation to provide more informative errors then read.table()
-    if (is.null(col_names)) stop("An unexpected error occurred!")
-    if (anyDuplicated(names(col_types)) != 0L)
-      stop("The names of 'col_types' are not unique!")
-
-    # All named elements should match with col_names
-    not_found <- !names(col_types) %in% col_names
-    if (any(not_found)) {
-      warning("\nThe following 'col_types':\n\t",
-              .quote_collapse(names(col_types)[not_found]),
-              "\ndid not match with any column names:\n\t",
-              .quote_collapse(col_names), call. = FALSE)
-      col_types <- col_types[!not_found]
-    }
-  } else {
-    # For unnamed vectors we support a readr::read_* style shorthand
-    if (length(col_types) == 1 && .is_expandable(col_types))
-      col_types <- strsplit(col_types, "", fixed = TRUE)[[1]]
-
-    # Add names to the vector, this inhibits recycling by read.table()
-    if (is.null(col_names)) {
-      names(col_types) <- paste0("V", seq_along(col_types))
-    } else {
-      if (length(col_types) > length(col_names)) {
-        warning("There are more 'col_types' (", length(col_types), ") then column names (", length(col_names) ,")!")
-        col_types <- col_types[seq_along(col_names)]
-      }
-      names(col_types) <- col_names[seq_along(col_types)]
-    }
-  }
-
-  # Add default col_type for all col_names that are not in names(col_types)
-  if (!is.null(default_type))
-    col_types[setdiff(col_names, names(col_types))] <- default_type
-
-  # Expand readr::read_* style single character col_type abbreviations
-  .expand_col_types(col_types)
-}
-
-.expand_col_types <- function(col_types) {
-  should_expand <- nchar(col_types) == 1
-  if (!any(should_expand))
-    return(col_types)
-
-  expand_me <- col_types[should_expand]
+  expand_me <- colClasses[try_expand]
   expanded <- dplyr::case_match(
     expand_me,
     "c" ~ "character",
@@ -175,40 +134,83 @@ read_tbl <- function(file,
     "f" ~ "factor",
     "D" ~ "Date",
     c("T", "t") ~ "POSIXct",
-    "?" ~ "guess",
+    c("?", NA) ~ "guess",
     "_" ~ "NULL",
     .ptype = character()
   )
 
   if (anyNA(expanded)) {
-    stop("\nThe following 'col_types' are not recognised:\n\t",
+    stop("\nThe following 'colClasses' are not recognised:\n\t",
          .quote_collapse(expand_me[is.na(expanded)]), call. = FALSE)
   }
 
   expanded[expanded == "guess"] <- NA
 
-  col_types[should_expand] <- expanded
-  col_types
+  colClasses[try_expand] <- expanded
+  colClasses
 }
 
-.is_expandable <- function(col_types) {
-  stringr::str_detect(col_types, "^[cindlfDTt?_]+$")
+.is_expandable <- function(colClasses) {
+  if (!is.character(colClasses))
+    return(rep(FALSE, length(colClasses)))
+  stringr::str_detect(colClasses, "^[cindlfDTt?_]+$") & !is.na(colClasses)
 }
 
 # Should be FALSE:
 ## any(.is_expandable(c("NULL", "logical", "integer", "numeric", "complex", "character", "raw", "factor", "Date", "POSIXct")))
 
-.removed_cols <- function(col_names, col_select) {
-  col_select <- rlang::enquo(col_select)
-  if (rlang::quo_is_null(col_select))
-    return(character())
+.is_shorthand <- function(colClasses) {
+  length(colClasses) == 1L         &&
+    !rlang::is_named(colClasses)   &&
+    isTRUE(nchar(colClasses) > 1L) &&
+    .is_expandable(colClasses)
+}
 
-  if (is.null(col_names))
-    stop("When using 'col_select', either 'header' should be TRUE or 'col_names' should be provided!", call. = FALSE)
+.check_col_classes <- function(colClasses, col.names) {
+  if (length(colClasses) > length(col.names)) {
+    warning(sprintf(
+      "There are more 'colClasses' (%i) then column names (%i)",
+      length(colClasses), length(col.names)
+    ))
+  }
 
-  names_df <- matrix(nrow = 0, ncol = length(col_names), dimnames = list(NULL, col_names))
-  names_df <- tibble::as_tibble(names_df)
+  not_found <- !names(colClasses) %in% col.names
+  if (any(not_found)) {
+    warning("\nThe following 'colClasses':\n\t",
+            .quote_collapse(names(colClasses)[not_found]),
+            "\ndid not match with any column names:\n\t",
+            .quote_collapse(col.names), call. = FALSE)
+    colClasses <- colClasses[!not_found]
+  }
 
-  keep <- colnames(dplyr::select(names_df, !!col_select))
-  setdiff(col_names, keep)
+  colClasses
+}
+
+.col_select_classes <- function(colClasses, col.select) {
+  if (rlang::quo_is_null(col.select))
+    return(colClasses)
+
+  if (is.null(names(colClasses)))
+    stop("Unexpected!")
+
+  .data <- colClasses
+  loc <- tidyselect::eval_select(col.select, data = .data)
+
+  colClasses[-loc] <- "NULL"
+  names(colClasses)[loc] <- names(loc)
+
+  colClasses
+}
+
+.read_tbl_internal <- function(file, ...) {
+  tryCatch({
+    utils::read.table(file = file, ...)
+  }, error = function(e) {
+    if (.str_starts(e$message, "scan()")) {
+      msg <- stringr::str_remove(e$message, stringr::fixed("scan()"))
+      stop("Value in 'file' did not match 'colClasses':", msg,
+           "\nCheck the value of 'na.strings' or increase 'guess.max'.", call. = FALSE)
+    }
+    stop(e)
+  })
 }
