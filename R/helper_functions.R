@@ -24,6 +24,14 @@
     stop("Argument '", substitute(x), "' should have a length of 1!")
 }
 
+.is_connection <- function(x) {
+  if (!inherits(x, "connection"))
+    return(FALSE)
+  if (!is_open.connection(x))
+    stop("The provided connection '", substitute(x), "' is not open!")
+  return(TRUE)
+}
+
 .collapse <- function(x, delim = ", ") {
   paste(x, collapse = delim)
 }

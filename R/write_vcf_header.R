@@ -6,7 +6,7 @@ write_vcf_header <- function(x, file, compression = NULL) {
 ##' @export
 write_vcf_header.varkit_header <- function(x, file, compression = NULL) {
   # Warn users about the use of .gz(ip) compressed files
-  description <- if (inherits(file, "connection")) summary.connection(file)$description else file
+  description <- if (.is_connection(file)) summary.connection(file)$description else file
   if (any(tools::file_ext(description) == c("gz", "gzip"))) {
     cli::cli_alert_warning("Varkit writes regular non-block g-zipped files, which often cannot be indexed by external tools.")
     message("  If you need this functionality, write to plain '.vcf' and compress using an external tool like 'bgzip'.")
