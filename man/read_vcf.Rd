@@ -10,7 +10,8 @@ read_vcf(
   header = NULL,
   n_max = -1,
   skip = 0,
-  na_geno = c("./.", ".|.")
+  na_geno = c("./.", ".|."),
+  guess_max = 100
 )
 }
 \arguments{
@@ -24,7 +25,9 @@ read_vcf(
 
 \item{skip}{Integer, number of variants to skip before loading 'n_max' variants.}
 
-\item{na_geno}{Character vector, exact string(s) to convert to NA in the genotype fields}
+\item{na_geno}{Character vector, exact string(s) to convert to NA. Empty strings and "." are always converted to NA}
+
+\item{guess_max}{Integer, number of variants to use for guessing the type/class of the genotype matrix}
 }
 \value{
 A VarKit object

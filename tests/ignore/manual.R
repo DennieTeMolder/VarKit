@@ -7,7 +7,7 @@ example <- "./inst/extdata/celegans.vcf.bgz"
 ## Varkit object ------
 read_vcf_header(example)
 
-vcf <- read_vcf(example, col_select = c(-id, -filter, -N2))
+vcf <- read_vcf(example, col_select = !c(id, filter, N2))
 print(vcf)
 
 varkit_help(vcf)

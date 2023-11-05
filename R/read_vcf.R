@@ -6,7 +6,8 @@
 ##' @param header varkit_header object, used to determine the column names of 'file'.
 ##' @param n_max Integer, maximum number of variants to load. Zero or negative will load all.
 ##' @param skip Integer, number of variants to skip before loading 'n_max' variants.
-##' @param na_geno Character vector, exact string(s) to convert to NA in the genotype fields
+##' @param na_geno Character vector, exact string(s) to convert to NA. Empty strings and "." are always converted to NA
+##' @param guess_max Integer, number of variants to use for guessing the type/class of the genotype matrix
 ##' @return A VarKit object
 ##' @export
 ##' @author Dennie te Molder
@@ -18,73 +19,88 @@ read_vcf <- function(file,
                      header = NULL,
                      n_max = -1,
                      skip = 0,
-                     na_geno = c("./.", ".|.")
+                     na_geno = c("./.", ".|."),
+                     guess_max = 100
                      ) {
-  if (!is.null(header))
-    validate_varkit_header(header)
+  stopifnot(is.numeric(n_max), length(n_max) == 1)
+  stopifnot(is.numeric(guess_max), length(guess_max) == 1)
+  col_select <- rlang::enquo(col_select)
+  na.strings <- unique(c("", ".", na_geno))
 
-  # Open the file if needed
-  if (inherits(file, "connection")) {
-    if (!is_open.connection(file))
-      stop("The provided 'file' connection is invalid!")
-  } else {
-    file <- file(file, "r")
-    on.exit(close(file))
-  }
+  # Disable guessing if fewer variants are requested
+  if (n_max > 0L && guess_max >= n_max)
+    guess_max <- -1L
 
-  # Handle the VCF header, it will be skipped by "comment.char" if the header is provided
+  # NOTE the header will be skipped by "comment.char" it is not read here
   if (is.null(header)) {
-    if (isSeekable(file) && seek.connection(file) != 0)
+    if (!.is_connection(file)) {
+      file <- file(file, "r")
+      on.exit(close(file))
+    } else if (isSeekable(file) && seek.connection(file) != 0) {
       stop("A header should be supplied if connection 'file' is not at the start!")
+    }
 
     cli::cli_progress_step("Reading VCF header")
     header <- read_vcf_header(file)
+  }
 
-    if (length(header$col_names) < 3)
-      stop("At line ", length(meta(header)) + 1, ": Invalid VCF, the header has fewer then three tab-separated fields!")
+  validate_varkit_header(header)
+
+  # Apply 'col_select' to header$col_names, which allows the user to rename columns
+  colClasses <- rlang::rep_named(header$col_names, NA_character_)
+  colClasses <- .col_select_classes(colClasses, col.select = col_select)
+
+  if (!all(c("chrom", "pos") %in% names(colClasses)))
+    stop("The 'chrom' and/or 'pos' columns are missing from the VCF!")
+
+  # Fill in known classes, chrom & pos cannot be skipped, others are optional
+  colClasses[c("chrom", "pos")] <- c("c", "i")
+  na_cols <- names(which(is.na(colClasses)))
+  optional_classes <- c(id = "c", ref = "c", alt = "c", qual = "n", filter = "c", info = "c", format = "c")
+  colClasses[na_cols] <- optional_classes[na_cols]
+
+  # The remaining NAs represent the genotype columns
+  if (!anyNA(colClasses)) {
+    null_geno <- setdiff(names(which(colClasses == "NULL")), names(optional_classes))
+    if (length(null_geno) > 0L)
+      stop("All genotypes were removed by 'col_select'!")
+    stop("The VCF only contains fixed columns, genotypes are missing!")
+  }
+
+  # Shared arguments for reading the body
+  shared_args <- list(
+    file = file, na.strings = na.strings, skip = skip, header = FALSE, check.names = FALSE,
+    quote = "", as.is = TRUE, fill = FALSE, strip.white = TRUE, comment.char = "#"
+  )
+
+  # The genotypes will be combined into a single matrix
+  # Therefore we guess the class of each column and coerce it to a shared type
+  if (guess_max >= 1L) {
+    cli::cli_progress_step("Guessing data type of genotype matrix")
+    skip_known <- rlang::rep_named(names(which(!is.na(colClasses))), "NULL")
+    geno_col_classes <- do.call(guess_col_classes, c(shared_args, list(
+      nmax = guess_max, col.names = names(colClasses), colClasses = skip_known
+    )))
+
+    # If file is a connection, make sure we don't skip twice
+    if (.is_connection(file)) shared_args$skip <- 0L
+
+    default_class <- lapply(geno_col_classes, function(class) methods::as(0.0, class))
+    colClasses[is.na(colClasses)] <- class(do.call(c, default_class))[1L]
   }
 
   cli::cli_progress_step("Reading VCF body")
-  body <- read_tbl(file,
-    col_select = {{ col_select }},
-    col_names = header$col_names,
-    nrows = n_max,
-    skip = skip,
-    na.strings = unique(c("", ".", na_geno)),
-    col_types = c(chrom = "c", pos = "i", id = "c", ref = "c", alt = "c",
-                  qual = "n", filter = "c", info = "c", format = "c"),
-    sep = "\t",
-    header = FALSE,
-    check.names = FALSE,
-    quote = "",
-    as.is = TRUE,
-    fill = FALSE,
-    strip.white = TRUE,
-    comment.char = "#"
-  )
-  cli::cli_progress_done()
+  body <- do.call(read_tbl, c(shared_args, list(col.names = colClasses, nrows = n_max)))
 
   if (nrow(body) < 1)
     return(NULL)
 
   cli::cli_progress_step("Collecting results")
 
-  # Detect fixed fields
-  fixed_idx <- match(.fixed_columns(), colnames(body))
-  fixed_idx <- fixed_idx[!is.na(fixed_idx)]
-
-  if (length(fixed_idx) == 0)
-    stop("No fixed columns detected in VCF, ensure they are lower case in `read_vcf_header(...)$col_names`!")
-  if (ncol(body) == length(fixed_idx))
-    stop("Only fixed columns detected in VCF, missing genotypes!")
-  if (!all(c("chrom", "pos") %in% colnames(body)[fixed_idx]))
-    stop("Missing 'chrom' and/or 'pos' columns in VCF!")
-
-  # Move fixed fields to a separate df
-  fxd <- body[, fixed_idx]
-  body <- body[, -fixed_idx]
-
-  # The remaining fields are genotype calls
+  # Move fixed fields to a separate df and convert genotypes to matrix
+  geno_cols <- setdiff(na_cols, names(optional_classes))
+  fxd <- body[, !colnames(body) %in% geno_cols]
+  body <- body[, geno_cols]
   body <- varkit_geno(body)
 
   varkit(site = fxd, geno = body, meta = meta(header))
