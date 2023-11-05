@@ -1,0 +1,60 @@
+##' @export
+guess_col_classes <- function(file,
+                              nmax = 1000,
+                              simplify = TRUE,
+                              sep = "\t",
+                              na.strings = "NA",
+                              skip = 0,
+                              fill = !blank.lines.skip,
+                              strip.white = FALSE,
+                              blank.lines.skip = TRUE,
+                              comment.char = "#",
+                              allowEscapes = FALSE,
+                              flush = FALSE,
+                              encoding = "unknown",
+                              skipNul = FALSE,
+                              ...) {
+  stopifnot(is.numeric(nmax), length(nmax) == 1)
+  nmax <- max(2, nmax)
+
+  if (.is_connection(file)) {
+    lines <- scan(file, character(), sep = "\n", nmax = nmax, quote = "",
+                  skip = skip, na.strings = na.strings, quiet = TRUE, fill = fill,
+                  strip.white = strip.white, blank.lines.skip = blank.lines.skip,
+                  multi.line = FALSE, comment.char = comment.char,
+                  allowEscapes = allowEscapes, flush = flush, encoding = encoding,
+                  skipNul = skipNul)
+    pushBack(lines, connection = file)
+
+    con <- textConnection(lines, encoding = "UTF-8")
+    on.exit(close(con))
+  } else {
+    stopifnot(file.exists(file))
+    con <- file(file, "r")
+    on.exit(close(con))
+
+    if (skip > 0L) readLines(con, skip)
+  }
+
+  data <- utils::read.table(
+    file = con,
+    nrows = nmax,
+    sep = sep,
+    na.strings = na.strings,
+    skip = 0,
+    fill = fill,
+    strip.white = strip.white,
+    blank.lines.skip = blank.lines.skip,
+    comment.char = comment.char,
+    allowEscapes = allowEscapes,
+    flush = flush,
+    encoding = encoding,
+    skipNul = skipNul,
+    ...
+  )
+  col_classes <- lapply(data, class)
+
+  if (!simplify)
+    return(col_classes)
+  sapply(col_classes, `[`, 1L)
+}
