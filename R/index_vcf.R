@@ -61,7 +61,7 @@ index_vcf <- function(file, size_bp = -1, chunk_size = 1e5, ...) {
   # Report progress during indexing
   total <- 0L
   frmt <- function(x) .frmt_big(x)
-  cli::cli_progress_step("Indexing VCF body... [{frmt(total)} lines]", "Indexed {frmt(total)} lines")
+  cli::cli_progress_step("Indexing VCF body... [{frmt(total)} lines completed]", "Indexed {frmt(total)} lines")
 
   # Loop over the VCF body in chunks and covert to Run Length Encoding (RLE)
   results <- vector("list", max_results)
@@ -105,7 +105,7 @@ index_vcf <- function(file, size_bp = -1, chunk_size = 1e5, ...) {
       stop("Surpassed the maximum number of iterations before reaching the end of file! Increase 'chunk_size'.", call. = FALSE)
   }
 
-  if (i == 1)
+  if (i == 1L)
     stop("Could not detect the VCF body, check if the 'file' is a valid VCF!", call. = FALSE)
 
   cli::cli_progress_done()
@@ -115,7 +115,7 @@ index_vcf <- function(file, size_bp = -1, chunk_size = 1e5, ...) {
   # Add the line number column
   results$linum <- cumsum(c(
     header_line + 1L,
-    utils::head(results$lengths, n = -1)
+    utils::head(results$lengths, n = -1L)
   ))
 
   results

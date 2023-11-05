@@ -13,7 +13,7 @@ read_vcf_index <- function(vcf_path, validate = TRUE, ...) {
     stop("The first line of the index is missing the 'varkit_header_sha1' attribute!")
   origin <- stringr::str_sub(origin, start = 21)
 
-  index <- read_tbl(index_path, skip = 1, colClasses = c(id = "c", linum = "i", n_lines = "i"))
+  index <- read_tbl(index_path, colClasses = c(id = "c", linum = "i", n_lines = "i"), guess.max = -1)
 
   if (validate && origin != digest::sha1(read_vcf_header(vcf_path)))
     stop("The VCF seems to have changed since it has been indexed!")
