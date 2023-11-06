@@ -10,7 +10,8 @@ varkit_geno.data.frame <- function(x) {
 
 ##' @export
 varkit_geno.matrix <- function(x) {
-  structure(x, class = unique(c("varkit_geno", class(x))))
+  class(x) <- c("varkit_geno", setdiff(class(x), "varkit_geno"))
+  x
 }
 
 ##' @export
