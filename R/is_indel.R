@@ -5,18 +5,12 @@ is_indel <- function(x) {
 
 ##'@export
 is_indel.varkit <- function(x) {
-  ref <- site(x, "ref")
-  if (anyNA(ref))
+  x <- site.varkit(x, "ref", "alt")
+  if (anyNA(x$ref))
     stop("The site$ref column contains missing values")
-  alt <- site(x, "alt")
-  if (anyNA(alt))
+  if (anyNA(x$alt))
     stop("The site$alt column contains missing values")
 
-  alt <- stringr::str_split(alt, ",")
-  alt_indel <- sapply(alt, function(current) {
-    if ("*" %in% current)
-      return(TRUE)
-    any(nchar(current) > 1)
-  })
-  alt_indel | nchar(site(x, "ref")) > 1
+  # INDELs have a '*' at the alt position or have more then 1 character (between commas)
+  nchar(x$ref) > 1L | stringr::str_detect(x$alt, "\\*|[^,]{2,}")
 }
