@@ -5,11 +5,13 @@ mask_sites_without_variation <- function(x, parse_geno_type = NULL) {
 
 ##' @export
 mask_sites_without_variation.varkit <- function(x, parse_geno_type = NULL) {
-  if (!is.null(parse_geno_type)) {
-    data <- parse_geno.varkit(x, type = parse_geno_type)
+  if (is.null(parse_geno_type)) {
+    data <- x$geno
+    use <- if (all(x$use_site)) NULL else x$use_site
   } else {
-    data <- geno(x)
+    data <- parse_geno.varkit(x, type = parse_geno_type)
+    use <- NULL
   }
-  is_not_variable <- apply_sites(data, .not_variable)
-  mask(x, site = is_not_variable)
+
+  mask(x, site = !has_variation.matrix(data, margin = 2, use = use))
 }

@@ -53,20 +53,6 @@
   stringr::str_split_i(string, pattern = stringr::fixed(on), i = i)
 }
 
-.not_variable <- function(x, na_rm = TRUE) {
-  stopifnot(is.vector(x))
-  if (na_rm) {
-    not_na <- !is.na(x)
-    if (sum(not_na) < 2)
-      return(TRUE)
-    x <- x[not_na]
-    return(all(x == x[1]))
-  }
-  if (length(x) < 2)
-    return(TRUE)
-  all(duplicated(x)[-1])
-}
-
 .is_repeated <- function(x) {
   if (is.character(x))
     x <- as.factor(x)
