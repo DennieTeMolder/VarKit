@@ -6,7 +6,7 @@ next_lines <- function(x, n = NULL, skip = 0) {
 ##' @export
 next_lines.varkit_index <- function(x, n = NULL, skip = 0) {
   if (!is.null(n)) {
-    stopifnot(is.numeric(n), length(n) == 1, n > 0)
+    stopifnot(is.numeric(n), length(n) == 1)
   } else {
     n <- seek.varkit_index(x)$n_lines
     if (n < 1)
@@ -14,7 +14,18 @@ next_lines.varkit_index <- function(x, n = NULL, skip = 0) {
   }
 
   open.varkit_index(x)
-  lines <- .scan_fields(env(x)$con, sep = "\n", nlines = n, skip = skip)
+
+  lines <- scan(env(x)$con,
+    what = character(),
+    sep = "\n",
+    nmax = n,
+    skip = skip,
+    na.strings = "",
+    quote = "",
+    strip.white = FALSE,
+    blank.lines.skip = FALSE,
+    quiet = TRUE
+  )
 
   n <- length(lines)
   env(x)$curr_line <- env(x)$curr_line + n + skip
