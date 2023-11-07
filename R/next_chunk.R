@@ -41,9 +41,9 @@ next_chunk.varkit_index <- function(x, col_select = NULL, ...) {
     args$header <- vcf_header
   }
 
-  # These arguments are always overwritten
+  # Arguments 'col_select' (when provided), 'file', and 'n_max' are always overwritten
   if (!missing(col_select))
-    args <- utils::modifyList(args, list(col_select = rlang::enexpr(col_select)))
+    args$col_select <- rlang::enquo(col_select)
   args <- utils::modifyList(args, list(file = env(x)$con, n_max = n_max))
 
   vcf <- do.call(read_vcf, args)
