@@ -7,7 +7,8 @@
 ##' @param n_max Integer, maximum number of variants to load. Zero or negative will load all.
 ##' @param skip Integer, number of variants to skip before loading 'n_max' variants.
 ##' @param na_geno Character vector, exact string(s) to convert to NA. Empty strings and "." are always converted to NA
-##' @param guess_max Integer, number of variants to use for guessing the type/class of the genotype matrix
+##' @param guess_max Integer, number of variants to use for guessing the type/class of the genotype matrix, negative to disable.
+##' @param geno_ptype Vector/array, prototype of the genotype matrix (i.e. double()). When provided guess_max is ignored.
 ##' @return A VarKit object
 ##' @export
 ##' @author Dennie te Molder
@@ -20,15 +21,16 @@ read_vcf <- function(file,
                      n_max = -1,
                      skip = 0,
                      na_geno = c("./.", ".|."),
-                     guess_max = 100
+                     guess_max = 100,
+                     geno_ptype = NULL
                      ) {
   stopifnot(is.numeric(n_max), length(n_max) == 1)
   stopifnot(is.numeric(guess_max), length(guess_max) == 1)
   col_select <- rlang::enquo(col_select)
   na.strings <- unique(c("", ".", na_geno))
 
-  # Disable guessing if fewer variants are requested
-  if (n_max > 0L && guess_max >= n_max)
+  # Disable guessing if a prototype is provided or fewer variants are requested
+  if (!is.null(geno_ptype) || (n_max > 0L && guess_max >= n_max))
     guess_max <- -1L
 
   # NOTE the header will be skipped by "comment.char" it is not read here
@@ -73,8 +75,10 @@ read_vcf <- function(file,
     quote = "", as.is = TRUE, fill = FALSE, strip.white = TRUE, comment.char = "#"
   )
 
-  # The genotypes will be combined into a single matrix
-  # Therefore we guess the class of each column and coerce it to a shared type
+  # The genotypes will be combined into a single matrix, coercing all values to a shared type
+  # Knowing the type beforehand improves the speed & memory usage of read_tbl & simplifies coercion
+  geno_class <- if (is.null(geno_ptype)) NA_character_ else typeof(geno_ptype)
+
   if (guess_max >= 1L) {
     cli::cli_progress_step("Guessing data type of genotype matrix")
     skip_known <- rlang::rep_named(names(which(!is.na(colClasses))), "NULL")
@@ -85,9 +89,11 @@ read_vcf <- function(file,
     # If file is a connection, make sure we don't skip twice
     if (.is_connection(file)) shared_args$skip <- 0L
 
-    default_class <- lapply(geno_col_classes, function(class) methods::as(0.0, class))
-    colClasses[is.na(colClasses)] <- class(do.call(c, default_class))[1L]
+    geno_class <- lapply(geno_col_classes, function(class) methods::as(0.0, class))
+    geno_class <- class(do.call(c, geno_class))[1L]
   }
+
+  colClasses[is.na(colClasses)] <- geno_class
 
   cli::cli_progress_step("Reading VCF body")
   body <- do.call(read_tbl, c(shared_args, list(col.names = colClasses, nrows = n_max)))
