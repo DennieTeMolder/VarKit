@@ -35,8 +35,9 @@
   substr(x, n_char - nchar(what) + 1, n_char) == what
 }
 
-.str_split_i <- function(string, on, i) {
-  stringr::str_split_i(string, pattern = stringr::fixed(on), i = i)
+.str_split_i <- function(x, on, i) {
+  pattern <- sprintf("(?:[^%s]+%s){%i}([^%s]+).*", on, on, i - 1L, on)
+  stringr::str_replace(x, pattern, "\\1")
 }
 
 .frmt_big <- function(x, scientific = FALSE, ...) {

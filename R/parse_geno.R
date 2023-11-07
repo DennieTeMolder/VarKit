@@ -17,21 +17,38 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
 
   # Check te FORMAT field for index of type
   frmt <- .index_format(x, type)
-  if (!allow_missing && any(is.na(frmt)))
+  if (all(frmt == 0L))
+    stop("The type'", type, "' is not in any FORMAT fields!")
+  if (!allow_missing && any(frmt == 0L))
     stop("The type '", type, "' is not found in all FORMAT fields! If this is expected use `allow_missing = TRUE`.")
 
   # Parse type from genotype fields
-  if (all(frmt == frmt[[1]])) {
-    # For fixed format loop over samples to save time while remaining memory efficient
-    idx <- frmt[[1]]
-    res <- as.matrix(apply_samples(geno(x), .str_split_i, on = ":", i = idx))
+  gt <- geno.varkit(x)
+  if (all(frmt == frmt[[1L]])) {
+    res <- matrix(
+      .str_split_i2(gt, on = ":", i = frmt[[1L]]),
+      nrow = nrow(gt), dimnames = dimnames(gt)
+    )
   } else {
-    idxs <- unname(frmt[site(x, "format")])
-    gt <- geno.varkit(x)
-    res <- vapply(seq_along(idxs), function(i) {
-      .str_split_i(gt[, i], on = ":", i = idxs[i])
-    }, character(length(samples(x))))
-    dimnames(res) <- dimnames(gt)
+    idxs <- unname(frmt[site.varkit(x, "format")])
+
+    old_names <- colnames(gt)
+    colnames(gt) <- seq_len(ncol(gt))
+    gt <- splitm(gt, f = idxs, margin = 2)
+
+    res <- lapply(names(gt), function(curr) {
+      dims <- dim(gt[[curr]])
+      if (curr == "0") {
+        res <- NA_character_
+      } else {
+        res <- .str_split_i2(gt[[curr]], on = ":", i = as.integer(curr))
+      }
+      matrix(res, nrow = dims[1L], ncol = dims[2L], dimnames = dimnames(gt[[curr]]))
+    })
+    res <- do.call(cbind, res)
+
+    res <- res[, order(as.integer(colnames(res)))]
+    colnames(res) <- old_names
   }
 
   # Convert NA values
@@ -42,18 +59,17 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
 }
 
 .get_format_types <- function(x) {
-  frmt <- site(x, "format")
-  if (any(is.na(frmt)))
-    stop("The FORMAT column contains missing values!")
-
-  uniq <- as.character(unique(frmt))
+  uniq <- as.character(unique(site.varkit(x, "format")))
 
   # Split the unique combinations and check if specific types appear at a fixed position/index
   uniq <- stringr::str_split(uniq, ":")
   uniq_mat <- sapply(uniq, `[`, seq_len(min(sapply(uniq, length))))
-  fixed_position <- uniq_mat[apply(uniq_mat, 1, .not_variable), 1L]
+  which_fixed_pos <- which(!has_variation.matrix(uniq_mat))
+  names(which_fixed_pos) <- uniq_mat[which_fixed_pos, 1L]
+
+  fixed_position <- uniq_mat[!has_variation.matrix(uniq_mat), 1L]
   types <- sort(unique(unlist(uniq)))
-  results <- tibble::tibble(type = types, index = match(types, fixed_position))
+  results <- tibble::tibble(type = types, index = which_fixed_pos[types])
 
   if ("FORMAT" %in% meta(x)$name) {
     metadata <- parse_meta(x, "FORMAT")
@@ -65,14 +81,9 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
 }
 
 .index_format <- function(x, type) {
-  frmt <- site(x, "format")
-  if (any(is.na(frmt)))
-    stop("The FORMAT column contains missing values!")
-
-  uniq <- as.character(unique(frmt))
+  uniq <- as.character(unique(site.varkit(x, "format")))
   splits <- stringr::str_split(uniq, stringr::fixed(":"))
   names(splits) <- uniq
-
-  vapply(splits, function(y) match(type, y), integer(1))
+  vapply(splits, function(y) match(type, y, 0L), integer(1))
 }
 
