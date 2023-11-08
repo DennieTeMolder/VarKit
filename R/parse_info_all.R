@@ -21,6 +21,6 @@ parse_info_all.varkit <- function(x, use_meta = TRUE) {
   keys <- sort(keys)
   names(keys) <- keys
 
-  res <- lapply(keys, function(key) .parse_info_internal2(info, type = key, meta_info = meta_info))
+  res <- lapply(keys, function(key) .parse_info_internal(info, type = key, meta_info = meta_info))
   do.call(tibble::tibble, res)
 }

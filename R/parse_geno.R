@@ -26,7 +26,7 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
   gt <- geno.varkit(x)
   if (all(frmt == frmt[[1L]])) {
     res <- matrix(
-      .str_split_i2(gt, on = ":", i = frmt[[1L]]),
+      .str_split_i(gt, on = ":", i = frmt[[1L]]),
       nrow = nrow(gt), dimnames = dimnames(gt)
     )
   } else {
@@ -41,7 +41,7 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
       if (curr == "0") {
         res <- NA_character_
       } else {
-        res <- .str_split_i2(gt[[curr]], on = ":", i = as.integer(curr))
+        res <- .str_split_i(gt[[curr]], on = ":", i = as.integer(curr))
       }
       matrix(res, nrow = dims[1L], ncol = dims[2L], dimnames = dimnames(gt[[curr]]))
     })
