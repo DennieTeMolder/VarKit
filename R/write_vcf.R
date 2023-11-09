@@ -1,10 +1,22 @@
 ##' @export
-write_vcf <- function(x, file, append = FALSE, replace_filter = FALSE, compression = NULL) {
+write_vcf <- function(x,
+                      file,
+                      append = FALSE,
+                      replace_filter = FALSE,
+                      na_geno = NULL,
+                      compression = 5) {
   UseMethod("write_vcf", x)
 }
 
 ##' @export
-write_vcf.varkit <- function(x, file, append = FALSE, replace_filter = FALSE, compression = NULL) {
+write_vcf.varkit <- function(x,
+                             file,
+                             append = FALSE,
+                             replace_filter = FALSE,
+                             na_geno = NULL,
+                             compression = 5) {
+  if (!is.null(na_geno))
+    stopifnot(is.character(na_geno), length(na_geno) == 1)
   validate_varkit(x)
 
   # Open a connection for writing, unless we want to append
@@ -19,7 +31,7 @@ write_vcf.varkit <- function(x, file, append = FALSE, replace_filter = FALSE, co
 
   # Ensure all columns & values adhere to VCF spec
   x <- standardize_cols.varkit(x)
-  x <- .replace_na_geno(x)
+  x <- .replace_na_geno(x, na_geno)
 
   # Check if filter column reflects current state, replace if indicated
   x$site$filter <- .check_filter(x$site$filter, use_site = x$use_site, replace_filter = replace_filter)
@@ -45,48 +57,48 @@ write_vcf.varkit <- function(x, file, append = FALSE, replace_filter = FALSE, co
   )
 }
 
-.replace_na_geno <- function(x) {
+.replace_na_geno <- function(x, na_geno) {
   if (!anyNA(x$geno))
     return(x)
 
-  cli::cli_progress_step("Reformatting missing values according to VCF spec")
+  if (is.null(na_geno)) {
+    cli::cli_progress_step("Determining VCF compliant NA format for geno()")
 
-  # Build an index of possible NA replacements, one for each value of FORMAT
-  frmt <- x$site$format
-  if (is.null(frmt))
-    stop("Conversion of NA values requires the FORMAT column to be present!", call. = FALSE)
-  if (anyNA(frmt))
-    stop("The FORMAT column contains missing values!", call. = FALSE)
+    # Build an index of possible NA replacements, one for each value of FORMAT
+    frmt <- x$site[["format"]]
+    if (is.null(frmt))
+      stop("Conversion of NA values requires the FORMAT column to be present!", call. = FALSE)
+    if (anyNA(frmt))
+      stop("The FORMAT column contains missing values!", call. = FALSE)
 
-  uniq <- as.character(unique(frmt))
-  match_uniq <- match(uniq, frmt)
+    uniq <- as.character(unique(frmt))
+    match_uniq <- match(uniq, frmt)
 
-  non_na <- apply(x$geno[, match_uniq, drop = FALSE], 2, function(site) {
-    is_na <- is.na(site)
-    if (all(is_na))
-      return(NA)
-    site[which.min(is_na)]
-  })
-
-  if (any(is.na(non_na))) {
-    stop("\nError at index: ", .collapse(match_uniq[is.na(non_na)]),
-         "\nCannot determine replacement as all sites are NA!", call. = FALSE)
-  }
-
-  replace_na <- stringr::str_replace_all(non_na, "[^|/:;,]+", ".")
-  names(replace_na) <- uniq
-
-  if (length(unique(replace_na)) == 1) {
-    x$geno[is.na(x$geno)] <- replace_na[[1]]
-  } else {
-    replacements <- replace_na[frmt]
-    i <- 0
-    x$geno <- apply_sites(x$geno, function(site) {
-      i <<- i + 1
-      site[is.na(site)] <- replacements[[i]]
-      site
+    non_na <- apply(x$geno[, match_uniq, drop = FALSE], 2, function(site) {
+      is_na <- is.na(site)
+      if (all(is_na))
+        return(NA)
+      site[which.min(is_na)]
     })
+
+    if (anyNA(non_na)) {
+      stop("\nError at index: ", .collapse(match_uniq[is.na(non_na)]),
+           "\nCannot determine replacement as all sites are NA!", call. = FALSE)
+    }
+
+    na_geno <- stringr::str_replace_all(non_na, "[^|/:;,.]+", ".")
+    names(na_geno) <- uniq
   }
+
+  if (length(unique(na_geno)) > 1L) {
+    # Complex case with multiple replacement values (based on column index of NA value)
+    is_na <- which(is.na(x$geno), arr.ind = TRUE, useNames = FALSE)
+    x$geno[is_na] <- unname(na_geno)[match(frmt[is_na[, 2L]], names(na_geno))]
+  } else if (na_geno[[1L]] != ".") {
+    # Simple case, na_geno == "." is handled by write_tbl()
+    x$geno[is.na(x$geno)] <- na_geno[[1L]]
+  }
+
   x
 }
 
