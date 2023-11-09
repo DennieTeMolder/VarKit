@@ -4,7 +4,7 @@ file_con <- function(description, open = "", ..., compression = NULL) {
   stopifnot(is.character(open), length(open) == 1L)
 
   type <- substr(open, 1L, 1L)
-  ext <- match(tools::file_ext(description), c("gz", "gzip", "bz2", "xz"), 0L)
+  ext <- match(tools::file_ext(description), c("gz", "gzip", "bz2", "xz", "zip"), 0L)
 
   if (type != "w") {
     # Additional checks before passing to file()
@@ -23,6 +23,8 @@ file_con <- function(description, open = "", ..., compression = NULL) {
     } else if (ext == 4L) {
       if (is.null(compression)) compression <- 6L
       return(xzfile(description = description, open = open, compression = compression, ...))
+    } else if (ext == 5L) {
+      stop("Writing to '.zip' files is not supported! Use '.gz' instead.")
     }
   }
 
