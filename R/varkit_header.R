@@ -8,22 +8,30 @@ varkit_header <- function(meta = data.frame(), col_names = character()) {
 
 ##' @export
 new_varkit_header <- function(meta = data.frame(), col_names = character()) {
-  stopifnot(is.null(meta) || is.data.frame(meta))
   stopifnot(is.character(col_names))
+  if (!is.null(meta)) {
+    stopifnot(is.data.frame(meta))
+    if (any(dim(meta) == 0L)) {
+      meta <- NULL
+    } else {
+      meta <- tibble::as_tibble(meta)
+    }
+  }
+
   structure(
-    list(meta = tibble::as_tibble(meta), col_names = col_names),
+    list(meta = meta, col_names = col_names),
     class = "varkit_header"
   )
 }
 
 ##' @export
 validate_varkit_header <- function(x) {
-  stopifnot(is.list(x), "col_names" %in% names(x))
+  stopifnot(is.list(x))
 
   if (!is.null(x$meta))
     .validate_varkit_meta(x$meta)
 
-  if (length(x$col_names) < 1L)
+  if (length(x[["col_names"]]) < 1L)
     stop("The '$col_names' slot is empty!")
   if (!is.character(x$col_names))
     stop("The '$col_names' slot must be a character vector!")
@@ -38,7 +46,7 @@ validate_varkit_header <- function(x) {
 .validate_varkit_meta <- function(meta) {
   if (!tibble::is_tibble(meta))
     stop("The 'meta()' slot must be a tibble!", call. = FALSE)
-  if (all(colnames(meta) != c("name", "value")))
+  if (!identical(colnames(meta), c("name", "value")))
     stop("The 'meta()' slot can only have a 'name' & 'value' column!", call. = FALSE)
   if (anyNA(meta$name))
     stop("The 'name' column of the 'meta()' slot contains NAs!", call. = FALSE)

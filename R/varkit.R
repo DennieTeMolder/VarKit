@@ -20,7 +20,7 @@ varkit <- function(site, geno, meta = NULL) {
 
 ##' @export
 new_varkit <- function(meta = data.frame(), site = data.frame(), geno = matrix(), use_site = logical()) {
-  stopifnot(is.data.frame(meta))
+  stopifnot(is.null(meta) || is.data.frame(meta))
   stopifnot(is.data.frame(site))
   stopifnot(is.matrix(geno))
   stopifnot(is.logical(use_site))
