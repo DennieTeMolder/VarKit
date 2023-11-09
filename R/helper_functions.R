@@ -45,6 +45,11 @@
   format(x, big.mark = big.mark, scientific = scientific, ...)
 }
 
+.msg_vec <- function(x, before = NULL, after = NULL, sep = ", ", last = sep, n_max = 100L) {
+  x <- cli::cli_vec(x, style = list(`vec-sep` = sep, `vec-last` = last, `vec-trunc` = n_max))
+  cli::cli_text(c(before, "{x}", after))
+}
+
 .msg_info <- function(...) {
   cat(paste0("# ", cli::symbol$info, " ", ..., "\n"))
 }

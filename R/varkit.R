@@ -122,17 +122,16 @@ print.varkit <- function(x, ..., n = NULL, n_samples = 10) {
     cat("\n")
   }
 
-  .msg_h2("Sample names, `samples(vcf)`")
-  samp <- cli::cli_vec(samples.varkit(x), style = list("vec-sep" = ", ", "vec-last" = ", ", "vec-trunc" = 100))
-  cli::cli_text("{samp}")
-  cat("\n")
-
   .msg_h2("Site information, `site(vcf)`")
   print(site.varkit(x), ..., n = n)
   cat("\n")
 
   .msg_h2("Transposed genotype matrix, `geno(vcf)`")
   print(geno.varkit(x), ..., n = n, n_samples = n_samples)
+  cat("\n")
+
+  .msg_h2("Sample names, `samples(vcf)`")
+  .msg_vec(samples.varkit(x))
   cat("\n")
 
   if (all(x$use_site)) {
