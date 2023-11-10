@@ -59,9 +59,13 @@ index_vcf <- function(file, size_bp = -1, chunk_size = 1e5, ...) {
   col_types <- c(chrom = "c", pos = if (use_pos) "i" else NULL, .default = "_")
 
   # Report progress during indexing
-  total <- 0L
-  frmt <- function(x) .frmt_big(x)
-  cli::cli_progress_step("Indexing VCF body... [{frmt(total)} lines completed]", "Indexed {frmt(total)} lines")
+  frmt <- function(x) .frmt_big(as.integer(x))
+  cli::cli_progress_step(
+    "Indexing VCF body... {frmt(cli::pb_current)} lines completed @{frmt(cli::pb_rate_raw)}/s [{cli::pb_elapsed}]",
+    msg_done = "Indexed VCF body, {frmt(cli::pb_current)} lines total",
+    msg_failed = "Indexing VCF body failed after {frmt(cli::pb_current)} lines"
+  )
+  cli::cli_progress_update(set = 0L, force = TRUE)
 
   # Loop over the VCF body in chunks and covert to Run Length Encoding (RLE)
   results <- vector("list", max_results)
@@ -97,8 +101,7 @@ index_vcf <- function(file, size_bp = -1, chunk_size = 1e5, ...) {
     rm(tbl)
 
     # Update progress bar
-    total <- total + n_row
-    cli::cli_progress_update()
+    cli::cli_progress_update(inc = n_row, force = TRUE)
 
     i <- i + 1L
     if (i == max_results)
