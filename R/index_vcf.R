@@ -9,7 +9,7 @@ index_vcf_header <- function(file, chunk_size = 1e4, ...) {
 }
 
 ##' @export
-index_vcf <- function(file, size_bp = -1, chunk_size = 1e5, ...) {
+index_vcf <- function(file, size_bp = -1, chunk_size = 1e4, ...) {
   stopifnot(file.exists(file))
   stopifnot(is.numeric(size_bp), length(size_bp) == 1L)
   stopifnot(is.numeric(chunk_size), length(chunk_size) == 1L, chunk_size > 1)
@@ -101,7 +101,7 @@ index_vcf <- function(file, size_bp = -1, chunk_size = 1e5, ...) {
     rm(tbl)
 
     # Update progress bar
-    cli::cli_progress_update(inc = n_row, force = TRUE)
+    cli::cli_progress_update(inc = n_row)
 
     i <- i + 1L
     if (i == max_results)
