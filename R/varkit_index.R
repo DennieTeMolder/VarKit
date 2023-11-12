@@ -101,6 +101,7 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ...) {
     stopifnot(is.character(where) || is.numeric(where))
   origin <- match.arg(origin, c("start", "current", "end"))
 
+  # Make sure the current line is not out of sync
   if (!is_open.varkit_index(con))
     env(con)$curr_line <- 1L
 
@@ -127,8 +128,10 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ...) {
   }
 
   # Move pointer if needed
-  if (where > env(con)$curr_line)
+  if (where > env(con)$curr_line) {
+    open.varkit_index(con)
     .skip_lines(con, n = where - env(con)$curr_line)
+  }
 
   invisible(con)
 }
@@ -151,22 +154,32 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ...) {
   res
 }
 
-.skip_lines <- function(index, n, block_size = 5e3) {
+.skip_lines <- function(con, n, block_size = 5e3L, progress = TRUE) {
+  stopifnot(is_open(con))
+  n <- as.integer(n)
+  block_size <- as.integer(block_size)
+
   # Jump through the file in blocks
-  times <- n / block_size
+  times <- n %/% block_size
   mod <- n %% block_size
 
-  if (times >= 1) {
-    cli::cli_progress_bar(total = n)
-    for (i in seq_len(times)) {
-      if (is.null(next_lines(index, n = 1, skip = block_size - 1)))
-        return(invisible(index))
-      cli::cli_progress_update(inc = block_size)
-    }
+  if (times > 0L) {
+    purrr::walk(seq_len(times), function(i) {
+      .skip_lines_internal(con, n = block_size)
+    }, .progress = progress)
   }
-  if (mod >= 1) {
-    next_lines(index, n = 1, skip = mod - 1)
-  }
+  if (mod > 0L)
+    .skip_lines_internal(con, n = mod)
 
-  invisible(index)
+  invisible(con)
+}
+
+.skip_lines_internal <- function(con, n) {
+  if (is_varkit_index(con)) {
+    readLines(env(con)$con, n = n)
+    env(con)$curr_line <- env(con)$curr_line + n
+  } else {
+    readLines(con, n = n)
+  }
+  invisible(NULL)
 }
