@@ -33,7 +33,7 @@ guess_col_classes <- function(file,
     con <- file(file, "r")
     on.exit(close(con))
 
-    if (skip > 0L) readLines(con, skip)
+    if (skip > 0L) .skip_lines(con, n = skip, progress = FALSE)
   }
 
   data <- utils::read.table(
