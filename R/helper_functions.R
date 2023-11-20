@@ -211,19 +211,3 @@
   class(res) <- class(mat)
   res
 }
-
-.dosage2gt <- function(mat, ploidy, cutoffs = c(.5, 1.5), na = NA) {
-  stopifnot(is.matrix(mat) && is.numeric(mat))
-  if (ploidy != 2)
-    stop("This function only supports a 'ploidy' of 2")
-  stopifnot(length(cutoffs) == ploidy)
-  if (max(mat, na.rm = TRUE) < cutoffs[2])
-    warning("No values pass the upper cutoff, ensure 'cutoffs' are correct.")
-
-  gt <- matrix("0/1", nrow = nrow(mat), ncol = ncol(mat), dimnames = dimnames(mat))
-  gt[is.na(mat)] <- na
-  gt[mat < cutoffs[1]] <- "0/0"
-  gt[mat >= cutoffs[2]] <- "1/1"
-  class(gt) <- class(mat)
-  gt
-}
