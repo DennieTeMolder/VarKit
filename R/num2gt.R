@@ -5,13 +5,17 @@ num2gt <- function(x, cutoffs, sep = "/") {
   stopifnot(is.numeric(x), is.numeric(cutoffs))
   stopifnot(is.character(sep), length(sep) == 1)
 
-  cutoffs <- sort(cutoffs, decreasing = TRUE)
-  res <- lapply(cutoffs, function(cutoff) {
-    ifelse(is.na(x), ".", ifelse(x >= cutoff, "1", "0"))
+  res <- rep("0", length(x))
+  res <- lapply(sort(cutoffs, decreasing = TRUE), function(cutoff) {
+    gt <- res
+    gt[x >= cutoff] <- "1"
+    gt
   })
 
   .join <- function(...) paste(..., sep = sep)
   res <- do.call(.join, res)
+
+  res[is.na(x)] <- paste(rep(".", length(cutoffs)), collapse = sep)
 
   attributes(res) <- attributes(x)
   res
