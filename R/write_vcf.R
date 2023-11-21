@@ -75,10 +75,7 @@ write_vcf.varkit <- function(x,
     match_uniq <- match(uniq, frmt)
 
     non_na <- apply(x$geno[, match_uniq, drop = FALSE], 2, function(site) {
-      is_na <- is.na(site)
-      if (all(is_na))
-        return(NA)
-      site[which.min(is_na)]
+      site[match(FALSE, is.na(site))]
     })
 
     if (anyNA(non_na)) {
@@ -86,7 +83,7 @@ write_vcf.varkit <- function(x,
            "\nCannot determine replacement as all sites are NA!", call. = FALSE)
     }
 
-    na_geno <- stringr::str_replace_all(non_na, "[^|/:;,.]+", ".")
+    na_geno <- stringr::str_replace_all(non_na, "[^|/:;,]+", ".")
     names(na_geno) <- uniq
   }
 
