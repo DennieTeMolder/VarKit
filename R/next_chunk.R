@@ -35,7 +35,7 @@ next_chunk.varkit_index <- function(x, col_select = NULL, ...) {
     env(x)$read_vcf_args <- list()
   args <- utils::modifyList(env(x)$read_vcf_args, args)
 
-  if (is.null(args$header)) {
+  if (is.null(args[["header"]])) {
     if (is.null(vcf_header))
       stop("A header must be supplied if the index is not before the first entry!")
     args$header <- vcf_header
@@ -49,7 +49,7 @@ next_chunk.varkit_index <- function(x, col_select = NULL, ...) {
   vcf <- do.call(read_vcf, args)
 
   # Store the header for subsequent calls
-  if (is.null(env(x)$read_vcf_args$header))
+  if (is.null(env(x)$read_vcf_args[["header"]]))
     env(x)$read_vcf_args$header <- args$header
 
   if (is.null(vcf))

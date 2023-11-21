@@ -27,14 +27,6 @@
   .collapse(x, ...)
 }
 
-.str_starts <- function(x, what) {
-  substr(x, 1, nchar(what)) == what
-}
-
-.str_ends <- function(x, what, n_char = nchar(x)) {
-  substr(x, n_char - nchar(what) + 1, n_char) == what
-}
-
 .str_split_i <- function(x, on, i) {
   pattern <- sprintf("(?:[^%s]+%s){%i}([^%s]+).*", on, on, i - 1L, on)
   stringr::str_replace(x, pattern, "\\1")

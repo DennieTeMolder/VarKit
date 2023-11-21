@@ -20,7 +20,7 @@ parse_meta.varkit <- function(x, type = NULL, na = ".") {
     stop("The type '", type, "' could not be found in meta(x)$name!")
 
   # Values should be surrounded by <...> according to the VCF spec, else abort
-  if (any(!.str_starts(values, "<") | !.str_ends(values, ">")))
+  if (!all(startsWith(values, "<") & endsWith(values, ">"), na.rm = TRUE))
     return(tibble::tibble(value = values))
 
   # Strip <...>
@@ -53,10 +53,9 @@ parse_meta.varkit <- function(x, type = NULL, na = ".") {
 .cleanup_meta_col <- function(col, na = ".") {
   stopifnot(is.character(col))
   # Strip surrounding double quotes
-  n_char <- nchar(col)
   res <- ifelse(
-    .str_starts(col, '"') & .str_ends(col, '"', n_char = n_char),
-    substr(col, 2L, n_char - 1L),
+    startsWith(col, '"') & endsWith(col, '"'),
+    substr(col, 2L, nchar(col) - 1L),
     col
   )
   utils::type.convert(res, as.is = TRUE, na.strings = na)

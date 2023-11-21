@@ -206,7 +206,7 @@ read_tbl <- function(file,
   tryCatch({
     utils::read.table(file = file, ...)
   }, error = function(e) {
-    if (.str_starts(e$message, "scan()")) {
+    if (startsWith(e$message, "scan()")) {
       msg <- stringr::str_remove(e$message, stringr::fixed("scan()"))
       stop("Value in 'file' did not match 'colClasses':", msg,
            "\nCheck the value of 'na.strings' or increase 'guess.max'.", call. = FALSE)
