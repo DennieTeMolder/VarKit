@@ -15,7 +15,7 @@ num2gt <- function(x, cutoffs, sep = "/") {
   .join <- function(...) paste(..., sep = sep)
   res <- do.call(.join, res)
 
-  res[is.na(x)] <- paste(rep(".", length(cutoffs)), collapse = sep)
+  res[is.na(x)] <- NA_character_
 
   attributes(res) <- attributes(x)
   res
