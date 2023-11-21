@@ -109,5 +109,10 @@ read_vcf <- function(file,
   body <- body[, geno_cols]
   body <- varkit_geno(body)
 
+  # Convert columns that only contains NAs to logical for memory efficiency
+  fxd <- dplyr::mutate(fxd,
+    dplyr::across(tidyselect::where(~ all(is.na(.x))), as.logical)
+  )
+
   varkit(site = fxd, geno = body, meta = meta(header))
 }
