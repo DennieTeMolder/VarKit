@@ -27,7 +27,7 @@ R, access desired fields, dynamically mask specific sites from the downstream
 analysis, and identify linkage between sites.
 
 ## Installation
-Download `varkit_0.5.0.tar.gz` from the releases tab
+Download `varkit_0.8.1.tar.gz` from the releases tab
 ([link](https://git.wur.nl/molde006/varkit/uploads/452778708f0a05a1e1831f347e1d6daf/varkit_0.8.1.tar.gz)).
 
 Run the following commands and select the downloaded file in the window that pops up:
