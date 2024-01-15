@@ -27,11 +27,13 @@ read_tbl <- function(file,
     guess.max <- -1L
 
   # if col.names is a named vector it doubles as the colClasses argument
-  if (rlang::is_named(col.names)) {
-    if (any(col.names == ".default"))
+  if (!is.null(names(col.names))) {
+    if (!rlang::is_named(col.names))
+      stop("Either all or none of the values in 'col.names' should be named!")
+    if (any(names(col.names) == ".default"))
       stop("The use of '.default' is not allowed in 'col.names'! Use 'colClasses' instead")
-    if (!missing(colClasses))
-      warning("If 'col.names' is a named vector/list, 'colClasses' is ignored")
+    if (!identical(colClasses, NA))
+      stop("The use of a named vector/list for 'col.names' is incompatible with 'colClasses'!")
 
     colClasses <- col.names
     col.names <- names(col.names)
