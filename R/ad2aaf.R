@@ -39,7 +39,7 @@ ad2aaf <- function(vcf, ad_cap = NULL, type = "AD", alt_idx = NULL) {
       # Get all multi-allelic sites by converting to a 3d matrix
       # The shape is the same to the geno() matrix, with the z-axis holding the alleles
       dim(ad) <- c(n_sample, n_site, n_allele)
-      multi_ad <- ad[, is_multi, -1L]
+      multi_ad <- ad[, is_multi, -1L, drop = FALSE]
       dim(ad) <- c(n_sample * n_site, n_allele)
       multi_ad[is.na(multi_ad)] <- 0L
 
