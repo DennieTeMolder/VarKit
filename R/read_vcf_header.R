@@ -7,18 +7,18 @@ read_vcf_header <- function(file) {
   )
 }
 
-.read_vcf_header_internal <- function(file, max_lines = 1e5L) {
+.read_vcf_header_internal <- function(file, max_lines = 1e5L, offset = 0L) {
   if (.is_connection(file)) {
     if (isSeekable(file) && seek(file) != 0L) {
-      warning("The provided connection is not at the start of 'file'\n",
-              ("If this was not intentional, the header will be incorrect"))
+      warning("The provided connection is not at the start of 'file'.\n",
+              ("If this was not intentional the header might be malformed."))
     }
   } else {
     file <- file(file, "r")
     on.exit(close(file))
   }
 
-  meta_lines <- vector("list", length = max_lines)
+  meta_lines <- vector("character", length = max_lines)
   for (i in seq_along(meta_lines)) {
     line <- readLines(file, n = 1L)
     if (!isTRUE(startsWith(line, "##")))
@@ -27,21 +27,23 @@ read_vcf_header <- function(file) {
   }
 
   if (length(line) < 1L || startsWith(line, "##"))
-    stop("At line ", i, ": could not detect header line!")
+    stop("At line ", i + offset, ": expected a VCF header line!")
+
+  meta_lines <- meta_lines[seq_len(i - 1L)]
 
   list(
-    meta = do.call(c, meta_lines[seq_len(i - 1L)]),
+    meta = meta_lines,
     header_line = line
   )
 }
 
 .parse_meta <- function(meta) {
+  if (!isTRUE(startsWith(meta[1L], "##fileformat=VCF")))
+    warning("No valid VCF 'fileformat' description detected on the first line!", call. = FALSE)
   if (length(meta) == 0L)
     return(NULL)
-  if (!startsWith(meta[1], "##fileformat=VCF"))
-    warning("No valid VCF 'fileformat' description detected on the first line!", call. = FALSE)
   meta <- stringr::str_remove(meta, "^##")
-  meta <- stringr::str_split_fixed(meta, "=", n = 2)
+  meta <- stringr::str_split_fixed(meta, "=", n = 2L)
   tibble::tibble(name = meta[, 1L], value = meta[, 2L])
 }
 
