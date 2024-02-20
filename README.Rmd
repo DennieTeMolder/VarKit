@@ -27,20 +27,11 @@ R, access desired fields, dynamically mask specific sites from the downstream
 analysis, and identify linkage between sites.
 
 ## Installation
-Download `varkit_0.8.1.tar.gz` from the releases tab
-([link](https://git.wur.nl/molde006/varkit/uploads/452778708f0a05a1e1831f347e1d6daf/varkit_0.8.1.tar.gz)).
-
-Run the following commands and select the downloaded file in the window that pops up:
+You can install the latest development version of VarKit using the `remotes` package:
 
 ``` r
 install.packages("remotes")
-install_varkit <- function(pkg_path, upgrade_dependencies = TRUE) {
-  remotes::install_deps(pkg_path, upgrade = if (upgrade_dependencies) "always" else "never")
-  install.packages(pkg_path, repos = NULL, type = "source")
-}
-
-# If desired you can set 'upgrade_dependencies' to FALSE
-install_varkit(file.choose(), upgrade_dependencies = TRUE)
+remotes::install_gitlab("molde006/varkit", host = "git.wur.nl", dependencies = NA, upgrade = TRUE)
 ```
 
 And load the package using:
@@ -70,3 +61,20 @@ GPL-3
 Beta, under active development. 
 
 Nearly all functionality is implemented, but documentation is still sorely lacking.
+
+## Alternative installation method
+Download `varkit_0.8.1.tar.gz` from the releases tab
+([link](https://git.wur.nl/molde006/varkit/uploads/452778708f0a05a1e1831f347e1d6daf/varkit_0.8.1.tar.gz)).
+
+Run the following commands and select the downloaded file in the window that pops up:
+
+``` r
+install.packages("remotes")
+install_varkit <- function(pkg_path, upgrade_dependencies = TRUE) {
+  remotes::install_deps(pkg_path, upgrade = if (upgrade_dependencies) "always" else "never")
+  install.packages(pkg_path, repos = NULL, type = "source")
+}
+
+# If desired you can set 'upgrade_dependencies' to FALSE
+install_varkit(file.choose(), upgrade_dependencies = TRUE)
+```
