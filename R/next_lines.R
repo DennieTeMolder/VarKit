@@ -6,12 +6,14 @@ next_lines <- function(x, n = NULL, skip = 0) {
 ##' @export
 next_lines.varkit_index <- function(x, n = NULL, skip = 0) {
   if (!is.null(n)) {
-    stopifnot(is.numeric(n), length(n) == 1)
+    stopifnot(is.numeric(n), length(n) == 1L)
   } else {
     n <- seek.varkit_index(x)$n_lines
-    if (n < 1)
-      n <- utils::tail(x$n_lines, n = 1)
+    if (n < 1L)
+      n <- utils::tail(x$n_lines, n = 1L)
   }
+  stopifnot(length(skip) == 1L, is.numeric(skip))
+  skip <- max(0, skip)
 
   open.varkit_index(x)
 
@@ -27,10 +29,10 @@ next_lines.varkit_index <- function(x, n = NULL, skip = 0) {
     quiet = TRUE
   )
 
-  n <- length(lines)
-  env(x)$curr_line <- env(x)$curr_line + n + skip
+  lines_read <- length(lines)
+  env(x)$curr_line <- env(x)$curr_line + lines_read + skip
 
-  if (n == 0)
+  if (lines_read == 0L)
     return(NULL)
   lines
 }

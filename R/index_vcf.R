@@ -38,7 +38,7 @@ index_vcf <- function(file, size_bp = -1, chunk_size = 1e4, ...) {
 }
 
 .index_vcf_internal <- function(file, size_bp, chunk_size, max_results = 1e5) {
-  use_pos <- size_bp >= 2
+  use_pos <- size_bp >= 1
 
   # Open the file for reading
   file <- file(file, "r")

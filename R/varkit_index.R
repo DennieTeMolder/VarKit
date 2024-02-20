@@ -98,7 +98,7 @@ close.varkit_index <- function(con, ...) {
 ##' @export
 seek.varkit_index <- function(con, where = NA, origin = "start", ...) {
   if (!is.na(where))
-    stopifnot(is.character(where) || is.numeric(where))
+    stopifnot(length(where) == 1L, is.character(where) || is.numeric(where))
   origin <- match.arg(origin, c("start", "current", "end"))
 
   # Make sure the current line is not out of sync
@@ -112,13 +112,15 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ...) {
     where <- con$linum[match(where, con$id)]
     if (is.na(where))
       stop("The value of 'where' is not present in the index's 'id' column!")
-  } else {
+  } else if (is.numeric(where)) {
     if (origin == "current") {
       where <- where + env(con)$curr_line
     } else if (origin == "end") {
       last_row <- nrow(con)
       where <- con$linum[last_row] + con$n_lines[last_row] - where
     }
+  } else {
+    stop("Unexpected")
   }
 
   # Reload file if target line is before current line
