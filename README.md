@@ -44,6 +44,14 @@ Or download the [introduction
 vignette](https://git.wur.nl/molde006/varkit/-/raw/main/doc/varkit.html?inline=false)
 and open it in your browser.
 
+## Development version
+
+To install the latest development version of varkit run:
+
+``` r
+pak::pkg_install("git::https://git.wur.nl/molde006/varkit.git", upgrade = TRUE, dependencies = TRUE)
+```
+
 ## Authors and acknowledgements
 
 Dennie te Molder: Creator and main developer.
