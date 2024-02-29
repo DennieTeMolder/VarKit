@@ -30,7 +30,7 @@ analysis, and identify linkage between sites.
 You can install the current latest release of VarKit (v0.8.1) using the `pak` package:
 
 ``` r
-install.packages("pak")
+install.packages(setdiff("pak", installed.packages()))
 pak::pkg_install("url::https://git.wur.nl/molde006/varkit/uploads/452778708f0a05a1e1831f347e1d6daf/varkit_0.8.1.tar.gz")
 ```
 
