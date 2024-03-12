@@ -212,7 +212,7 @@ lookup speed, it is possible to entirely remove sites (meaning they cannot be
 retrieved by unmasking):
 
 ```{r mask_remove}
-reduced_vcf <- remove_masked(vcf)
+reduced_vcf <- delete_masked_sites(vcf)
 summary(reduced_vcf)
 ```
 

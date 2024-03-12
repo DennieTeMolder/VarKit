@@ -45,7 +45,7 @@ temp_file <- tempfile(fileext = ".vcf.gz")
 write_vcf(vcf, temp_file, replace_filter = TRUE)
 read_vcf(temp_file)
 
-summary(remove_masked(vcf))
+summary(delete_masked_sites(vcf))
 
 
 ## Linked sites ------
