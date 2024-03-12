@@ -8,7 +8,7 @@ retain.varkit <- function(x, site, why = NULL) {
   if (!is.null(why))
     .stopifnotsingle(why, class = "character")
   if (is_varkit_linkage_graph(site))
-    stop("Linkage graphs should be used with mask() function!")
+    stop("Linkage graphs only support the mask() function!")
 
   idx <- get_site_idx(site, x)
   if (length(idx) < 1)

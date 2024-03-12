@@ -28,7 +28,7 @@ site.varkit <- function(x, ..., .add_index = FALSE) {
     if (!all(x$use_site))
       stop("Remove current mask before modifying! See `unmask_all()`.")
     stop("The new value should have an equal number of rows!\n",
-         "Use `mask()/retain()` (+ `remove_masked()`) to remove rows/sites.")
+         "Use `mask()/retain()` (+ `delete_masked_sites()`) to remove rows/sites.")
   }
 
   x$site <- value
