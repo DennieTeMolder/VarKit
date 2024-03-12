@@ -116,7 +116,7 @@
 
 .skip_lines <- function(con, n, block_size = 5e3L, progress = TRUE) {
   stopifnot(is_open(con))
-  n <- as.integer(n)
+  n <- max(0L, as.integer(n), na.rm = TRUE)
   block_size <- as.integer(block_size)
 
   # Jump through the file in blocks
