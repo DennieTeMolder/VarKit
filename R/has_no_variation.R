@@ -1,5 +1,5 @@
 ##' @export
-has_no_variation <- function(x, margin = 1, na.rm = TRUE) {
+has_no_variation <- function(x, na.rm = TRUE, margin = 1) {
   stopifnot(is.numeric(margin), length(margin) == 1, margin %in% 1:2)
   if (is.vector(x))
     return(.has_no_variation.vector(x = x, na.rm = na.rm))
@@ -21,18 +21,22 @@ has_no_variation <- function(x, margin = 1, na.rm = TRUE) {
   if (margin == 2)
     x <- t(x)
 
+  # Obtain the first non-na value for each row if it exists
   non_na <- x[, 1L, drop = TRUE]
-  is_na <- is.na(non_na)
+  which_na <- which(is.na(non_na))
   for (i in seq_len(ncol(x))[-1L]) {
-    if (!any(is_na))
+    if (length(which_na) == 0L)
       break()
-    non_na[is_na] <- x[is_na, i, drop = TRUE]
-    is_na <- is.na(non_na)
+    non_na[which_na] <- x[which_na, i, drop = TRUE]
+    which_na <- which(is.na(non_na))
   }
 
+  # Returns TRUE if NA.RM is enabled and all values in a row are NA
   all_equal <- matrixStats::rowAlls(x == non_na, na.rm = na.rm)
 
-  if (!na.rm)
-    all_equal[is_na] <- TRUE
-  all_equal
+  if (na.rm || !anyNA(all_equal))
+    return(all_equal)
+
+  # If NAs are kept, variation can also occur between NA and non-NA values
+  ifelse(is.na(all_equal), is.na(non_na), all_equal)
 }
