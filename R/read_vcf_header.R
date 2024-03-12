@@ -10,8 +10,10 @@ read_vcf_header <- function(file) {
 .read_vcf_header_internal <- function(file, max_lines = 1e5L, offset = 0L) {
   if (.is_connection(file)) {
     if (isSeekable(file) && seek(file) != 0L) {
-      warning("The provided connection is not at the start of 'file'.\n",
-              ("If this was not intentional the header might be malformed."))
+      warning(
+        "The provided connection is not at the start of 'file'.",
+        "If this was not intentional the header might be malformed.", call. = FALSE
+      )
     }
   } else {
     file <- file(file, "r")
