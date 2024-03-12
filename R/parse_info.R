@@ -7,7 +7,7 @@ parse_info <- function(x, type = NULL, use_meta = TRUE) {
 parse_info.varkit <- function(x, type = NULL, use_meta = TRUE) {
   if (is.null(type)) {
     warning("Please provide the 'type' argument, returning possible options.")
-    if ("INFO" %in% meta.varkit(x)$name)
+    if (use_meta && "INFO" %in% meta.varkit(x)$name)
       return(dplyr::transmute(parse_meta.varkit(x, "INFO"), type = .data$ID, description = .data$Description))
     return(.collect_all_keys(site.varkit(x, "info")))
   } else {
