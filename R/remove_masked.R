@@ -1,12 +1,5 @@
 ##' @export
 remove_masked <- function(x) {
-  UseMethod("remove_masked", x)
-}
-
-##' @export
-remove_masked.varkit <- function(x) {
-  x$site <- site(x)
-  x$geno <- geno(x)
-  x$use_site <- rep(TRUE, ncol(x$geno))
-  x
+  lifecycle::deprecate_warn("v0.8.2", "remove_masked()", "delete_masked_sites()")
+  delete_masked_sites(x)
 }

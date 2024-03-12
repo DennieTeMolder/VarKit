@@ -16,6 +16,7 @@ Imports:
     digest (>= 0.6.23),
     dplyr (>= 1.1.0),
     forcats (>= 1.0.0),
+    lifecycle,
     matrixStats,
     methods,
     parallel,
