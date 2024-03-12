@@ -1,15 +1,15 @@
 ##' @export
-mask <- function(x, site, why = NULL) {
+mask <- function(x, site, why = NULL, na_mask = TRUE) {
   UseMethod("mask", x)
 }
 
 ##' @export
-mask.varkit <- function(x, site, why = NULL) {
+mask.varkit <- function(x, site, why = NULL, na_mask = TRUE) {
   if (!is.null(why))
     .stopifnotsingle(why, class = "character")
 
   # Mask
-  idx <- get_site_idx(site, x)
+  idx <- get_site_idx(site, vcf = x, na_get = na_mask)
   x$use_site[idx] <- FALSE
 
   if (!any(x$use_site))

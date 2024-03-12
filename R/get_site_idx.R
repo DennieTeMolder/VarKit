@@ -1,18 +1,21 @@
 ##' @export
-get_site_idx <- function(site, vcf) {
+get_site_idx <- function(site, vcf, na_get = FALSE) {
   stopifnot(is_varkit(vcf))
   UseMethod("get_site_idx", site)
 }
 
 ##' @export
-get_site_idx.logical <- function(site, vcf) {
-  if (length(site) != sum(vcf$use_site))
+get_site_idx.logical <- function(site, vcf, na_get = FALSE) {
+  if (length(site) != n_sites.varkit(vcf))
     stop("Length of 'site' not equal to current number of unmasked sites!", call. = FALSE)
-  which(vcf$use_site)[site]
+
+  if (na_get && anyNA(site))
+    site[is.na(site)] <- TRUE
+  which(vcf$use_site)[which(site)]
 }
 
 ##' @export
-get_site_idx.data.frame <- function(site, vcf) {
+get_site_idx.data.frame <- function(site, vcf, na_get = FALSE) {
   if (nrow(site) == 0L)
     return(integer())
 
@@ -22,7 +25,7 @@ get_site_idx.data.frame <- function(site, vcf) {
   if (!all(join_by %in% colnames(site)))
     stop("The data frame 'site' must contain columns: ", .quote_collapse(join_by), "!", call. = FALSE)
 
-  current <- site(vcf, tidyselect::all_of(join_by), .add_index = TRUE)
+  current <- site.varkit(vcf, tidyselect::all_of(join_by), .add_index = TRUE)
   current <- dplyr::semi_join(current, site, by = join_by, na_matches = "never")
 
   if(nrow(current) == 0L)
@@ -36,7 +39,7 @@ get_site_idx.data.frame <- function(site, vcf) {
 }
 
 ##' @export
-get_site_idx.varkit_linkage_graph <- function(site, vcf) {
+get_site_idx.varkit_linkage_graph <- function(site, vcf, na_get = FALSE) {
   .ensure_igraph()
 
   if (is.null(get_origin(site))) {
