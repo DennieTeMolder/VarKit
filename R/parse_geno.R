@@ -6,8 +6,8 @@ parse_geno <- function(x, type = NULL, allow_missing = FALSE) {
 ##' @export
 parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
   validate_varkit(x, check_format = TRUE)
-  if (!is.character(x$geno))
-    stop("The matrix in the `geno()` slot should be of type character!")
+
+  # We first check TYPE because the errors generated are more intuitive to the user
   if (!is.null(type)) {
     .stopifnotsingle(type, class = "character")
   } else {
@@ -21,6 +21,10 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
     stop("The type'", type, "' is not in any FORMAT fields!")
   if (!allow_missing && any(frmt == 0L))
     stop("The type '", type, "' is not found in all FORMAT fields! If this is expected use `allow_missing = TRUE`.")
+
+  # Only character matrices can/need to be parsed
+  if (!is.character(x$geno))
+    stop("The matrix in the `geno()` slot should be of type character!")
 
   # Parse type from genotype fields
   gt <- geno.varkit(x)
