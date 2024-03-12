@@ -1,14 +1,4 @@
 ##' @export
-index_vcf_header <- function(file, chunk_size = 1e4, ...) {
-  index <- tibble::tibble(
-    id = "chunk_size",
-    linum = find_header_line(file) + 1,
-    n_lines = chunk_size
-  )
-  varkit_index(index = index, file = file, ...)
-}
-
-##' @export
 index_vcf <- function(file, size_bp = -1, chunk_size = 1e4, ...) {
   stopifnot(file.exists(file))
   stopifnot(is.numeric(size_bp), length(size_bp) == 1L)
@@ -26,7 +16,7 @@ index_vcf <- function(file, size_bp = -1, chunk_size = 1e4, ...) {
     id = .data$values[1],
     linum = min(.data$linum),
     n_lines = sum(.data$lengths)
-  )[-1]
+  )[-1L]
 
   # Warn user about undesirable index properties
   if (anyNA(index$id))
@@ -56,7 +46,7 @@ index_vcf <- function(file, size_bp = -1, chunk_size = 1e4, ...) {
     stop("Could not detect the POS column! Check the output of `read_vcf_header(file)`.", call. = FALSE)
 
   # Select only the necessary columns of the VCF body
-  col_types <- c(chrom = "c", pos = if (use_pos) "i" else NULL, .default = "_")
+  col_types <- c(chrom = "c", pos = if (use_pos) "i" else "_", .default = "_")
 
   # Report progress during indexing
   frmt <- function(x) .frmt_big(as.integer(x))
