@@ -123,17 +123,37 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ...) {
     stop("Unexpected")
   }
 
-  # Reload file if target line is before current line
-  if (where < env(con)$curr_line) {
-    close(con)
-    env(con)$con <- file(env(con)$file, open = "r", blocking = TRUE)
+  # Close file if target line is before current line
+  if (where < env(con)$curr_line)
+    close.varkit_index(con)
+  open.varkit_index(con)
+
+  # Store the VCF header for user convenience
+  if (!.index_has_header(con) && .seek_passes_header(con, where)) {
+    header <- tryCatch(
+      read_vcf_header(env(con)$con),
+      error = function(e) NULL
+    )
+
+    # Adjust the current line number for the number of header lines read
+    if (!is.null(header)) {
+      env(con)$curr_line <- env(con)$curr_line + nrow(meta(header)) + 1L
+      if (env(con)$curr_line > where)
+        header <- NULL
+    }
+
+    # If we failed to read the header or the header size did not match the
+    # index, reset the connection, else it safe to store the header
+    if (is.null(header)) {
+      close.varkit_index(con)
+      open.varkit_index(con)
+    } else {
+      env(con)$read_vcf_args$header <- header
+    }
   }
 
   # Move pointer if needed
-  if (where > env(con)$curr_line) {
-    open.varkit_index(con)
-    .skip_lines(con, n = where - env(con)$curr_line)
-  }
+  .skip_lines(con, n = where - env(con)$curr_line)
 
   invisible(con)
 }
@@ -154,4 +174,12 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ...) {
 
   res$linum <- env(index)$curr_line
   res
+}
+
+.index_has_header <- function(con) {
+  !is.null(env(con)$read_vcf_args$header)
+}
+
+.seek_passes_header <- function(con, where) {
+  env(con)$curr_line < con$linum[1L] &&  where >= con$linum[1L]
 }
