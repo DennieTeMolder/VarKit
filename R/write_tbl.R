@@ -5,7 +5,7 @@ write_tbl <- function(x,
                       append = FALSE,
                       col_names = !append,
                       row_names = FALSE,
-                      quote = FALSE,
+                      quote = sep == ",",
                       compression = NULL,
                       ...) {
   if (!.is_connection(file)) {

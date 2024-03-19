@@ -1,7 +1,7 @@
 ##' @export
 write_vcf <- function(x,
                       file,
-                      append = FALSE,
+                      append = NULL,
                       replace_filter = FALSE,
                       na_geno = NULL,
                       compression = 5) {
@@ -11,7 +11,7 @@ write_vcf <- function(x,
 ##' @export
 write_vcf.varkit <- function(x,
                              file,
-                             append = FALSE,
+                             append = NULL,
                              replace_filter = FALSE,
                              na_geno = NULL,
                              compression = 5) {
@@ -19,14 +19,13 @@ write_vcf.varkit <- function(x,
     stopifnot(is.character(na_geno), length(na_geno) == 1)
   validate_varkit(x)
 
+  if (is.null(append))
+    append <- isTRUE(.is_connection(file) && isSeekable(file) && seek(file) > 0L)
+
   # Open a connection for writing, unless we want to append
-  if (.is_connection(file)) {
-    if (isSeekable(file) && seek(file) == 0L)
-      append <- FALSE
-  } else {
+  if (!.is_connection(file)) {
     file <- file_con(file, open = if (append) "a" else "w", compression = compression)
     on.exit(close(file))
-    append <- FALSE
   }
 
   # Ensure all columns & values adhere to VCF spec
@@ -35,6 +34,9 @@ write_vcf.varkit <- function(x,
 
   # Check if filter column reflects current state, replace if indicated
   x$site$filter <- .check_filter(x$site$filter, use_site = x$use_site, replace_filter = replace_filter)
+
+  # Make sure we write all sites, the FILTER column will reflect if a site should be masked
+  x <- unmask_all.varkit(x)
 
   if (!append) {
     cli::cli_progress_step("Writing VCF header")
@@ -45,7 +47,7 @@ write_vcf.varkit <- function(x,
   cli::cli_progress_step("Writing VCF body")
 
   # Convert all sites to a data frame by unmasking
-  x <- as.data.frame.varkit(unmask_all.varkit(x), optional = TRUE)
+  x <- as.data.frame.varkit(x, optional = TRUE)
 
   write_tbl(
     x,
@@ -53,7 +55,7 @@ write_vcf.varkit <- function(x,
     append = append,
     col_names = FALSE,
     row_names = FALSE,
-    na = ".",
+    na = "."
   )
 }
 
