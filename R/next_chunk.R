@@ -16,9 +16,8 @@ next_chunk.varkit_index <- function(x, col_select = NULL, ...) {
     seek.varkit_index(x, where = x$linum[1L])
 
   # Fetch arguments stored on the index & merge with ...
-  if (is.null(env(x)$read_vcf_args))
-    env(x)$read_vcf_args <- list()
-  args <- utils::modifyList(env(x)$read_vcf_args, args)
+  if (exists("read_vcf_args", envir = env(x)))
+    args <- purrr::list_assign(env(x)$read_vcf_args, !!!args)
 
   if (is.null(args[["header"]]))
     stop("Could not detect a VCF header! Please supply the 'header' argument.")
@@ -32,7 +31,7 @@ next_chunk.varkit_index <- function(x, col_select = NULL, ...) {
   # Arguments 'col_select' (when provided), 'file', and 'n_max' are always overwritten
   if (!missing(col_select))
     args$col_select <- rlang::enquo(col_select)
-  args <- utils::modifyList(args, list(file = env(x)$con, n_max = n_max))
+  args <- purrr::list_assign(args, file = env(x)$con, n_max = n_max)
 
   vcf <- do.call(read_vcf, args)
   if (is.null(vcf))
