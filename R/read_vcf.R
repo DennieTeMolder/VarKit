@@ -33,15 +33,14 @@ read_vcf <- function(file,
   if (!is.null(geno_ptype) || (n_max > 0L && guess_max >= n_max))
     guess_max <- -1L
 
+  # Turn file into a connection
+  if (!.is_connection(file)) {
+    file <- file(file, "r")
+    on.exit(close(file))
+  }
+
   # NOTE the header will be skipped by "comment.char" it is not read here
   if (is.null(header)) {
-    if (!.is_connection(file)) {
-      file <- file(file, "r")
-      on.exit(close(file))
-    } else if (isSeekable(file) && seek.connection(file) != 0) {
-      stop("A header should be supplied if connection 'file' is not at the start!")
-    }
-
     cli::cli_progress_step("Reading VCF header")
     header <- read_vcf_header(file)
   }
@@ -86,8 +85,8 @@ read_vcf <- function(file,
       nmax = guess_max, col.names = names(colClasses), colClasses = skip_known
     )))
 
-    # If file is a connection, make sure we don't skip twice
-    if (.is_connection(file)) shared_args$skip <- 0L
+    # Make sure we don't skip a second time
+    shared_args$skip <- 0L
 
     geno_class <- lapply(geno_col_classes, function(class) methods::as(0.0, class))
     geno_class <- class(do.call(c, geno_class))[1L]
