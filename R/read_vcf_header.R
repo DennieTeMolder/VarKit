@@ -7,7 +7,7 @@ read_vcf_header <- function(file) {
   )
 }
 
-.read_vcf_header_internal <- function(file, max_lines = 1e5L, offset = 0L) {
+.read_vcf_header_internal <- function(file, max_lines = 1e5L) {
   if (.is_connection(file)) {
     if (isSeekable(file) && seek(file) != 0L) {
       warning(
@@ -28,8 +28,8 @@ read_vcf_header <- function(file) {
     meta_lines[[i]] <- line
   }
 
-  if (length(line) < 1L || startsWith(line, "##"))
-    stop("At line ", i + offset, ": expected a VCF header line!")
+  if (length(line) < 1L || !stringr::str_detect(line, "^#[^#]"))
+    stop("After reading ", i - 1L, " lines: expected the VCF header line!", call. = FALSE)
 
   meta_lines <- meta_lines[seq_len(i - 1L)]
 
