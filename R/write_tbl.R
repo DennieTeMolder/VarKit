@@ -6,12 +6,16 @@ write_tbl <- function(x,
                       col_names = !append,
                       row_names = FALSE,
                       quote = sep == ",",
+                      scipen = 9,
                       compression = NULL,
                       ...) {
   if (!.is_connection(file)) {
     file <- file_con(file, open = if (append) "a" else "w", compression = compression)
     on.exit(close(file))
   }
+
+  # The 'scipen' option affects write.table() because it uses format() internally
+  rlang::local_options(scipen = scipen)
 
   utils::write.table(
     x = x, file = file, sep = sep, append = FALSE, col.names = col_names,
