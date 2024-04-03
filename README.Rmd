@@ -27,11 +27,19 @@ R, access desired fields, dynamically mask specific sites from the downstream
 analysis, and identify linkage between sites.
 
 ## Installation
-You can install the current latest release of VarKit (v0.8.1) using the `pak` package:
+You can install the latest release of VarKit using the `pak` package via this
+custom function:
 
 ``` r
-install.packages(setdiff("pak", installed.packages()))
-pak::pkg_install("url::https://git.wur.nl/molde006/varkit/uploads/452778708f0a05a1e1831f347e1d6daf/varkit_0.8.1.tar.gz")
+install_varkit <- function(version = "latest", upgrade_deps = FALSE) {
+  url <- readLines(paste0("https://git.wur.nl/molde006/varkit/-/raw/main/releases/", version))
+  message("Installing: ", url)
+  install.packages(setdiff("pak", installed.packages()))
+  path <- pak::pkg_download(paste0("url::", url), dest_dir = tempdir())$fulltarget
+  pak::pkg_install(paste0("deps::", path), upgrade = upgrade_deps)
+  install.packages(path, type = "source", repos = NULL)
+}
+install_varkit()
 ```
 
 And load the package using:
