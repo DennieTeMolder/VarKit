@@ -15,6 +15,10 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
     return(.get_format_types(x))
   }
 
+  # Check if parsing is required
+  if (all(site(vcf, "format") == type))
+    return(geno.varkit(x))
+
   # Check te FORMAT field for index of type
   frmt <- .index_format(x, type)
   if (all(frmt == 0L))
