@@ -5,5 +5,5 @@ sha1.varkit <- function(x, ...) {
 
 ##' @exportS3Method digest::sha1
 sha1.varkit_header <- function(x, ...) {
-  digest::sha1(list(meta(x), samples(x)))
+  digest::sha1(list(meta(x), samples.varkit_header(x)))
 }
