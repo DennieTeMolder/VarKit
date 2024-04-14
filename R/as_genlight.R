@@ -7,12 +7,13 @@ as_genlight <- function(x, ploidy, cores = 1, check_geno = TRUE) {
 as_genlight.varkit <- function(x, ploidy, cores = 1, check_geno = TRUE) {
   .ensure_pkg("adegenet")
   validate_varkit(x)
+  stopifnot(length(ploidy) == 1L, is.numeric(ploidy), ploidy >= 1L)
+  ploidy <- as.integer(ploidy)
+
   if (any(is_indel.varkit(x)))
     warning("The provided VCF contains INDELs, which are not explicitly supported by 'genlight'.")
   if (!is.numeric(x$geno))
     stop("The `geno()` matrix should contain numeric values describing ALT allele dosage!")
-  stopifnot(length(ploidy) == 1L, is.numeric(ploidy), ploidy >= 1L)
-  ploidy <- as.integer(ploidy)
 
   gt <- geno.varkit(x)
   if (check_geno && !max(gt, na.rm = TRUE) > ploidy - 1L) {
@@ -23,7 +24,7 @@ as_genlight.varkit <- function(x, ploidy, cores = 1, check_geno = TRUE) {
   gt <- as_integer(unclass(gt))
 
   if (requireNamespace("adegenet")) {
-    gt <- methods::new(Class = "genlight", gt, n.cores = cores)
+    gt <- methods::new(Class = "genlight", gt, ploidy = ploidy, n.cores = cores)
   } else {
     stop("adegenet is not installed!")
   }
