@@ -50,9 +50,7 @@ summary(delete_masked_sites(vcf))
 
 ## Linked sites ------
 vcf <- unmask_all(read_vcf(example))
-geno(vcf) <- round(ad2aaf(vcf)$aaf) * 2L
-
-as_genind(vcf, ploidy = 2)
+geno(vcf) <- as_integer(round(ad2aaf(vcf)$aaf) * 2L)
 
 links <- find_linked_sites(vcf, windows = -1, return_r2 = TRUE, cores = 1)
 lgraph <- resolve_links(links, cores = 1)
