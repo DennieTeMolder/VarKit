@@ -33,19 +33,50 @@ apply_samples.varkit_geno <- function(x, FUN, ..., simplify = TRUE) {
     res <- matrix(res, nrow = 1, dimnames = dimnames(x))
     return(varkit_geno(res))
   }
-res
+  res
 }
 
 ##' @export
-apply_index <- function(x, FUN, ...) {
+apply_index <- function(x, FUN, ..., .from_start = TRUE, .progress = TRUE) {
   UseMethod("apply_index", x)
 }
 
 ##' @export
-apply_index.varkit_index <- function(x, FUN, ..., FROM.START = TRUE, .progress = TRUE) {
-  if (FROM.START)
-    seek.varkit_index(x, 1)
-  purrr::map(seq_index.varkit_index(x), function(i, ...) {
-    FUN(suppressMessages(next_chunk.varkit_index(x)), ...)
-  }, ..., .progress = .progress)
+apply_index.varkit_index <- function(x, FUN, ..., .from_start = TRUE, .progress = TRUE) {
+  stopifnot(is.logical(.from_start), length(.from_start) == 1, !anyNA(.from_start))
+  stopifnot(is.logical(.progress) | is.character(.progress), length(.progress) == 1, !anyNA(.progress))
+
+  if (is.character(.progress)) {
+    msg <- .progress
+    .progress <- TRUE
+  } else {
+    msg <- "Processing VCF"
+  }
+
+  if (.from_start)
+    seek.varkit_index(x, 1L)
+
+  idx <- seq_index.varkit_index(x)
+  if (.progress) {
+    i <- 1L
+    cli::cli_progress_step(
+      paste0(msg, "... {cli::pb_percent} | ETA: {cli::pb_eta}"),
+      paste0(msg, " finished, processed {format(cli::pb_total, big.mark = ',',",
+             " scientific = FALSE)} lines @{cli::pb_rate}"),
+      paste0(msg, " failed at index row {idx[i]}")
+    )
+    cli::cli_progress_update(
+      set = 0L,
+      total = sum(x$n_lines[idx]),
+      force = TRUE
+    )
+  }
+
+  res <- vector("list", length(idx))
+  for (i in seq_along(res)) {
+    res[[i]] <- FUN(suppressMessages(next_chunk.varkit_index(x)))
+    if (.progress)
+      cli::cli_progress_update(inc = x$n_lines[idx[i]], force = TRUE)
+  }
+  res
 }
