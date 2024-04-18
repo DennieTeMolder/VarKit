@@ -11,7 +11,14 @@ varkit_index <- function(index, file, col_select = NULL, ...) {
   if (!rlang::quo_is_null(col_select))
     dots$col_select <- col_select
 
-  new_varkit_index(index = index, file = file, con = NA, curr_line = 1L, read_vcf_args = dots)
+  index <- new_varkit_index(
+    index = index,
+    file = file,
+    con = NA,
+    curr_line = 1L,
+    read_vcf_args = dots
+  )
+  validate_varkit_index(index)
 }
 
 ##' @export

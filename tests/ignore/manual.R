@@ -80,8 +80,10 @@ next_chunk(index, col_select = -id)
 next_chunk(index, col_select = NULL)
 
 res <- apply_index(index, function(vcf) {
+  Sys.sleep(2)
   mask(vcf, site(vcf, "qual") < 1e5)
 })
+
 concat_vcf(res)
 concat_vcf(res[[1]])
 concat_vcf(res[[1]], res[2:3])
