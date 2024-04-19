@@ -5,12 +5,10 @@ next_lines <- function(x, n = NULL, skip = 0) {
 
 ##' @export
 next_lines.varkit_index <- function(x, n = NULL, skip = 0) {
-  if (!is.null(n)) {
-    stopifnot(is.numeric(n), length(n) == 1L)
+  if (is.null(n)) {
+    n <- .seek_next(x, skip_header = FALSE)$n_lines
   } else {
-    n <- seek.varkit_index(x)$n_lines
-    if (n < 1L)
-      n <- utils::tail(x$n_lines, n = 1L)
+    stopifnot(is.numeric(n), length(n) == 1L, n >= 1)
   }
   stopifnot(length(skip) == 1L, is.numeric(skip))
   skip <- max(0, skip)

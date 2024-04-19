@@ -79,20 +79,37 @@ next_chunk(index)
 next_chunk(index, col_select = -id)
 next_chunk(index, col_select = NULL)
 
+## Looping over indexes
+# Using a complete index
 res <- apply_index(index, function(vcf) {
   Sys.sleep(2)
   mask(vcf, site(vcf, "qual") < 1e5)
 })
 
+# Combining results
 concat_vcf(res)
 concat_vcf(res[[1]])
 concat_vcf(res[[1]], res[2:3])
 
+# Using a partial index
+apply_index(index[c(1, 3), ], function(vcf) table(site(vcf, chrom)))
+
+# Using a header only index while reading raw lines (also works with next_chunk)
 h_index <- index_vcf_header(example, chunk_size  = 25)
 seek(h_index, 1)
 while (!is.null(vcf <- next_lines(h_index))) {
   str(vcf)
 }
+
+# The index can also contain 0 line entries which are skipped
+test <- rbind(
+  index[1:2, ],
+  data.frame(id = "test", linum = index$linum[3], n_lines = 0L),
+  index[3, ]
+)
+
+seek(test, 1)
+seq_index(test)
 
 ### Tests ------
 ## Geno ------

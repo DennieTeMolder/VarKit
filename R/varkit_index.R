@@ -11,14 +11,14 @@ varkit_index <- function(index, file, col_select = NULL, ...) {
   if (!rlang::quo_is_null(col_select))
     dots$col_select <- col_select
 
-  index <- new_varkit_index(
+  # Skip validation as its performed by open.varkit_index()
+  new_varkit_index(
     index = index,
     file = file,
     con = NA,
     curr_line = 1L,
     read_vcf_args = dots
   )
-  validate_varkit_index(index)
 }
 
 ##' @export
@@ -36,14 +36,14 @@ validate_varkit_index <- function(index) {
     stop("The index should be a data frame with columns 'id', 'linum', and 'n_lines'!")
   if (anyNA(index$linum) || anyNA(index$n_lines))
     stop("The 'linum' and/or 'n_lines' columns contain NA values!")
-  if (min(index$linum, index$n_lines) < 1)
-    stop("The index contains values smaller then 1!")
-  if (is.unsorted(index$linum, strictly = TRUE))
+  if (any(index$linum < 1L))
+    stop("The 'linum' column contains values smaller then 1!")
+  if (any(index$n_lines < 0L))
+    stop("The 'n_lines' column contains negative values!")
+  if (is.unsorted(index$linum))
     stop("The provided 'index' should be sorted on 'linum'!")
-  if (!all(index$n_lines >= 1))
-    stop("The index contains entries with zero lines!")
-  if (any(diff(index$linum) != utils::head(index$n_lines, n = -1)))
-    stop("The 'n_lines' column is not congruent with 'linum'!")
+  if (any(diff(index$linum) < utils::head(index$n_lines, n = -1)))
+    stop("The 'n_lines' column is larger then the difference in 'linum'!")
   if (is.null(env(index)$file))
     stop("The index env has no associated 'file'!")
   if (!file.exists(env(index)$file))
@@ -123,11 +123,10 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ...) {
     if (origin == "current") {
       where <- where + env(con)$curr_line
     } else if (origin == "end") {
-      last_row <- nrow(con)
-      where <- con$linum[last_row] + con$n_lines[last_row] - where
+      where <- with(utils::tail(con, n = 1L), linum + n_lines) - where
     }
   } else {
-    stop("Unexpected")
+    stop("Unexpected!")
   }
 
   # Close file if target line is before current line
@@ -167,14 +166,18 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ...) {
 
 .current_index_position <- function(index) {
   i <- max(0L, which(index$linum <= env(index)$curr_line))
-  res <- as.data.frame(index[max(i, 1L), ])
+  res <- as.data.frame(index[max(i, 1L), , drop = FALSE])
   rownames(res) <- i
 
-  # Pointer before start of index
-  if (i == 0L) {
-    res$n_lines <- res$linum - env(index)$curr_line
-    for (idx in which(!names(res) %in% c("linum", "n_lines")))
-      res[[idx]] <- NA
+  # Check if pointer is outside current entry
+  res_diff <- env(index)$curr_line - res$linum
+  if (res_diff < 0L || res_diff >= res$n_lines) {
+    for (idx in seq_along(res)) res[[idx]] <- NA
+    if (i == nrow(index)) {
+      res$n_lines <- index$n_lines[i] - res_diff
+    } else {
+      res$n_lines <- index$linum[i + 1L] - env(index)$curr_line
+    }
   } else {
     res$n_lines <- res$linum + res$n_lines - env(index)$curr_line
   }
