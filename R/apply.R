@@ -57,10 +57,12 @@ apply_index.varkit_index <- function(x, FUN, ..., .from_start = TRUE, .progress 
     seek.varkit_index(x, 1L)
 
   idx <- seq_index.varkit_index(x)
+  n_chunks <- length(idx)
+
   if (.progress) {
-    i <- 1L
+    i <- 0L
     cli::cli_progress_step(
-      paste0(msg, "... {cli::pb_percent} | ETA: {cli::pb_eta}"),
+      paste0(msg, "... {i}/{n_chunks} | ETA: {cli::pb_eta}"),
       paste0(msg, " finished, processed {format(cli::pb_total, big.mark = ',',",
              " scientific = FALSE)} lines @{cli::pb_rate}"),
       paste0(msg, " failed at index row {idx[i]}")
@@ -72,9 +74,9 @@ apply_index.varkit_index <- function(x, FUN, ..., .from_start = TRUE, .progress 
     )
   }
 
-  res <- vector("list", length(idx))
+  res <- vector("list", length = n_chunks)
   for (i in seq_along(res)) {
-    res[[i]] <- FUN(suppressMessages(next_chunk.varkit_index(x)))
+    res[[i]] <- FUN(suppressMessages(next_chunk.varkit_index(x)), ...)
     if (.progress)
       cli::cli_progress_update(inc = x$n_lines[idx[i]], force = TRUE)
   }
