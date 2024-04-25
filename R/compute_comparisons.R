@@ -6,7 +6,7 @@ compute_comparisons <- function(x, y = NULL, windows = -1, use = FALSE) {
 
   seq_x <- seq_along(x)
   seq_y <- if (is.null(y)) seq_x else seq_along(y)
-  idxs <- expand.grid(j = seq_y, i = seq_x)
+  idxs <- expand.grid(j = seq_y, i = seq_x, KEEP.OUT.ATTRS = FALSE)
 
   if (is.null(y))
     idxs <- idxs[idxs[[1]] >= idxs[[2]], ]

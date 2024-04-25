@@ -7,7 +7,7 @@ get_vcf_index <- function(vcf_path, size_bp = -1, chunk_size = 1e4, validate = T
     if (!validate || .has_matching_index(vcf_path)) {
       index <- read_vcf_index(vcf_path, validate = FALSE, ...)
     } else {
-      cli::cli_progress_message("The VCF index is out dated, creating a new one.")
+      cli::cli_alert_info("The VCF index is out dated, creating a new one.")
     }
   }
 

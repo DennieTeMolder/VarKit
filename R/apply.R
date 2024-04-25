@@ -63,8 +63,7 @@ apply_index.varkit_index <- function(x, FUN, ..., .from_start = TRUE, .progress 
     i <- 0L
     cli::cli_progress_step(
       paste0(msg, "... {i}/{n_chunks} | ETA: {cli::pb_eta}"),
-      paste0(msg, " finished, processed {format(cli::pb_total, big.mark = ',',",
-             " scientific = FALSE)} lines @{cli::pb_rate}"),
+      paste0(msg, " finished, processed { .frmt_big(cli::pb_total)} lines @{cli::pb_rate}"),
       paste0(msg, " failed at index row {idx[i]}")
     )
     cli::cli_progress_update(

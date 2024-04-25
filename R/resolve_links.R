@@ -1,4 +1,4 @@
-# NOTE Leiden provides faster clustering, high quality clustering, but the solution is not stable
+# NOTE Leiden provides faster, high quality clustering, but the solution is not stable
 ##' @export
 cluster_fast <- function(graph) {
   igraph::groups(igraph::cluster_leiden(graph, objective_function = "modularity", n_iterations = 1))
@@ -16,7 +16,7 @@ resolve_links <- function(links,
                           cores = 1
                           ) {
   .ensure_igraph()
-  strategy <- strategy[1]
+  strategy <- match.arg(strategy)
   origin <- get_origin(links)
 
   if (is.data.frame(links) || !is.list(links)) {
@@ -28,9 +28,9 @@ resolve_links <- function(links,
 
   # Remove zero length elements
   sizes <- sapply(links, nrow)
-  if (all(sizes < 1)) {
+  if (all(sizes < 1L)) {
     return(NULL)
-  } else if (any(sizes < 1)) {
+  } else if (any(sizes < 1L)) {
     links <- links[sizes >= 1L]
     sizes <- sizes[sizes >= 1L]
   }
@@ -49,7 +49,7 @@ resolve_links <- function(links,
     cli::cli_progress_step("Setting up parallel workers")
     # Optimal ordering for core utilisation
     lb_order <- .split_load_balance(order(sizes, decreasing = TRUE), cores = cores)
-    chunk_size <- length(lb_order[[1]])
+    chunk_size <- length(lb_order[[1L]])
     lb_order <- unlist(lb_order)
 
     cl <- parallel::makeCluster(cores, type = "PSOCK")
