@@ -58,7 +58,7 @@ find_linked_sites.varkit <- function(x,
 
   results <- .r2_cutoff_parallel(mat_list, comps = comps, cutoff = cutoff, return_r2 = return_r2, cores = cores)
 
-  cli::cli_progress_step("Collecting results")
+  .msg_step("Collecting results")
 
   # Combine output according to by_chrom
   if (by_chrom) {

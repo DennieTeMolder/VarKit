@@ -42,7 +42,7 @@ read_vcf <- function(file,
 
   # NOTE the header will be skipped by "comment.char" it is not read here
   if (is.null(header)) {
-    cli::cli_progress_step("Reading VCF header")
+    .msg_step("Reading VCF header")
     header <- read_vcf_header(file)
   }
 
@@ -80,7 +80,7 @@ read_vcf <- function(file,
   geno_class <- if (is.null(geno_ptype)) NA_character_ else typeof(geno_ptype)
 
   if (guess_max >= 1L) {
-    cli::cli_progress_step("Guessing data type of genotype matrix")
+    .msg_step("Guessing data type of genotype matrix")
     skip_known <- rlang::rep_named(names(which(!is.na(colClasses))), "NULL")
     geno_col_classes <- do.call(guess_col_classes, c(shared_args, list(
       nmax = guess_max, col.names = names(colClasses), colClasses = skip_known
@@ -95,13 +95,13 @@ read_vcf <- function(file,
 
   colClasses[is.na(colClasses)] <- geno_class
 
-  cli::cli_progress_step("Reading VCF body")
+  .msg_step("Reading VCF body")
   body <- do.call(read_tbl, c(shared_args, list(col.names = colClasses, nrows = n_max)))
 
   if (nrow(body) < 1)
     return(NULL)
 
-  cli::cli_progress_step("Collecting results")
+  .msg_step("Collecting results")
 
   # Move fixed fields to a separate df and convert genotypes to matrix
   geno_cols <- setdiff(na_cols, names(optional_classes))

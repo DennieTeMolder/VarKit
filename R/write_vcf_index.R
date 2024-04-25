@@ -14,7 +14,7 @@ write_vcf_index.varkit_index <- function(index, vcf_path) {
   sha <- digest::sha1(header)
 
   index_path <- get_index_file(vcf_path)
-  cli::cli_progress_step("Writing VCF index to: {index_path}")
+  .msg_step("Writing VCF index to: {index_path}")
   con <- file_con(index_path, "w")
   on.exit(close(con))
   write_lines2(paste0("#varkit_header_sha1=", sha), file = con)

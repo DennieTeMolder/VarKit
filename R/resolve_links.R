@@ -46,7 +46,7 @@ resolve_links <- function(links,
       .progress = TRUE
     )
   } else {
-    cli::cli_progress_step("Setting up parallel workers")
+    .msg_step("Setting up parallel workers")
     # Optimal ordering for core utilisation
     lb_order <- .split_load_balance(order(sizes, decreasing = TRUE), cores = cores)
     chunk_size <- length(lb_order[[1L]])
@@ -55,7 +55,7 @@ resolve_links <- function(links,
     cl <- parallel::makeCluster(cores, type = "PSOCK")
     on.exit(tryCatch(parallel::stopCluster(cl), error = function(e) NULL))
 
-    cli::cli_progress_step("Running parallel computations")
+    .msg_step("Running parallel computations")
     res <- parallel::parLapplyLB(cl,
       links[lb_order], .resolve_links_internal,
       strategy = strategy, cluster_fn = cluster_fn,

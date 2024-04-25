@@ -11,7 +11,7 @@
     }, .progress = TRUE))
   }
 
-  cli::cli_progress_step("Setting up parallel workers")
+  .msg_step("Setting up parallel workers")
 
   # Rearrange lower half for better data usage by clusters
   half <- max(comps$i) / 2
@@ -61,7 +61,7 @@
       " of RAM will be needed for parallel computations"))
   }
 
-  cli::cli_progress_step("Running parallel computations")
+  .msg_step("Running parallel computations")
 
   # NOTE Using an anonymous function here will copy the enclosing env to the workers, using a lot of memory
   res <- parallel::clusterMap(cl, .r2_cutoff_worker,

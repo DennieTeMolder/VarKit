@@ -7,7 +7,7 @@ index_vcf <- function(file, size_bp = -1, chunk_size = 1e4, ...) {
   # Loop over the file in chunks to index it
   index <- .index_vcf_internal(file = file, size_bp = size_bp, chunk_size = chunk_size)
 
-  cli::cli_progress_step("Collecting results")
+  .msg_step("Collecting results")
 
   # Combine adjacent values that were split over multiple chunks
   index$n <- cumsum(!duplicated(index$values))
@@ -34,7 +34,7 @@ index_vcf <- function(file, size_bp = -1, chunk_size = 1e4, ...) {
   file <- file(file, "r")
   on.exit(close(file))
 
-  cli::cli_progress_step("Reading VCF header")
+  .msg_step("Reading VCF header")
   header <- read_vcf_header(file)
   col_names <- header$col_names
   header_line <- nrow(meta(header)) + 1L

@@ -39,12 +39,12 @@ write_vcf.varkit <- function(x,
   x <- unmask_all.varkit(x)
 
   if (!append) {
-    cli::cli_progress_step("Writing VCF header")
+    .msg_step("Writing VCF header")
     write_vcf_header.varkit(x, file = file)
     cli::cli_progress_done()
   }
 
-  cli::cli_progress_step("Writing VCF body")
+  .msg_step("Writing VCF body")
 
   # Convert all sites to a data frame by unmasking
   x <- as.data.frame.varkit(x, optional = TRUE)
@@ -64,7 +64,7 @@ write_vcf.varkit <- function(x,
     return(x)
 
   if (is.null(na_geno)) {
-    cli::cli_progress_step("Determining VCF compliant NA format for geno()")
+    .msg_step("Determining VCF compliant NA format for geno()")
 
     # Build an index of possible NA replacements, one for each value of FORMAT
     frmt <- x$site[["format"]]

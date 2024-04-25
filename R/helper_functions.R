@@ -37,6 +37,10 @@
   format(x, big.mark = big.mark, scientific = scientific, ...)
 }
 
+.curr_time <- function() {
+  format(Sys.time(), "%H:%M:%S")
+}
+
 .msg_vec <- function(x, before = NULL, after = NULL, sep = ", ", last = sep, n_max = 100L) {
   x <- cli::cli_vec(x, style = list(`vec-sep` = sep, `vec-last` = last, `vec-trunc` = n_max))
   cli::cli_text(c(before, "{x}", after))
@@ -52,6 +56,12 @@
 
 .msg_h2 <- function(...) {
   print(cli::rule(left = paste0(...), line = 1))
+}
+
+.msg_step <- function(..., .envir = parent.frame()) {
+  msg <- paste0(...)
+  msg_time <- paste0("<", .curr_time(), "> ", msg)
+  cli::cli_progress_step(msg_time, msg_done = msg, .envir = .envir)
 }
 
 .max_print_col <- function(mat, width = getOption("width")) {

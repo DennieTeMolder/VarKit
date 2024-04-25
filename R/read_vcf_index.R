@@ -3,7 +3,7 @@ read_vcf_index <- function(vcf_path, validate = TRUE, ...) {
   stopifnot(file.exists(vcf_path))
 
   index_path <- get_index_file(vcf_path)
-  cli::cli_progress_step("Reading VCF index: {index_path}")
+  .msg_step("Reading VCF index: {index_path}")
 
   if (!file.exists(index_path))
     stop("The provided 'vcf_path' has no associated index!")
