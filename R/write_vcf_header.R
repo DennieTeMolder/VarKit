@@ -1,27 +1,29 @@
 ##' @export
-write_vcf_header <- function(x, file, compression = NULL) {
+write_vcf_header <- function(x, file, timestamp = TRUE, compression = NULL) {
   UseMethod("write_vcf_header", x)
 }
 
 ##' @export
-write_vcf_header.varkit_header <- function(x, file, compression = NULL) {
-  # Warn users about the use of .gz(ip) compressed files
-  description <- if (.is_connection(file)) summary.connection(file)$description else file
-  if (any(tools::file_ext(description) == c("gz", "gzip"))) {
-    cli::cli_alert_warning("Varkit writes regular non-block g-zipped files, which often cannot be indexed by external tools.")
-    message("  If you need this functionality, write to plain '.vcf' and compress using an external tool like 'bgzip'.")
-  }
+write_vcf_header.varkit_header <- function(x, file, timestamp = TRUE, compression = NULL) {
+  stopifnot(isTRUE(timestamp) || isFALSE(timestamp))
 
+  description <- if (.is_connection(file)) summary.connection(file)$description else file
   header <- meta.varkit_header(x)
+
+  if (timestamp) {
+    stamp <- data.frame(
+      name = "VarKit",
+      value = paste0("Modified and written to file by 'write_vcf()';Date=", date())
+    )
+  } else {
+    stamp <- NULL
+  }
 
   # Replace fileformat and add info
   header <- rbind(
     data.frame(name = "fileformat", value = "VCFv4.2"),
     header[header$name != "fileformat", ],
-    data.frame(
-      name = "VarKit",
-      value = paste0("Modified and written to file by 'write_vcf()';Date=", date())
-    )
+    stamp
   )
 
   # Standardise the column names of the fixed fields and convert to upper
@@ -38,13 +40,14 @@ write_vcf_header.varkit_header <- function(x, file, compression = NULL) {
 }
 
 ##' @export
-write_vcf_header.varkit <- function(x, file, compression = NULL) {
+write_vcf_header.varkit <- function(x, file, timestamp = TRUE, compression = NULL) {
   write_vcf_header.varkit_header(
     new_varkit_header(
       meta = meta.varkit(x),
       col_names = c(colnames(x$site), samples.varkit(x))
     ),
     file = file,
+    timestamp = timestamp,
     compression = compression
   )
 }

@@ -4,6 +4,7 @@ write_vcf <- function(x,
                       append = NULL,
                       replace_filter = FALSE,
                       na_geno = NULL,
+                      timestamp = TRUE,
                       compression = 5) {
   UseMethod("write_vcf", x)
 }
@@ -49,7 +50,7 @@ write_vcf.varkit <- function(x,
 
   if (!append) {
     .msg_step("Writing VCF header")
-    write_vcf_header.varkit(x, file = file)
+    write_vcf_header.varkit(x, file = file, timestamp = timestamp, compression = compression)
     cli::cli_progress_done()
   }
 
