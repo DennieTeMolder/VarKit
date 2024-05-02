@@ -14,13 +14,22 @@ write_vcf.varkit <- function(x,
                              append = NULL,
                              replace_filter = FALSE,
                              na_geno = NULL,
+                             timestamp = TRUE,
                              compression = 5) {
   if (!is.null(na_geno))
     stopifnot(is.character(na_geno), length(na_geno) == 1)
   validate_varkit(x)
 
-  if (is.null(append))
-    append <- isTRUE(.is_connection(file) && isSeekable(file) && seek(file) > 0L)
+  # If FILE is a connection we only append if at start of file (unless specified otherwise)
+  if (is.null(append)) {
+    if (.is_connection(file)) {
+      if (!isSeekable(file))
+        stop("`append` cannot be NULL if `file` is a connection & `isSeekable(file)` is FALSE!")
+      append <- isTRUE(seek(file) > 0L)
+    } else {
+      append <- FALSE
+    }
+  }
 
   # Open a connection for writing, unless we want to append
   if (!.is_connection(file)) {
