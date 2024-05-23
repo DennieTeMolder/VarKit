@@ -60,7 +60,7 @@
 
 .msg_step <- function(..., .envir = parent.frame()) {
   msg <- paste0(...)
-  msg_time <- paste0("<", .curr_time(), "> ", msg)
+  msg_time <- paste0(msg, " <", .curr_time(), ">")
   cli::cli_progress_step(msg_time, msg_done = msg, .envir = .envir)
 }
 
