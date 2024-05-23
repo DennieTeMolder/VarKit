@@ -29,9 +29,9 @@ ad2aaf <- function(vcf, ad_cap = NULL, type = "AD", alt_idx = NULL) {
   ad <- stringr::str_split_fixed(ad, stringr::fixed(","), n = n_allele)
   storage.mode(ad) <- "integer"
 
-  # Check if there are site with multiple ALT alleles
-  is_multi <- n_delim > 1L
-  if (any(is_multi)) {
+  # Check if there are sites with multiple ALT alleles
+  which_multi <- which(n_delim > 1L)
+  if (length(which_multi) != 0L) {
     if (is.null(alt_idx)) {
       # For multi-allelic sites pick the alt allele w/ the highest depth
       alt_idx <- rep(1L, n_site)
@@ -39,28 +39,27 @@ ad2aaf <- function(vcf, ad_cap = NULL, type = "AD", alt_idx = NULL) {
       # Get all multi-allelic sites by converting to a 3d matrix
       # The shape is the same to the geno() matrix, with the z-axis holding the alleles
       dim(ad) <- c(n_sample, n_site, n_allele)
-      multi_ad <- ad[, is_multi, -1L, drop = FALSE]
+      multi_ad <- ad[, which_multi, -1L, drop = FALSE]
       dim(ad) <- c(n_sample * n_site, n_allele)
-      multi_ad[is.na(multi_ad)] <- 0L
 
       # Cap and scale down samples with a high depth for single alleles
       if (!is.null(ad_cap)) {
-        # Convert to a 2d matrix
-        dim(multi_ad) <- with(list(x = dim(multi_ad)), c(x[1L] * x[2L], x[3L]))
+        # Convert to a 2d matrix to find max AD per call
+        dim_3d <- dim(multi_ad)
+        dim(multi_ad) <- c(dim_3d[1L] * dim_3d[2L], dim_3d[3L])
         maxs <- matrixStats::rowMaxs(multi_ad)
 
         # Adjust all alleles per sample such that the ratio stays the same
-        above_cap <- maxs > ad_cap
-        if (any(above_cap)) {
-          adjusted <- ad_cap / maxs[above_cap] * multi_ad[above_cap, ]
-          storage.mode(adjusted) <- "integer"
-          multi_ad[above_cap, ] <- adjusted
-          rm(adjusted)
+        which_above <- which(maxs > ad_cap)
+        if (length(which_above) != 0L) {
+          multi_ad[which_above, ] <- as.integer(
+            multi_ad[which_above, ] * ad_cap / maxs[which_above]
+          )
         }
 
         # Convert back to 3d for the colSums()
-        dim(multi_ad) <- c(n_sample, sum(is_multi), n_allele - 1L)
-        rm(maxs, above_cap)
+        dim(multi_ad) <- dim_3d
+        rm(maxs, which_above)
       }
 
       # Sums the depth over all samples per site per allele
@@ -68,14 +67,12 @@ ad2aaf <- function(vcf, ad_cap = NULL, type = "AD", alt_idx = NULL) {
       multi_ad <- colSums(multi_ad)
 
       # Find the index of the allele with the highest total depth
-      multi_idx <- matrixStats::rowRanks(multi_ad, ties.method = "last")
-      multi_idx <- which(multi_idx == ncol(multi_idx), arr.ind = TRUE, useNames = FALSE)
-      alt_idx[is_multi] <- multi_idx[, 2L][order(multi_idx[, 1L])]
-      rm(multi_ad, multi_idx)
+      alt_idx[which_multi] <- which_nth_lowest(multi_ad * -1L, margin = 1, n = 1L)
+      rm(multi_ad)
     }
 
     # Read depth of the most abundant alternative allele
-    alt_dp <- matrixStats::rowCollapse(ad, rep(alt_idx + 1L, each = n_sample), useNames = FALSE)
+    alt_dp <- ad[seq_len(nrow(ad)) + rep(alt_idx * nrow(ad), each = n_sample)]
     # Bi-allelic read depth
     bi_dp <- ad[, 1L] + alt_dp
     # Fraction of total reads that support bi-allelic sites
