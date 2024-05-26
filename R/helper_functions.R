@@ -38,7 +38,7 @@
 }
 
 .curr_time <- function() {
-  format(Sys.time(), "%H:%M:%S")
+  format(Sys.time(), "%a %H:%M")
 }
 
 .msg_vec <- function(x, before = NULL, after = NULL, sep = ", ", last = sep, n_max = 100L) {
