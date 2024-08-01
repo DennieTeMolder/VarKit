@@ -17,9 +17,9 @@ write_vcf.varkit <- function(x,
                              na_geno = NULL,
                              timestamp = TRUE,
                              compression = 5) {
-  if (!is.null(na_geno))
-    stopifnot(is.character(na_geno), length(na_geno) == 1)
   validate_varkit(x)
+  if (!is.null(na_geno))
+    stopifnot(is.character(na_geno), length(na_geno) == 1L || length(na_geno) == n_sites(x))
 
   # If FILE is a connection we only append if at start of file (unless specified otherwise)
   if (is.null(append)) {
@@ -73,39 +73,31 @@ write_vcf.varkit <- function(x,
   if (!anyNA(x$geno))
     return(x)
 
+  is_na <- which(is.na(x$geno), arr.ind = TRUE, useNames = FALSE)
+
   if (is.null(na_geno)) {
     .msg_step("Determining VCF compliant NA format for geno()")
 
-    # Build an index of possible NA replacements, one for each value of FORMAT
-    frmt <- x$site[["format"]]
-    if (is.null(frmt))
-      stop("Conversion of NA values requires the FORMAT column to be present!", call. = FALSE)
-    if (anyNA(frmt))
-      stop("The FORMAT column contains missing values!", call. = FALSE)
+    # Find all columns with NAs to save on computation time
+    na_col <- unique(is_na[, 2L])
+    na_geno <- get_first_non_na_rowwise(t(x$geno[, na_col]))
 
-    uniq <- as.character(unique(frmt))
-    match_uniq <- match(uniq, frmt)
+    # Convert to VCF spec
+    na_geno <- stringr::str_replace_all(na_geno, "[^|/:;,]+", ".")
+    if (anyNA(na_geno))
+      na_geno[is.na(na_geno)] <- "."
 
-    non_na <- apply(x$geno[, match_uniq, drop = FALSE], 2, function(site) {
-      site[match(FALSE, is.na(site))]
-    })
-
-    if (anyNA(non_na)) {
-      stop("\nError at index: ", .collapse(match_uniq[is.na(non_na)]),
-           "\nCannot determine replacement as all sites are NA!", call. = FALSE)
-    }
-
-    na_geno <- stringr::str_replace_all(non_na, "[^|/:;,]+", ".")
-    names(na_geno) <- uniq
+    # Expand to a vector that matches the number of columns
+    na_geno <- `[<-`(NA_character_, is_na[, 2L], na_geno[match(is_na[, 2L], na_col)])
   }
 
-  if (length(unique(na_geno)) > 1L) {
+  .msg_step("Replacing NA geno() values")
+  if (dplyr::n_distinct(na_geno) > 1L) {
     # Complex case with multiple replacement values (based on column index of NA value)
-    is_na <- which(is.na(x$geno), arr.ind = TRUE, useNames = FALSE)
-    x$geno[is_na] <- unname(na_geno)[match(frmt[is_na[, 2L]], names(na_geno))]
-  } else if (na_geno[[1L]] != ".") {
-    # Simple case, na_geno == "." is handled by write_tbl()
-    x$geno[is.na(x$geno)] <- na_geno[[1L]]
+    x$geno[is_na] <- na_geno[is_na[, 2L]]
+  } else {
+    # Simple case with a single replacement value
+    x$geno[is_na] <- na_geno[[1L]]
   }
 
   x
