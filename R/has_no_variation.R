@@ -22,14 +22,7 @@ has_no_variation <- function(x, na.rm = TRUE, margin = 1) {
     x <- t(x)
 
   # Obtain the first non-na value for each row if it exists
-  non_na <- x[, 1L, drop = TRUE]
-  which_na <- which(is.na(non_na))
-  for (i in seq_len(ncol(x))[-1L]) {
-    if (length(which_na) == 0L)
-      break()
-    non_na[which_na] <- x[which_na, i, drop = TRUE]
-    which_na <- which(is.na(non_na))
-  }
+  non_na <- get_first_non_na_rowwise(x)
 
   # Returns TRUE if NA.RM is enabled and all values in a row are NA
   all_equal <- matrixStats::rowAlls(x == non_na, na.rm = na.rm)
