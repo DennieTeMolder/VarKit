@@ -95,13 +95,15 @@ write_vcf.varkit <- function(x,
     na_geno <- `[<-`(NA_character_, is_na[, 2L], na_geno[match(is_na[, 2L], na_col)])
   }
 
+  # NOTE this step can appear slow for non-character matrices as they need to be
+  # cast before replacing, but this time is saved when writing to file.
   .msg_step("Replacing NA geno() values")
-  if (dplyr::n_distinct(na_geno) > 1L) {
-    # Complex case with multiple replacement values (based on column index of NA value)
-    x$geno[is_na] <- na_geno[is_na[, 2L]]
-  } else {
+  if (has_no_variation(na_geno, na.rm = TRUE)) {
     # Simple case with a single replacement value
     x$geno[is_na] <- na_geno[[1L]]
+  } else {
+    # Complex case with multiple replacement values (based on column index of NA value)
+    x$geno[is_na] <- na_geno[is_na[, 2L]]
   }
 
   x
