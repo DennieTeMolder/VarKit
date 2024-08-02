@@ -18,6 +18,25 @@
   return(TRUE)
 }
 
+.round <- function(x, digits) {
+  if (is.null(digits))
+    return(x)
+
+  if (is.array(x)) {
+    if (is.numeric(x))
+      x <- round(x, digits = digits)
+  } else if (is.list(x)) {
+    for (i in seq_along(x)) {
+      if (is.numeric(x[[i]]))
+        x[[i]] <- round(x[[i]], digits = digits)
+    }
+  } else {
+    warning("Failed to apply 'digits' argument. Please round numeric values manually.", call. = FALSE)
+  }
+
+  x
+}
+
 .collapse <- function(x, delim = ", ") {
   paste(x, collapse = delim)
 }

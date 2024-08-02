@@ -6,6 +6,7 @@ write_tbl <- function(x,
                       col_names = !append,
                       row_names = FALSE,
                       quote = sep == ",",
+                      digits = NULL,
                       scipen = 9,
                       compression = NULL,
                       ...) {
@@ -18,7 +19,7 @@ write_tbl <- function(x,
   rlang::local_options(scipen = scipen)
 
   utils::write.table(
-    x = x, file = file, sep = sep, append = FALSE, col.names = col_names,
-    row.names = row_names, quote = quote, ...
+    x = .round(x, digits), file = file, sep = sep, append = FALSE,
+    col.names = col_names, row.names = row_names, quote = quote, ...
   )
 }

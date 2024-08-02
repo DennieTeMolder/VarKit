@@ -5,6 +5,7 @@ write_vcf <- function(x,
                       replace_filter = FALSE,
                       na_geno = NULL,
                       timestamp = TRUE,
+                      digits = 6,
                       compression = 5) {
   UseMethod("write_vcf", x)
 }
@@ -16,6 +17,7 @@ write_vcf.varkit <- function(x,
                              replace_filter = FALSE,
                              na_geno = NULL,
                              timestamp = TRUE,
+                             digits = 6,
                              compression = 5) {
   validate_varkit(x)
   if (!is.null(na_geno))
@@ -40,6 +42,7 @@ write_vcf.varkit <- function(x,
 
   # Ensure all columns & values adhere to VCF spec
   x <- standardize_cols.varkit(x)
+  x$geno <- .round(x$geno, digits = digits)
   x <- .replace_na_geno(x, na_geno)
 
   # Check if filter column reflects current state, replace if indicated
@@ -56,7 +59,7 @@ write_vcf.varkit <- function(x,
 
   .msg_step("Writing VCF body")
 
-  # Convert all sites to a data frame by unmasking
+  # Convert body to a data frame
   x <- as.data.frame.varkit(x, optional = TRUE)
 
   write_tbl(
@@ -65,7 +68,8 @@ write_vcf.varkit <- function(x,
     append = append,
     col_names = FALSE,
     row_names = FALSE,
-    na = "."
+    na = ".",
+    digits = digits
   )
 }
 
