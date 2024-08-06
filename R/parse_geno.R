@@ -9,7 +9,7 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
 
   # We first check TYPE because the errors generated are more intuitive to the user
   if (!is.null(type)) {
-    .stopifnotsingle(type, class = "character")
+    .stopifnotsingle(type, what = "character")
   } else {
     warning("Please provide the 'type' argument, returning possible options.")
     return(.get_format_types(x))

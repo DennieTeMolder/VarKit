@@ -3,11 +3,26 @@
   c("chrom", "pos", "id", "ref", "alt", "qual", "filter", "info", "format")
 }
 
-.stopifnotsingle <- function(x, class = NULL) {
-  if (!is.null(class) && !inherits(x, what = class))
-    stop("Argument '", substitute(x), "' should be of class '", class, "'!")
-  if (length(x) != 1)
-    stop("Argument '", substitute(x), "' should have a length of 1!")
+.stopifnotsingle <- function(x, what = NULL, allow_na = FALSE) {
+  # Check class
+  if (is.null(what)) {
+    # Do nothing
+  } else if (is.function(what)) {
+    if (!isTRUE(what(x)))
+      stop("`", substitute(what), "(", substitute(x), ")` is not TRUE!", call. = FALSE)
+  } else if (!inherits(x, what = what)) {
+    stop("`", substitute(x), "` should be one of what: ", .collapse(what), "!", call. = FALSE)
+  }
+
+  # Check length
+  if (length(x) != 1L)
+    stop("Argument '", substitute(x), "' should have a length of 1!", call. = FALSE)
+
+  # Check NA
+  if (!isTRUE(allow_na) && is.na(x))
+    stop("`", substitute(x), "` cannot be NA!", call. = FALSE)
+
+  invisible(x)
 }
 
 .is_connection <- function(x) {

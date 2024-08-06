@@ -8,7 +8,7 @@ parse_meta.varkit <- function(x, type = NULL, na = ".") {
   .validate_varkit_meta(meta(x))
   stopifnot(is.character(na))
   if (!is.null(type)) {
-    .stopifnotsingle(type, class = "character")
+    .stopifnotsingle(type, what = "character")
   } else {
     warning("Please provide the 'type' argument, returning possible options.")
     return(.get_meta_types(x))

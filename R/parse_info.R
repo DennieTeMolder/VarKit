@@ -11,7 +11,7 @@ parse_info.varkit <- function(x, type = NULL, use_meta = TRUE) {
       return(dplyr::transmute(parse_meta.varkit(x, "INFO"), type = .data$ID, description = .data$Description))
     return(.collect_all_keys(site.varkit(x, "info")))
   } else {
-    .stopifnotsingle(type, class = "character")
+    .stopifnotsingle(type, what = "character")
     validate_varkit(x, check_info = TRUE)
   }
 

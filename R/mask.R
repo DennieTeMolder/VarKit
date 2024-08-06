@@ -6,7 +6,7 @@ mask <- function(x, site, why = NULL, na_mask = TRUE) {
 ##' @export
 mask.varkit <- function(x, site, why = NULL, na_mask = TRUE) {
   if (!is.null(why))
-    .stopifnotsingle(why, class = "character")
+    .stopifnotsingle(why, what = "character")
 
   # Mask
   idx <- get_site_idx(site, vcf = x, na_get = na_mask)
