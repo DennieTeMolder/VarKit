@@ -5,7 +5,7 @@ write_vcf_header <- function(x, file, timestamp = TRUE, compression = NULL) {
 
 ##' @export
 write_vcf_header.varkit_header <- function(x, file, timestamp = TRUE, compression = NULL) {
-  stopifnot(isTRUE(timestamp) || isFALSE(timestamp))
+  .stopifnotsingle(timestamp, what = "logical")
 
   description <- if (.is_connection(file)) summary.connection(file)$description else file
   header <- meta.varkit_header(x)
@@ -13,7 +13,8 @@ write_vcf_header.varkit_header <- function(x, file, timestamp = TRUE, compressio
   if (timestamp) {
     stamp <- data.frame(
       name = "VarKit",
-      value = paste0("Modified and written to file by 'write_vcf()';Date=", date())
+      value = paste0("Written to file by 'varkit::write_vcf()';Version=",
+                     utils::packageVersion("varkit"), ";Date=", date())
     )
   } else {
     stamp <- NULL
