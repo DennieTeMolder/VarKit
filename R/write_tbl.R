@@ -1,3 +1,5 @@
+# NOTE in contrast to the R options DIGITS controls the actual number of digits
+# (using round()) and NSIGNIF controls the number of significant numbers.
 ##' @export
 write_tbl <- function(x,
                       file,
@@ -7,7 +9,8 @@ write_tbl <- function(x,
                       row_names = FALSE,
                       quote = sep == ",",
                       digits = NULL,
-                      scipen = 9,
+                      nsignif = getOption("digits", 7L),
+                      scipen = 6,
                       compression = NULL,
                       ...) {
   if (!.is_connection(file)) {
@@ -15,9 +18,10 @@ write_tbl <- function(x,
     on.exit(close(file))
   }
 
-  # The 'scipen' option affects write.table() because it uses format() internally
-  rlang::local_options(scipen = scipen)
+  # The 'ditigts' and 'scipen' options affect write.table() because it uses format() internally
+  rlang::local_options(digits = nsignif, scipen = scipen)
 
+  # Rounding on DIGITS is not possible during format() so we round() first
   utils::write.table(
     x = .round(x, digits), file = file, sep = sep, append = FALSE,
     col.names = col_names, row.names = row_names, quote = quote, ...

@@ -6,6 +6,7 @@ write_vcf <- function(x,
                       na_geno = NULL,
                       timestamp = TRUE,
                       digits = 6,
+                      nsignif = getOption("digits", 7L),
                       compression = 5) {
   UseMethod("write_vcf", x)
 }
@@ -18,6 +19,7 @@ write_vcf.varkit <- function(x,
                              na_geno = NULL,
                              timestamp = TRUE,
                              digits = 6,
+                             nsignif = getOption("digits", 7L),
                              compression = 5) {
   validate_varkit(x)
   if (!is.null(na_geno))
@@ -69,7 +71,8 @@ write_vcf.varkit <- function(x,
     col_names = FALSE,
     row_names = FALSE,
     na = ".",
-    digits = digits
+    digits = digits,
+    nsignif = nsignif
   )
 }
 
