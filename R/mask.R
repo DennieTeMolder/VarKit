@@ -8,7 +8,9 @@ mask.varkit <- function(x, site, why = NULL, na_mask = TRUE) {
   if (!is.null(why))
     .stopifnotsingle(why, what = "character")
 
-  # Mask
+  # dplyr::filter() like argument evaluation (supports: ., site, geno, meta, names(site))
+  site <- with_vcf(x, expr = {{ site }})
+
   idx <- get_site_idx(site, vcf = x, na_get = na_mask)
   x$use_site[idx] <- FALSE
 

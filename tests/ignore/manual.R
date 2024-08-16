@@ -29,8 +29,7 @@ parse_info(vcf)
 str(parse_info(vcf, type = "DP"))
 parse_info_all(vcf)
 
-hide_site <- site(vcf)$chrom == "I"
-vcf <- mask(vcf, site = hide_site)
+vcf <- mask(vcf, chrom == "I")
 summary(vcf)
 site(vcf)
 
@@ -83,7 +82,7 @@ next_chunk(index, col_select = NULL)
 # Using a complete index
 res <- apply_index(index, function(vcf) {
   Sys.sleep(2)
-  mask(vcf, site(vcf, "qual") < 1e5)
+  mask(vcf, qual < 1e5)
 })
 
 # Combining results
