@@ -111,37 +111,37 @@
     max(nchar(format(x, trim = TRUE)))
   }
 
-  # Reduce size of matrix to a reasonable size
-  n_max <- max(1, floor(width / 2) - 1)
+  # Reduce size of matrix to the maximum possible number of columns
+  n_max <- max(1L, as.integer(floor(width / 2L)) - 1L)
   if (ncol(mat) > n_max)
     mat <- mat[, seq_len(n_max), drop = FALSE]
 
   if (is.null(rownames(mat))) {
-    rname_len <- nchar(nrow(mat)) + 3
+    rname_len <- nchar(nrow(mat)) + 3L
   } else {
     rname_len <- .max_nchar(rownames(mat))
   }
 
   if (is.null(colnames(mat))) {
-    # We add 3 for the [,] and for the space before the column
-    cname_len <- nchar(seq_len(ncol(mat))) + 4
+    # We add 3 for the [,] and 1 for the space before the column
+    cname_len <- nchar(seq_len(ncol(mat))) + 4L
   } else {
-    # We add 2 here for the potential `` around var names
-    cname_len <- nchar(colnames(mat)) + 3
+    # We add 2 here for the potential `` around var names + 1 for the space
+    cname_len <- nchar(colnames(mat)) + 3L
   }
 
-  col_len <- apply(mat, 2, .max_nchar) + 1
+  col_len <- apply(mat, 2L, .max_nchar) + 1L
   if (is.character(mat))
-    col_len <- col_len + 2
+    col_len <- col_len + 2L
 
   # Check if col name or col value is widest, add row name width to first element
   col_widths <- pmax.int(cname_len, col_len)
-  col_widths[1] <- col_widths[1] + rname_len
+  col_widths[1L] <- col_widths[1L] + rname_len
 
   # Return the index of the last column that fits within width
   which_fit <- which(cumsum(col_widths) < width)
-  if (length(which_fit) == 0)
-      return(1)
+  if (length(which_fit) == 0L)
+      return(1L)
   max(which_fit)
 }
 
@@ -195,7 +195,7 @@
 }
 
 .ensure_pkg <- function(pkg, version = "0.0.0") {
-  if (length(find.package(pkg, quiet = TRUE)) > 0) {
+  if (length(find.package(pkg, quiet = TRUE)) > 0L) {
     if (utils::packageVersion(pkg) < version) {
       message("This function requires a newer version of the following package:")
       utils::update.packages(oldPkgs = pkg)
@@ -224,28 +224,28 @@
     x <- as.factor(x)
   if (is.factor(x))
     x <- as.integer(x)
-  c(FALSE, diff(x) == 0)
+  c(FALSE, diff(x) == 0L)
 }
 
 .middle <- function(x, on_even = "left") {
   stopifnot(is.vector(x))
   len <- length(x)
   if (on_even == "right") {
-    len <- len + 1
+    len <- len + 1L
   } else if (on_even != "left") {
     stop("Option on_even = '", on_even, "' not recognised!")
   }
-  x[ceiling(len / 2)]
+  x[ceiling(len / 2L)]
 }
 
 .bi_gt2dosage <- function(mat) {
   stopifnot(is.matrix(mat))
   stopifnot(is.character(mat))
   dims <- dim(mat)
-  res <- matrix(NA, dims[1], dims[2], dimnames = dimnames(mat))
-  for (j in 1:dims[2]) {
+  res <- matrix(NA, dims[1L], dims[2L], dimnames = dimnames(mat))
+  for (j in 1:dims[2L]) {
     alleles <- stringr::str_split(mat[, j], "[/|]")
-    for(i in 1:dims[1]) {
+    for(i in 1:dims[1L]) {
       if (all(alleles[[i]] %in% c("0", "1")))
         res[i,j] <- sum(alleles[[i]] == "1")
     }
