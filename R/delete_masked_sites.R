@@ -5,6 +5,8 @@ delete_masked_sites <- function(x) {
 
 ##' @export
 delete_masked_sites.varkit <- function(x) {
+  validate_varkit(x)
+
   x$site <- site(x)
   x$geno <- geno(x)
   x$use_site <- rep(TRUE, n_sites.varkit_geno(x$geno))

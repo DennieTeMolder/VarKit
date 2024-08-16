@@ -9,10 +9,11 @@ site.varkit <- function(x, ..., .add_index = FALSE) {
   if (...length() > 0L)
     res <- dplyr::select(res, ...)
   if (.add_index)
-    res <- dplyr::bind_cols(res, idx = seq_len(nrow(res)))
+    res$idx <- seq_len(nrow(res))
   if (!all(x$use_site))
     res <- res[x$use_site, ]
 
+  # Single column results are returned as vectors when ... are provided
   if (ncol(res) == 1L && ...length() > 0L)
     return(res[[1L]])
   res
