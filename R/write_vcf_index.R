@@ -16,7 +16,7 @@ write_vcf_index.varkit_index <- function(index, vcf_path) {
   index_path <- get_index_file(vcf_path)
   .msg_step("Writing VCF index to: {index_path}")
   con <- file_con(index_path, "w")
-  on.exit(close(con))
+  .defer(close(con))
   write_lines2(paste0("#varkit_header_sha1=", sha), file = con)
   write_tbl(index, file = con, append = TRUE, col_names = TRUE)
 }

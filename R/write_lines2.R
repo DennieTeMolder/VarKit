@@ -4,7 +4,7 @@ write_lines2 <- function(text, file, sep = "\n", na = "NA", append = FALSE, comp
 
   if (!.is_connection(file)) {
     file <- file_con(file, open = if (append) "a" else "w", compression = compression)
-    on.exit(close(file))
+    .defer(close(file))
   }
 
   if (anyNA(text))

@@ -27,11 +27,11 @@ guess_col_classes <- function(file,
     pushBack(lines, connection = file)
 
     con <- textConnection(lines, encoding = "UTF-8")
-    on.exit(close(con))
+    .defer(close(con))
   } else {
     stopifnot(file.exists(file))
     con <- file(file, "r")
-    on.exit(close(con))
+    .defer(close(con))
 
     if (skip > 0L) .skip_lines(con, n = skip, progress = FALSE)
   }

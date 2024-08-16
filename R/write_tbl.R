@@ -15,7 +15,7 @@ write_tbl <- function(x,
                       ...) {
   if (!.is_connection(file)) {
     file <- file_con(file, open = if (append) "a" else "w", compression = compression)
-    on.exit(close(file))
+    .defer(close(file))
   }
 
   # The 'ditigts' and 'scipen' options affect write.table() because it uses format() internally

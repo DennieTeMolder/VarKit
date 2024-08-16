@@ -3,6 +3,12 @@
   c("chrom", "pos", "id", "ref", "alt", "qual", "filter", "info", "format")
 }
 
+# Simplified version of withr::defer()
+.defer <- function(expr, envir = parent.frame(), after = FALSE) {
+  thunk <- as.call(list(function() expr))
+  do.call(base::on.exit, args = list(thunk, TRUE, after), envir = envir)
+}
+
 .stopifnotsingle <- function(x, what = NULL, allow_na = FALSE) {
   # Check class
   if (is.null(what)) {

@@ -39,7 +39,7 @@ write_vcf.varkit <- function(x,
   # Open a connection for writing, unless we want to append
   if (!.is_connection(file)) {
     file <- file_con(file, open = if (append) "a" else "w", compression = compression)
-    on.exit(close(file))
+    .defer(close(file))
   }
 
   # Ensure all columns & values adhere to VCF spec

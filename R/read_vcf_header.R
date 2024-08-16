@@ -17,7 +17,7 @@ read_vcf_header <- function(file) {
     }
   } else {
     file <- file(file, "r")
-    on.exit(close(file))
+    .defer(close(file))
   }
 
   meta_lines <- vector("character", length = max_lines)

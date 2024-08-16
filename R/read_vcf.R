@@ -37,7 +37,7 @@ read_vcf <- function(file,
   # Turn file into a connection
   if (!.is_connection(file)) {
     file <- file(file, "r")
-    on.exit(close(file))
+    .defer(close(file))
   }
 
   # NOTE the header will be skipped by "comment.char" it is not read here

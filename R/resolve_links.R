@@ -53,7 +53,7 @@ resolve_links <- function(links,
     lb_order <- unlist(lb_order)
 
     cl <- parallel::makeCluster(cores, type = "PSOCK")
-    on.exit(tryCatch(parallel::stopCluster(cl), error = function(e) NULL))
+    .defer(tryCatch(parallel::stopCluster(cl), error = function(e) NULL))
 
     .msg_step("Running parallel computations")
     res <- parallel::parLapplyLB(cl,

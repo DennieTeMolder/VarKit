@@ -43,7 +43,7 @@ read_tbl <- function(file,
   if (skip > 0L) {
     if (!.is_connection(file)) {
       file <- file(file, "r")
-      on.exit(close(file))
+      .defer(close(file))
     }
     .skip_lines(file, n = skip, progress = FALSE)
   }

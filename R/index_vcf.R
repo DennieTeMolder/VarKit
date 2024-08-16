@@ -32,7 +32,7 @@ index_vcf <- function(file, size_bp = -1, chunk_size = 1e4, ...) {
 
   # Open the file for reading
   file <- file(file, "r")
-  on.exit(close(file))
+  .defer(close(file))
 
   .msg_step("Reading VCF header")
   header <- read_vcf_header(file)

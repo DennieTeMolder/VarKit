@@ -40,7 +40,7 @@
 
   # Start workers, PSOCK is much more memory efficient then FORK
   cl <- parallel::makeCluster(cores, type = "PSOCK")
-  on.exit(tryCatch(parallel::stopCluster(cl), error = function(e) NULL))
+  .defer(tryCatch(parallel::stopCluster(cl), error = function(e) NULL))
 
   # Setup BLAS threads on worker env
   total_threads <- min(blas_threads(), parallel::detectCores(), na.rm = TRUE)
