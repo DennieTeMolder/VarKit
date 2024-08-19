@@ -9,42 +9,31 @@ splitm <- function(x,
                    min_size = 20,
                    keep_f = FALSE,
                    ...) {
-  # Ensure margin is correct
-  stopifnot(is.numeric(margin), length(margin) == 1L)
-  margin <- as.integer(margin)
-  stopifnot(margin %in% 1:2)
-  if (is.null(dim(x))) {
-    if (!isTRUE(length(x) >= 0L))
-      stop("Argument 'x' lacks either a dim() or length() property!")
-    margin <- 0L
-  } else if (length(dim(x)) != 2L) {
-    stop("'x' should be a one- or two- dimensional object")
-  }
-
   ## Internal Functions ------
   .get_size <- switch(margin + 1L, length, nrow, ncol)
 
   .split_ind_formula <- function(x, f, margin, ...) {
-    stopifnot(margin %in% 1:2)
-
-    if (margin == 2L)
-      x <- t(x)
-
-    if (length(all.vars(f)) == 0L) {
-      x <- data.frame(.IDX = seq_len(nrow(x)))
+    if (margin == 1L) {
+      x <- x[, all.vars(f), drop = FALSE]
+    } else if (margin == 2L) {
+      x <- t(x[all.vars(f), , drop = FALSE])
     } else {
-      x <- x[, unique(all.vars(f)), drop = FALSE]
-      x <- cbind(x, .IDX = seq_len(nrow(x)))
+      stop("Unexpected")
     }
 
+    x <- as.data.frame(x)
+    x[[".IDX"]] <- seq_len(nrow(x))
+
     x <- split.data.frame(x = x, f = f, ...)
-    lapply(x, function(xx) as.integer(xx[, ".IDX", drop = TRUE]))
+    lapply(x, function(xx) xx[[".IDX"]])
   }
 
   .extract <- function(ind, data, margin) {
     if (identical(ind, 0L))
       return(data)
-    if (ind[1] == 1L) {
+
+    # Return original object if all indices are selected (assuming no duplicates/NAs)
+    if (ind[[1L]] == 1L) {
       total <- switch(margin + 1L, length, nrow, ncol)(data)
       if (total == length(ind))
         return(data)
@@ -58,46 +47,70 @@ splitm <- function(x,
   }
 
   ## Argument checks ------
-  n <- .get_size(x)
-
   # Required
-  stopifnot(is.numeric(min_size), length(min_size) == 1L)
-  if (!missing(min_size) && !by_na_pattern)
-    warning("The argument 'min_size' is ignored when 'by_na_pattern = FALSE'.")
-  if (by_na_pattern && margin == 0L) {
-    warning("The arguments 'by_na_pattern' & 'min_size' are ignored for one-dimensional objects.")
-    by_na_pattern <- FALSE
+  if (is.null(dim(x))) {
+    if (!isTRUE(length(x) >= 0L))
+      stop("Argument 'x' lacks either a dim() or length() property!")
+    margin <- 0L
+  } else if (length(dim(x)) != 2L) {
+    stop("'x' should be a one- or two- dimensional object")
   }
+
+  .stopifnotsingle(margin, what = is.numeric)
+  margin <- as.integer(margin)
+  stopifnot(margin %in% 1:2)
+
+  .stopifnotsingle(min_size, what = is.numeric)
+  .stopifnotsingle(by_na_pattern, what = "logical")
+  .stopifnotsingle(keep_f, what = "logical")
+
+  if (by_na_pattern) {
+    if (margin == 0L) {
+      warning("The arguments 'by_na_pattern' & 'min_size' are ignored for one-dimensional objects.")
+      by_na_pattern <- FALSE
+    }
+  } else if (!missing(min_size) && min_size >= 1L) {
+    warning("The argument 'min_size' is ignored when 'by_na_pattern = FALSE'.")
+  }
+
+  # Cast to integer after checking missing()
   min_size <- as.integer(min_size)
+
+  # Number of total values to split
+  n <- .get_size(x)
 
   # Optional
   if (!is.null(distances))
-    stopifnot(is.numeric(distances), length(distances) == n)
+    stopifnot(is.numeric(distances), length(distances) == n, !anyNA(distances))
   if (!is.null(size)) {
-    stopifnot(is.numeric(size), length(size) == 1L)
+    .stopifnotsingle(size, what = is.numeric)
     if (is.null(distances))
       size <- as.integer(size)
   }
 
   ## Code ------
   # Split by f
-  # Implement base::split() with support for margins
+  # Here we apply base::split() to indices to support splitting over margins
+  # NOTE Using indices is 10x faster then using strings with unique() & ==
   if (is.null(f)) {
-    f_split_ind <- list(0L) # Instruct .extract to return the full object
+    # A value of 0 instructs .extract() to return the full object
+    f_split_ind <- list(0L)
   } else if (inherits(f, "formula") && margin > 0L) {
     f_split_ind <- .split_ind_formula(x = x, f = f, margin = margin, ...)
     if (!keep_f) {
       if (margin == 1L) {
         x <- x[, !colnames(x) %in% all.vars(f), drop = FALSE]
-      } else {
+      } else if (margin == 2L) {
         x <- x[!rownames(x) %in% all.vars(f), , drop = FALSE]
+      } else {
+        stop("Unexpected!")
       }
     }
   } else {
     f_split_ind <- split(seq_len(n), f = f, ...)
   }
 
-  # NOTE Using indices is 10x faster then using unique() & ==
+  # Apply the splits and perform splitting by size if requested
   res <- lapply(f_split_ind, function(ind) {
     split <- .extract(ind, data = x, margin = margin)
     if (is.null(distances)) {
@@ -113,6 +126,7 @@ splitm <- function(x,
       size_split_ind <- unname(split(seq_along(dist), dist %/% size))
     }
 
+    # Apply the splits and perform splitting by 'na pattern' if requested
     lapply(size_split_ind, function(ind2) {
       split2 <- .extract(ind2, data = split, margin = margin)
 
@@ -139,13 +153,14 @@ splitm <- function(x,
       }
 
       # Split such that each subset has the same pattern of NAs (except below_min_size)
-      lapply(split(seq_along(is_na), is_na), .extract, data = split2, margin = margin)
+      na_split_ind <- split(seq_along(is_na), is_na)
+      lapply(na_split_ind, .extract, data = split2, margin = margin)
     })
   })
 
   # Un-nest list if specific arguments were omitted
   if (is.null(size))
-    res <- lapply(res, function(x) x[[1L]])
+    res <- lapply(res, function(xx) xx[[1L]])
   if (is.null(f))
     res <- res[[1L]]
   res
