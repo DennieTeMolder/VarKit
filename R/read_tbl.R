@@ -51,7 +51,7 @@ read_tbl <- function(file,
   # If missing extract the col.names from the start of the file
   if (is.null(col.names)) {
     col.names <- names(guess_col_classes(
-      file = file, nmax = header + 1L, sep = sep, header = header, colClasses = "character", ...
+      file = file, nmax = 1L, sep = sep, header = header, colClasses = "character", ...
     ))
 
     # If no col.names are found the file must be an invalid
@@ -207,7 +207,8 @@ read_tbl <- function(file,
     if (startsWith(e$message, "scan()")) {
       msg <- stringr::str_remove(e$message, stringr::fixed("scan()"))
       stop("Value in 'file' did not match 'colClasses':", msg,
-           "\nCheck the value of 'na.strings' or increase 'guess.max'.", call. = FALSE)
+           "\nIf you didn't provide 'colClasses', check the value of ",
+           "'na.strings' or increase 'guess.max'.", call. = FALSE)
     }
     stop(e)
   })

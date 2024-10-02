@@ -3,6 +3,8 @@ guess_col_classes <- function(file,
                               nmax = 1000,
                               simplify = TRUE,
                               sep = "\t",
+                              col.names = NULL,
+                              header = is.null(col.names),
                               na.strings = "NA",
                               skip = 0,
                               fill = !blank.lines.skip,
@@ -40,6 +42,7 @@ guess_col_classes <- function(file,
     file = con,
     nrows = nmax,
     sep = sep,
+    header = header,
     na.strings = na.strings,
     skip = 0,
     fill = fill,
@@ -53,6 +56,9 @@ guess_col_classes <- function(file,
     ...
   )
   col_classes <- lapply(data, class)
+
+  if (!is.null(col.names))
+    names(col_classes) <- col.names
 
   if (!simplify)
     return(col_classes)

@@ -52,8 +52,9 @@
 
   # Inform the user about memory usage if above 1 Gb
   session_size <- 100e6
+  factor <- 3 # Object in current session + copy in worker session + equal size for results
   mem_usage <- sum(sapply(split_mat_list[seq_len(cores)], utils::object.size))
-  mem_usage <- mem_usage * 2 + cores * session_size
+  mem_usage <- mem_usage * factor + cores * session_size
   class(mem_usage) <- "object_size"
   if (mem_usage > 1074e6) {
     cli::cli_alert_warning(c(
