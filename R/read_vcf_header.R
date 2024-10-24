@@ -1,13 +1,13 @@
 ##' @export
-read_vcf_header <- function(file) {
-  header <- .read_vcf_header_internal(file)
+read_vcf_header <- function(file, max_lines = 1e6) {
+  header <- .read_vcf_header_internal(file, max_lines = max_lines)
   new_varkit_header(
     meta = .parse_meta(header$meta),
     col_names = .parse_header_line(header$header_line)
   )
 }
 
-.read_vcf_header_internal <- function(file, max_lines = 1e5L) {
+.read_vcf_header_internal <- function(file, max_lines) {
   if (.is_connection(file)) {
     if (isSeekable(file) && seek(file) != 0L) {
       warning(
