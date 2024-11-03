@@ -9,6 +9,36 @@ splitm <- function(x,
                    min_size = 20,
                    keep_f = FALSE,
                    ...) {
+  ## Required arguments ------
+  .stopifnotsingle(margin, what = is.numeric)
+  margin <- as.integer(margin)
+  stopifnot(margin %in% 1:2)
+
+  if (is.null(dim(x))) {
+    if (!isTRUE(length(x) >= 0L))
+      stop("Argument 'x' lacks either a dim() or length() property!")
+    margin <- 0L
+  } else if (length(dim(x)) != 2L) {
+    # REVIEW: a 1d array raises an error, should we cast it to vector instead?
+    stop("'x' should be a vector or two-dimensional object!")
+  }
+
+  .stopifnotsingle(min_size, what = is.numeric)
+  .stopifnotsingle(by_na_pattern, what = "logical")
+  .stopifnotsingle(keep_f, what = "logical")
+
+  if (by_na_pattern) {
+    if (margin == 0L) {
+      warning("The arguments 'by_na_pattern' & 'min_size' are ignored for one-dimensional objects.")
+      by_na_pattern <- FALSE
+    }
+  } else if (!missing(min_size) && min_size >= 1L) {
+    warning("The argument 'min_size' is ignored when 'by_na_pattern = FALSE'.")
+  }
+
+  # Cast to integer after checking missing()
+  min_size <- as.integer(min_size)
+
   ## Internal Functions ------
   .get_size <- switch(margin + 1L, length, nrow, ncol)
 
@@ -46,40 +76,10 @@ splitm <- function(x,
     )
   }
 
-  ## Argument checks ------
-  # Required
-  if (is.null(dim(x))) {
-    if (!isTRUE(length(x) >= 0L))
-      stop("Argument 'x' lacks either a dim() or length() property!")
-    margin <- 0L
-  } else if (length(dim(x)) != 2L) {
-    stop("'x' should be a one- or two- dimensional object")
-  }
-
-  .stopifnotsingle(margin, what = is.numeric)
-  margin <- as.integer(margin)
-  stopifnot(margin %in% 1:2)
-
-  .stopifnotsingle(min_size, what = is.numeric)
-  .stopifnotsingle(by_na_pattern, what = "logical")
-  .stopifnotsingle(keep_f, what = "logical")
-
-  if (by_na_pattern) {
-    if (margin == 0L) {
-      warning("The arguments 'by_na_pattern' & 'min_size' are ignored for one-dimensional objects.")
-      by_na_pattern <- FALSE
-    }
-  } else if (!missing(min_size) && min_size >= 1L) {
-    warning("The argument 'min_size' is ignored when 'by_na_pattern = FALSE'.")
-  }
-
-  # Cast to integer after checking missing()
-  min_size <- as.integer(min_size)
-
+  ## Optional arguments ------
   # Number of total values to split
   n <- .get_size(x)
 
-  # Optional
   if (!is.null(distances))
     stopifnot(is.numeric(distances), length(distances) == n, !anyNA(distances))
   if (!is.null(size)) {
