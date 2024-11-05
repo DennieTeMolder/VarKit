@@ -40,7 +40,7 @@ read_vcf <- function(file,
     .defer(close(file))
   }
 
-  # NOTE the header will be skipped by "comment.char" it is not read here
+  # NOTE the header part of the file is skipped "comment.char" if not read here
   if (is.null(header)) {
     .msg_step("Reading VCF header")
     header <- read_vcf_header(file)
