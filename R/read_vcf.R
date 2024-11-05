@@ -13,8 +13,8 @@
 ##' @export
 ##' @author Dennie te Molder
 ##' @examples
-##' file <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
-##' vcf <- read_vcf(file)
+##' file_path <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
+##' vcf <- read_vcf(file_path)
 read_vcf <- function(file,
                      col_select = NULL,
                      header = NULL,
@@ -40,7 +40,7 @@ read_vcf <- function(file,
     .defer(close(file))
   }
 
-  # NOTE the header part of the file is skipped "comment.char" if not read here
+  # NOTE the header part of the file is skipped by "comment.char" if not read here
   if (is.null(header)) {
     .msg_step("Reading VCF header")
     header <- read_vcf_header(file)
