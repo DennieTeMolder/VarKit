@@ -39,8 +39,8 @@ A VarKit object
 Load A VCF File From Disk
 }
 \examples{
-file <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
-vcf <- read_vcf(file)
+file_path <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
+vcf <- read_vcf(file_path)
 }
 \author{
 Dennie te Molder
