@@ -24,5 +24,7 @@ write_vcf_index.varkit_index <- function(index, vcf_path) {
 ##' @export
 get_index_file <- function(vcf_path) {
   stopifnot(file.exists(vcf_path) && !dir.exists(vcf_path))
+  if (endsWith(vcf_path, ".index.tsv"))
+    stop("Expected a VCF path, but got a path to an index!")
   paste0(vcf_path, ".index.tsv")
 }
