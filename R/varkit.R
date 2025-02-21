@@ -118,7 +118,7 @@ print.varkit <- function(x, ..., n = NULL, n_samples = 10) {
   .msg_h1("VarKit Variant Object")
   if (!is.null(x$meta)) {
     .msg_h2("Header metadata, `meta(vcf)`")
-    print(meta.varkit(x), ..., verbose = FALSE)
+    print(meta.varkit(x), ...)
     cat("\n")
   }
 
