@@ -19,8 +19,8 @@ ad2aaf <- function(vcf, ad_cap = NULL, type = "AD", alt_idx = NULL) {
   d_names <- dimnames(ad)
   n_site <- ncol(ad)
   n_sample <- nrow(ad)
-  n_delim <- stringr::str_count(ad[1L, ], stringr::fixed(","))
-  n_allele <- max(n_delim) + 1L
+  n_delim <- stringr::str_count(get_first_non_na(ad, margin = 2), stringr::fixed(","))
+  n_allele <- max(n_delim, 0L, na.rm = TRUE) + 1L
 
   if (isTRUE(n_allele < 2L))
     stop("Could not detect multiple allelic depths delimited by a ','!")
@@ -28,6 +28,10 @@ ad2aaf <- function(vcf, ad_cap = NULL, type = "AD", alt_idx = NULL) {
   # Split into a 2d matrix with the shape [n_sample * n_site, n_allele]
   ad <- stringr::str_split_fixed(ad, stringr::fixed(","), n = n_allele)
   storage.mode(ad) <- "integer"
+
+  # NAs can represented as zero depth, so we don't have to account for them separately
+  if (anyNA(ad))
+    ad[is.na(ad)] <- 0L
 
   # Check if there are sites with multiple ALT alleles
   which_multi <- which(n_delim > 1L)
@@ -85,7 +89,8 @@ ad2aaf <- function(vcf, ad_cap = NULL, type = "AD", alt_idx = NULL) {
     alt_idx <- rep(1L, n_site)
     bi_dp <- ad[, 1L] + ad[, 2L]
     aaf <- ad[, 2L] / bi_dp
-    bi_frac <- rep(1L, length(aaf))
+    bi_frac <- rep(NaN, length(aaf))
+    bi_frac[bi_dp > 0L] <- 1
   }
 
   list(
