@@ -18,18 +18,20 @@ has_no_variation <- function(x, na.rm = TRUE, margin = 1) {
 }
 
 .has_no_variation.matrix <- function(x, na.rm, margin) {
-  if (margin == 2)
-    x <- t(x)
+  # Obtain the first non-na value for each row/column if it exists
+  non_na <- get_first_non_na(x, margin = margin)
 
-  # Obtain the first non-na value for each row if it exists
-  non_na <- get_first_non_na_rowwise(x)
+  if (margin == 1) {
+    all_equal <- matrixStats::rowAlls(x == non_na, na.rm = na.rm)
+  } else {
+    all_equal <- matrixStats::colAlls(x == non_na, na.rm = na.rm)
+  }
 
-  # Returns TRUE if NA.RM is enabled and all values in a row are NA
-  all_equal <- matrixStats::rowAlls(x == non_na, na.rm = na.rm)
-
+  # Return TRUE if NA.RM is enabled and all values in a row/column are NA
   if (na.rm || !anyNA(all_equal))
     return(all_equal)
 
-  # If NAs are kept, variation can also occur between NA and non-NA values
-  ifelse(is.na(all_equal), is.na(non_na), all_equal)
+  # If NAs are not removed, variation can also occur between NA and non-NA values
+  all_equal[which_na] <- is.na(non_na[which_na])
+  all_equal
 }

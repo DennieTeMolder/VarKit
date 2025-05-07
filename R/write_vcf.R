@@ -87,7 +87,7 @@ write_vcf.varkit <- function(x,
 
     # Find all columns with NAs to save on computation time
     na_col <- unique(is_na[, 2L])
-    na_geno <- get_first_non_na_rowwise(t(x$geno[, na_col]))
+    na_geno <- get_first_non_na(x$geno[, na_col], margin = 2)
 
     # Convert to VCF spec
     na_geno <- stringr::str_replace_all(na_geno, "[^|/:;,]+", ".")
