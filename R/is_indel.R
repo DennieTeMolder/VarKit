@@ -11,6 +11,6 @@ is_indel.varkit <- function(x) {
   if (anyNA(x$alt))
     stop("The site$alt column contains missing values")
 
-  # INDELs have a '*' at the alt position or have more then 1 character (between commas)
-  nchar(x$ref) > 1L | stringr::str_detect(x$alt, "\\*|[^,]{2,}")
+  # INDELs have more than 1 character (ALT can be comma separated) or has a '*' at the ALT position
+  nchar(x$ref) > 1L | stringr::str_detect(x$alt, "\\*|[^,]{2}")
 }
