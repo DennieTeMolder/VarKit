@@ -32,6 +32,7 @@ has_no_variation <- function(x, na.rm = TRUE, margin = 1) {
     return(all_equal)
 
   # If NAs are not removed, variation can also occur between NA and non-NA values
+  which_na <- which(is.na(all_equal))
   all_equal[which_na] <- is.na(non_na[which_na])
   all_equal
 }
