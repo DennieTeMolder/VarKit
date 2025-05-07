@@ -93,7 +93,7 @@ splitm <- function(x,
   # Here we apply base::split() to indices to support splitting over margins
   # NOTE Using indices is 10x faster then using strings with unique() & ==
   if (is.null(f)) {
-    # A value of 0 instructs .extract() to return the full object
+    # A value of 0L instructs .extract() to return the full object
     f_split_ind <- list(0L)
   } else if (inherits(f, "formula") && margin > 0L) {
     f_split_ind <- .split_ind_formula(x = x, f = f, margin = margin, ...)
