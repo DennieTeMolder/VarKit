@@ -66,12 +66,6 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
   # Meta
   if (!is.null(x$meta)) {
     .validate_varkit_meta(x$meta)
-    if (check_info && !"INFO" %in% x$meta$name)
-      warning("The 'meta()' slot has no INFO entry, functionality is impaired.")
-    if (check_format &&!"FORMAT" %in% x$meta$name)
-      warning("The 'meta()' slot has no FORMAT entry, functionality is impaired.")
-  } else if (check_info || check_format) {
-    warning("The 'meta()' slot is empty, functionality is impaired")
   }
 
   # Geno
