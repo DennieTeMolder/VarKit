@@ -7,8 +7,6 @@ parse_info_all <- function(x, use_meta = TRUE) {
 parse_info_all.varkit <- function(x, use_meta = TRUE) {
   validate_varkit(x, check_info = TRUE)
   info <- site.varkit(x, "info")
-  if (all(is.na(info)))
-    stop("The INFO column only contains NAs!")
 
   if (use_meta) {
     meta_info <- parse_meta.varkit(x, "INFO")
@@ -17,6 +15,9 @@ parse_info_all.varkit <- function(x, use_meta = TRUE) {
     meta_info <- NULL
     keys <- .collect_all_keys(info)
   }
+
+  if (all(is.na(keys)))
+    return(tibble::tibble(.rows = n_sites.varkit(x)))
 
   keys <- sort(keys)
   names(keys) <- keys
