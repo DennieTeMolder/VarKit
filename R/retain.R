@@ -1,10 +1,10 @@
 ##' @export
-retain <- function(x, site, why = NULL, na_retain = TRUE) {
+retain <- function(x, site, why = NULL, na_retain = TRUE, ...) {
   UseMethod("retain", x)
 }
 
 ##' @export
-retain.varkit <- function(x, site, why = NULL, na_retain = TRUE) {
+retain.varkit <- function(x, site, why = NULL, na_retain = TRUE, ...) {
   if (!is.null(why))
     .stopifnotsingle(why, what = "character")
 
@@ -14,7 +14,7 @@ retain.varkit <- function(x, site, why = NULL, na_retain = TRUE) {
   if (is_varkit_linkage_graph(site))
     stop("Linkage graphs only support the mask() function!")
 
-  idx <- get_site_idx(site, vcf = x, na_get = na_retain)
+  idx <- get_site_idx(site, vcf = x, na_get = na_retain, ...)
   if (length(idx) < 1)
     stop("No sites remaining! Check your input.")
 
