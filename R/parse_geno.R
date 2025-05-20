@@ -55,7 +55,7 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
     })
     res <- do.call(cbind, res)
 
-    res <- res[, order(as.integer(colnames(res)))]
+    res <- res[, order(as.integer(colnames(res))), drop = FALSE]
     colnames(res) <- old_names
   }
 
