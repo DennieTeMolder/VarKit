@@ -168,6 +168,8 @@
   stopifnot(is_open(con))
   n <- max(0L, as.integer(n), na.rm = TRUE)
   block_size <- as.integer(block_size)
+  if (isTRUE(progress))
+    progress <- "Moving index pointer:"
 
   # Jump through the file in blocks
   times <- n %/% block_size
