@@ -28,8 +28,17 @@ next_chunk.varkit_index <- function(x, col_select = NULL, ...) {
   if (is.null(vcf))
     return(NULL)
 
+  n <- n_sites.varkit(vcf, mask = FALSE)
+
+  # Check if we got the expected number of sites as long as we are within the index's range
+  if (n != n_max && env(x)$curr_line <= x$linum[nrow(x)]) {
+    warning("At index row ", rownames(seek(x)), ": expected ", .frmt_big(n_max),
+            " sites, but got ", .frmt_big(n), " sites.")
+    n <- n_max
+  }
+
   # Increment index
-  env(x)$curr_line <- env(x)$curr_line + n_sites.varkit(vcf)
+  env(x)$curr_line <- env(x)$curr_line + n
 
   vcf
 }
