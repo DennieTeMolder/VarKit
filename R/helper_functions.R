@@ -196,28 +196,8 @@
   invisible(NULL)
 }
 
-.ensure_pkg <- function(pkg, version = "0.0.0") {
-  if (length(find.package(pkg, quiet = TRUE)) > 0L) {
-    if (utils::packageVersion(pkg) < version) {
-      message("This function requires a newer version of the following package:")
-      utils::update.packages(oldPkgs = pkg)
-    }
-    if (utils::packageVersion(pkg) >= version)
-      return(TRUE)
-  } else {
-    message("This function requires the '", pkg, "' package.")
-    response <- readline(paste0("Install it into ", .libPaths()[1L], "? [y/N] "))
-
-    if (tolower(response) == "y") {
-      utils::install.packages(pkg)
-      return(TRUE)
-    }
-  }
-  stop("Package '", pkg, "' (>= ", version, ") is required but not available!")
-}
-
-.ensure_igraph <- function() {
-  .ensure_pkg("igraph")
+.ensure_igraph <- function(...) {
+  rlang::check_installed("igraph", ...)
 }
 
 ## Unused functions ------

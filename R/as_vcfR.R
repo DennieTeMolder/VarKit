@@ -5,7 +5,7 @@ as_vcfR <- function(x) {
 
 ##' @export
 as_vcfR.varkit <- function(x) {
-  .ensure_pkg("vcfR")
+  rlang::check_installed("vcfR", reason = "for as_vcfR()")
   validate_varkit(x, check_format = TRUE)
 
   if (requireNamespace("vcfR")) {
