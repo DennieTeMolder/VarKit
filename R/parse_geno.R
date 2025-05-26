@@ -72,10 +72,9 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
   # Split the unique combinations and check if specific types appear at a fixed position/index
   uniq <- stringr::str_split(uniq, ":")
   uniq_mat <- sapply(uniq, `[`, seq_len(min(sapply(uniq, length))))
-  which_fixed_pos <- which(has_no_variation(uniq_mat))
+  which_fixed_pos <- which(has_no_variation(uniq_mat, margin = 1))
   names(which_fixed_pos) <- uniq_mat[which_fixed_pos, 1L]
 
-  fixed_position <- uniq_mat[has_no_variation(uniq_mat), 1L]
   types <- sort(unique(unlist(uniq)))
   results <- tibble::tibble(type = types, index = which_fixed_pos[types])
 

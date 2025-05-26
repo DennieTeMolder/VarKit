@@ -21,18 +21,29 @@ has_no_variation <- function(x, na.rm = TRUE, margin = 1) {
   # Obtain the first non-na value for each row/column if it exists
   non_na <- get_first_non_na(x, margin = margin)
 
+  # Expand to an equally sized matrix
+  non_na <- matrix(non_na, nrow = nrow(x), ncol = ncol(x), byrow = margin == 2)
+
   if (margin == 1) {
     all_equal <- matrixStats::rowAlls(x == non_na, na.rm = na.rm)
   } else {
     all_equal <- matrixStats::colAlls(x == non_na, na.rm = na.rm)
   }
 
-  # Return TRUE if NA.RM is enabled and all values in a row/column are NA
+  # all() always returns TRUE for a 0/1 length row/column (after NA.RM)
+  # NA is only returned when NA.RM is TRUE and the row/column has no FALSE values
+  if (margin == 1) {
+    all_equal <- matrixStats::rowAlls(x == non_na, na.rm = na.rm)
+  } else {
+    all_equal <- matrixStats::colAlls(x == non_na, na.rm = na.rm)
+  }
+
+  # With NA.RM on, values can only be TRUE/FALSE
   if (na.rm || !anyNA(all_equal))
     return(all_equal)
 
-  # If NAs are not removed, variation can also occur between NA and non-NA values
+  # If NAs are present in the output, variation can also occur between NA and non-NA values
   which_na <- which(is.na(all_equal))
-  all_equal[which_na] <- is.na(non_na[which_na])
+  all_equal[which_na] <- is.na(non_na[1L, which_na])
   all_equal
 }

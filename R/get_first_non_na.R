@@ -20,7 +20,7 @@ get_first_non_na <- function(x, margin = 1) {
       non_na[which_na] <- x[i, which_na, drop = TRUE]
     }
   } else {
-    stop("Only 'margin' value of 1 and 2 are supported! Current value: ", margin)
+    stop("Only 'margin' values of 1 and 2 are supported! Current value: ", margin)
   }
 
   non_na
