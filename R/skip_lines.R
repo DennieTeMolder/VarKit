@@ -8,7 +8,7 @@ skip_lines <- function(con,
                        comment.char = "",
                        block_size = 5e3L,
                        progress = TRUE) {
-  stopifnot(inherits(con, c("connection", "varkit.index")))
+  stopifnot(inherits(con, c("connection", "varkit_index")))
   if (!is_open(con)) open(con)
   n <- max(0L, as.integer(n), na.rm = TRUE)
   if (is.null(quote)) quote <- ""
