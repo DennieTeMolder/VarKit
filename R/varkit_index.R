@@ -11,7 +11,7 @@ varkit_index <- function(index, file, col_select = NULL, ...) {
   if (!rlang::quo_is_null(col_select))
     dots$col_select <- col_select
 
-  # Skip validation as its performed by open.varkit_index()
+  # Skip validation as its performed by open.varkit_index() later
   new_varkit_index(
     index = index,
     file = file,
@@ -79,9 +79,9 @@ print.varkit_index <- function(x, ...) {
 
 ##' @export
 open.varkit_index <- function(con, open = "r", blocking = TRUE, ...) {
-  if (open != "r")
+  if (!(identical(open, "r") || identical(open, "rt")))
     stop("Indexes should be read-only (open = 'r')!")
-  if (!blocking)
+  if (!isTRUE(blocking))
     stop("Indexes should be blocking (blocking = TRUE)!")
 
   if (!is_open.varkit_index(con)) {
@@ -103,7 +103,7 @@ close.varkit_index <- function(con, ...) {
 }
 
 ##' @export
-seek.varkit_index <- function(con, where = NA, origin = "start", ...) {
+seek.varkit_index <- function(con, where = NA, origin = "start", ..., max_header_lines = 1e6) {
   if (!is.na(where))
     stopifnot(length(where) == 1L, is.character(where) || is.numeric(where))
   origin <- match.arg(origin, c("start", "current", "end"))
@@ -134,32 +134,40 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ...) {
     close.varkit_index(con)
   open.varkit_index(con)
 
-  # Store the VCF header for user convenience
-  if (!.index_has_header(con) && .seek_passes_header(con, where)) {
-    header <- tryCatch(
-      read_vcf_header(env(con)$con),
-      error = function(e) NULL
-    )
+  #  Because skip_lines() below ignores comments we cannot use it on the header
+  if (.seek_passes_header(con, where)) {
+    no_header_p <- is.null(env(con)$read_vcf_args$header)
+    if (no_header_p) {
+      header <- read_vcf_header(env(con)$con, max_lines = max_header_lines)
+      n_header_lines <- nrow(meta(header)) + 1L
+    } else {
+      n_header_lines <- find_header_line(env(con)$con)
+    }
 
     # Adjust the current line number for the number of header lines read
-    if (!is.null(header)) {
-      env(con)$curr_line <- env(con)$curr_line + nrow(meta(header)) + 1L
-      if (env(con)$curr_line > where)
-        header <- NULL
+    env(con)$curr_line <- env(con)$curr_line + n_header_lines
+
+    if (env(con)$curr_line != con$linum[1L]) {
+      stop("The header size differs from the index! Expected: ", .frmt_big(con$linum[1L]),
+           ", but got: ", .frmt_big(env(con)$curr_line))
     }
 
-    # If we failed to read the header or the header size did not match the
-    # index, reset the connection, else it safe to store the header
-    if (is.null(header)) {
-      close.varkit_index(con)
-      open.varkit_index(con)
-    } else {
+    # Store the VCF header if not provided for user convenience
+    if (no_header_p)
       env(con)$read_vcf_args$header <- header
-    }
   }
 
-  # Move pointer if needed
-  skip_lines(con, n = where - env(con)$curr_line)
+  # When outside of the header we should count data lines only for parity with index_vcf()
+  if (where > con$linum[1L]) {
+    skip_lines(
+      con,
+      n = where - env(con)$curr_line,
+      blank.lines.skip = TRUE,
+      comment.char = "#"
+    )
+  } else {
+    skip_lines(con, n = where - env(con)$curr_line)
+  }
 
   invisible(con)
 }
@@ -184,10 +192,6 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ...) {
 
   res$linum <- env(index)$curr_line
   res
-}
-
-.index_has_header <- function(con) {
-  !is.null(env(con)$read_vcf_args$header)
 }
 
 .seek_passes_header <- function(con, where) {

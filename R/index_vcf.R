@@ -73,6 +73,7 @@ index_vcf <- function(file, size_bp = -1, chunk_size = 1e4, ...) {
       as.is = TRUE,
       fill = FALSE,
       strip.white = TRUE,
+      blank.lines.skip = TRUE,
       comment.char = "#"
     )
 
