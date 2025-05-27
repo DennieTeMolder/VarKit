@@ -159,7 +159,7 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ...) {
   }
 
   # Move pointer if needed
-  .skip_lines(con, n = where - env(con)$curr_line)
+  skip_lines(con, n = where - env(con)$curr_line)
 
   invisible(con)
 }

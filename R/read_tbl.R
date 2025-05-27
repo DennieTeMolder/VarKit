@@ -45,7 +45,7 @@ read_tbl <- function(file,
       file <- file(file, "r")
       .defer(close(file))
     }
-    .skip_lines(file, n = skip, progress = FALSE)
+    skip_lines(file, n = skip, progress = FALSE)
   }
 
   # If missing extract the col.names from the start of the file

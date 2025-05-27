@@ -1,6 +1,7 @@
 # Skip lines of CON in blocks with optional progress updates.
 # Increment CURRENT_LINE of CON if it is an index.
-.skip_lines <- function(con,
+##' @export
+skip_lines <- function(con,
                        n,
                        quote = "",
                        blank.lines.skip = FALSE,
