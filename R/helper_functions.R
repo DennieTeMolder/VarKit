@@ -164,38 +164,6 @@
   unname(split.default(x, f = group))
 }
 
-.skip_lines <- function(con, n, block_size = 5e3L, progress = TRUE) {
-  stopifnot(is_open(con))
-  n <- max(0L, as.integer(n), na.rm = TRUE)
-  block_size <- as.integer(block_size)
-  if (isTRUE(progress))
-    progress <- "Moving index pointer:"
-
-  # Jump through the file in blocks
-  times <- n %/% block_size
-  mod <- n %% block_size
-
-  if (times > 0L) {
-    purrr::walk(seq_len(times), function(i) {
-      .skip_lines_internal(con, n = block_size)
-    }, .progress = progress)
-  }
-  if (mod > 0L)
-    .skip_lines_internal(con, n = mod)
-
-  invisible(con)
-}
-
-.skip_lines_internal <- function(con, n) {
-  if (is_varkit_index(con)) {
-    readLines(env(con)$con, n = n)
-    env(con)$curr_line <- env(con)$curr_line + n
-  } else {
-    readLines(con, n = n)
-  }
-  invisible(NULL)
-}
-
 .ensure_igraph <- function(...) {
   rlang::check_installed("igraph", ...)
 }
