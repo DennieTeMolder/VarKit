@@ -9,7 +9,6 @@ read_vcf(
   col_select = NULL,
   header = NULL,
   n_max = -1,
-  skip = 0,
   na_geno = c("./.", ".|."),
   guess_max = 100,
   geno_ptype = NULL
@@ -23,8 +22,6 @@ read_vcf(
 \item{header}{varkit_header object, used to determine the column names of 'file'.}
 
 \item{n_max}{Integer, maximum number of variants to load. Zero or negative will load all.}
-
-\item{skip}{Integer, number of variants to skip before loading 'n_max' variants.}
 
 \item{na_geno}{Character vector, exact string(s) to convert to NA. Empty strings and "." are always converted to NA}
 

@@ -5,7 +5,6 @@
 ##' @param col_select Columns to include in the results. You can use the same mini-language as ‘dplyr::select()’ to refer to the columns by name. Use ‘c()’ to use more than one selection expression.
 ##' @param header varkit_header object, used to determine the column names of 'file'.
 ##' @param n_max Integer, maximum number of variants to load. Zero or negative will load all.
-##' @param skip Integer, number of variants to skip before loading 'n_max' variants.
 ##' @param na_geno Character vector, exact string(s) to convert to NA. Empty strings and "." are always converted to NA
 ##' @param guess_max Integer, number of variants to use for guessing the type/class of the genotype matrix, negative to disable.
 ##' @param geno_ptype Vector/array, prototype of the genotype matrix (i.e. double()). When provided guess_max is ignored.
@@ -19,7 +18,6 @@ read_vcf <- function(file,
                      col_select = NULL,
                      header = NULL,
                      n_max = -1,
-                     skip = 0,
                      na_geno = c("./.", ".|."),
                      guess_max = 100,
                      geno_ptype = NULL
@@ -71,7 +69,7 @@ read_vcf <- function(file,
 
   # Shared arguments for reading the body
   shared_args <- list(
-    file = file, na.strings = na.strings, skip = skip, header = FALSE, check.names = FALSE,
+    file = file, na.strings = na.strings, header = FALSE, check.names = FALSE,
     quote = "", as.is = TRUE, fill = FALSE, strip.white = TRUE, comment.char = "#"
   )
 
@@ -85,9 +83,6 @@ read_vcf <- function(file,
     geno_col_classes <- do.call(guess_col_classes, c(shared_args, list(
       nmax = guess_max, col.names = names(colClasses), colClasses = skip_known
     )))
-
-    # Make sure we don't skip a second time
-    shared_args$skip <- 0L
 
     geno_class <- lapply(geno_col_classes, function(class) methods::as(0.0, class))
     geno_class <- class(do.call(c, geno_class))[1L]
