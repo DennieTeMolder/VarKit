@@ -25,7 +25,7 @@ skip_lines <- function(con,
   }
 
   # Variables used by .skip_lines_internal()
-  real_lines <- identical(comment.char, "") && identcial(quote, "") && isFALSE(blank.lines.skip)
+  real_lines <- identical(comment.char, "") && identical(quote, "") && isFALSE(blank.lines.skip)
   index_p <- is_varkit_index(con)
 
   .skip_lines_internal <- function(con, n) {
@@ -59,11 +59,11 @@ skip_lines <- function(con,
 
   if (times > 0L) {
     purrr::walk(seq_len(times), function(i) {
-      .skip_lines_internal(con, n = block_size, quote, blank.lines.skip, comment.char)
+      .skip_lines_internal(con, n = block_size)
     }, .progress = progress)
   }
   if (mod > 0L)
-    .skip_lines_internal(con, n = mod, quote, blank.lines.skip, comment.char)
+    .skip_lines_internal(con, n = mod)
 
   invisible(con)
 }
