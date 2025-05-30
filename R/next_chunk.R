@@ -14,8 +14,8 @@ next_chunk.varkit_index <- function(x, col_select = NULL, ...) {
   next_idx <- .seek_next(x)
 
   # Fetch arguments stored on the index & merge with ...
-  if (exists("read_vcf_args", envir = env(x)))
-    args <- purrr::list_assign(env(x)$read_vcf_args, !!!args)
+  if (!is.null(read_vcf_args(x)))
+    args <- purrr::list_assign(read_vcf_args(x), !!!args)
 
   if (is.null(args[["header"]]))
     stop("Could not detect a VCF header! Please supply the 'header' argument.")

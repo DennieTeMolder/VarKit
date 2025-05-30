@@ -10,7 +10,7 @@ seq_index.varkit_index <- function(x, n_max = NULL) {
   open.varkit_index(x)
 
   if (is.null(n_max))
-    n_max <- env(x)$read_vcf_args$n_max
+    n_max <- read_vcf_args(x)$n_max
 
   if (!is.null(n_max) && !(is.numeric(n_max) && length(n_max) == 1L))
     stop("Please provide a single numeric value for the 'n_max' argument!")

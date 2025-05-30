@@ -136,7 +136,7 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ..., max_header
 
   # Deal with the VCF header, storing it if not provided by the user
   if (.seek_passes_header(con, where)) {
-    if (is.null(env(con)$read_vcf_args$header)) {
+    if (is.null(read_vcf_args(con)$header)) {
       header <- read_vcf_header(env(con)$con, max_lines = max_header_lines)
 
       # Adjust the current line number for the number of header lines read
@@ -147,7 +147,7 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ..., max_header
             ", but got: ", .frmt_big(env(con)$curr_line))
       }
 
-      env(con)$read_vcf_args$header <- header
+      read_vcf_args(con)$header <- header
     } else {
       # Skip past the header
       skip_lines(con, n = con$linum[1L] - env(con)$curr_line)
