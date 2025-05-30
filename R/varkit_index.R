@@ -134,27 +134,24 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ..., max_header
     close.varkit_index(con)
   open.varkit_index(con)
 
-  #  Because skip_lines() below ignores comments we cannot use it on the header
+  # Deal with the VCF header, storing it if not provided by the user
   if (.seek_passes_header(con, where)) {
-    no_header_p <- is.null(env(con)$read_vcf_args$header)
-    if (no_header_p) {
+    if (is.null(env(con)$read_vcf_args$header)) {
       header <- read_vcf_header(env(con)$con, max_lines = max_header_lines)
-      n_header_lines <- nrow(meta(header)) + 1L
-    } else {
-      n_header_lines <- find_header_line(env(con)$con)
-    }
 
-    # Adjust the current line number for the number of header lines read
-    env(con)$curr_line <- env(con)$curr_line + n_header_lines
+      # Adjust the current line number for the number of header lines read
+      env(con)$curr_line <- env(con)$curr_line + nrow(meta.varkit_header(header)) + 1L
 
-    if (env(con)$curr_line != con$linum[1L]) {
-      stop("The header size differs from the index! Expected: ", .frmt_big(con$linum[1L]),
-           ", but got: ", .frmt_big(env(con)$curr_line))
-    }
+      if (env(con)$curr_line != con$linum[1L]) {
+        stop("The header size differs from the index! Expected: ", .frmt_big(con$linum[1L]),
+            ", but got: ", .frmt_big(env(con)$curr_line))
+      }
 
-    # Store the VCF header if not provided for user convenience
-    if (no_header_p)
       env(con)$read_vcf_args$header <- header
+    } else {
+      # Skip past the header
+      skip_lines(con, n = con$linum[1L] - env(con)$curr_line)
+    }
   }
 
   # When outside of the header we should count data lines only for parity with index_vcf()
