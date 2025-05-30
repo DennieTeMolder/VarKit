@@ -9,8 +9,9 @@ next_chunk.varkit_index <- function(x, col_select = NULL, ...) {
   if (!rlang::is_named2(args))
     stop("All additional arguments must be named!")
 
+  # Open index to ensure it is valid
   open.varkit_index(x)
-  n_max <- .seek_next(x)$n_lines
+  next_idx <- .seek_next(x)
 
   # Fetch arguments stored on the index & merge with ...
   if (exists("read_vcf_args", envir = env(x)))
@@ -18,11 +19,19 @@ next_chunk.varkit_index <- function(x, col_select = NULL, ...) {
 
   if (is.null(args[["header"]]))
     stop("Could not detect a VCF header! Please supply the 'header' argument.")
+  if (!is.null(args[["n_max"]]) && !(is.numeric(args$n_max) && length(args$n_max) == 1L))
+    stop("Please provide a single numeric value for the 'n_max' argument!")
 
-  # Arguments 'col_select' (when provided), 'file', and 'n_max' are always overwritten
   if (!missing(col_select))
     args$col_select <- rlang::enquo(col_select)
-  args <- purrr::list_assign(args, file = env(x)$con, n_max = n_max)
+
+  # Ignore negative N_MAX
+  if (!isTRUE(args$n_max >= 1L))
+    args$n_max <- NULL
+
+  # Stay below N_MAX whilst never reading more than one chunk
+  args$n_max <- min(as.integer(args$n_max), next_idx$n_lines, na.rm = TRUE)
+  args$file <- env(x)$con
 
   vcf <- do.call(read_vcf, args)
   if (is.null(vcf))
@@ -31,10 +40,10 @@ next_chunk.varkit_index <- function(x, col_select = NULL, ...) {
   n <- n_sites.varkit(vcf, mask = FALSE)
 
   # Check if we got the expected number of sites as long as we are within the index's range
-  if (n != n_max && env(x)$curr_line <= x$linum[nrow(x)]) {
-    warning("At index row ", rownames(seek(x)), ": expected ", .frmt_big(n_max),
+  if (n != args$n_max && env(x)$curr_line <= x$linum[nrow(x)]) {
+    warning("At index row ", rownames(seek(x)), ": expected ", .frmt_big(args$n_max),
             " sites, but got ", .frmt_big(n), " sites.")
-    n <- n_max
+    n <- args$n_max
   }
 
   # Increment index
