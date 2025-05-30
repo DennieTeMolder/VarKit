@@ -44,19 +44,19 @@ validate_varkit_index <- function(index) {
     stop("The provided 'index' should be sorted on 'linum'!")
   if (any(diff(index$linum) < utils::head(index$n_lines, n = -1)))
     stop("The 'n_lines' column is larger then the difference in 'linum'!")
-  if (is.null(env(index)$file))
+  if (is.null(.env(index)$file))
     stop("The index env has no associated 'file'!")
-  if (!file.exists(env(index)$file))
+  if (!file.exists(.env(index)$file))
     stop("The 'file' associated to the index does not seem to exists!")
   index
 }
 
-`env<-` <- function(x, value) {
+`.env<-` <- function(x, value) {
   attr(x, "env") <- value
   x
 }
 
-env <- function(x) {
+.env <- function(x) {
   attr(x, "env")
 }
 
@@ -70,9 +70,9 @@ print.varkit_index <- function(x, ...) {
   .msg_h1("VarKit Index Object")
   NextMethod("print", x)
   if (is_open.varkit_index(x)) {
-    .msg_info("With a pointer at line ", env(x)$curr_line, " in ", env(x)$file)
+    .msg_info("With a pointer at line ", .env(x)$curr_line, " in ", .env(x)$file)
   } else {
-    .msg_info("For file ", env(x)$file)
+    .msg_info("For file ", .env(x)$file)
   }
   invisible(x)
 }
@@ -86,8 +86,8 @@ open.varkit_index <- function(con, open = "r", blocking = TRUE, ...) {
 
   if (!is_open.varkit_index(con)) {
     validate_varkit_index(con)
-    env(con)$con <- file(env(con)$file, open = open, blocking = blocking, ...)
-    env(con)$curr_line <- 1L
+    .env(con)$con <- file(.env(con)$file, open = open, blocking = blocking, ...)
+    .env(con)$curr_line <- 1L
   }
   invisible(con)
 }
@@ -95,10 +95,10 @@ open.varkit_index <- function(con, open = "r", blocking = TRUE, ...) {
 ##' @export
 close.varkit_index <- function(con, ...) {
   if (is_open.varkit_index(con)) {
-    close(env(con)$con)
+    close(.env(con)$con)
   }
-  env(con)$con <- NA
-  env(con)$curr_line <- 1L
+  .env(con)$con <- NA
+  .env(con)$curr_line <- 1L
   invisible(con)
 }
 
@@ -110,7 +110,7 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ..., max_header
 
   # Make sure the current line is not out of sync
   if (!is_open.varkit_index(con))
-    env(con)$curr_line <- 1L
+    .env(con)$curr_line <- 1L
 
   # Handle non-numeric values of WHERE
   if (is.na(where)) {
@@ -121,7 +121,7 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ..., max_header
       stop("The value of 'where' is not present in the index's 'id' column!")
   } else if (is.numeric(where)) {
     if (origin == "current") {
-      where <- where + env(con)$curr_line
+      where <- where + .env(con)$curr_line
     } else if (origin == "end") {
       where <- with(utils::tail(con, n = 1L), linum + n_lines) - where
     }
@@ -130,27 +130,27 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ..., max_header
   }
 
   # Close file if target line is before current line
-  if (where < env(con)$curr_line)
+  if (where < .env(con)$curr_line)
     close.varkit_index(con)
   open.varkit_index(con)
 
   # Deal with the VCF header, storing it if not provided by the user
   if (.seek_passes_header(con, where)) {
     if (is.null(read_vcf_args(con)$header)) {
-      header <- read_vcf_header(env(con)$con, max_lines = max_header_lines)
+      header <- read_vcf_header(.env(con)$con, max_lines = max_header_lines)
 
       # Adjust the current line number for the number of header lines read
-      env(con)$curr_line <- env(con)$curr_line + nrow(meta.varkit_header(header)) + 1L
+      .env(con)$curr_line <- .env(con)$curr_line + nrow(meta.varkit_header(header)) + 1L
 
-      if (env(con)$curr_line != con$linum[1L]) {
+      if (.env(con)$curr_line != con$linum[1L]) {
         stop("The header size differs from the index! Expected: ", .frmt_big(con$linum[1L]),
-            ", but got: ", .frmt_big(env(con)$curr_line))
+            ", but got: ", .frmt_big(.env(con)$curr_line))
       }
 
       read_vcf_args(con)$header <- header
     } else {
       # Skip past the header
-      skip_lines(con, n = con$linum[1L] - env(con)$curr_line)
+      skip_lines(con, n = con$linum[1L] - .env(con)$curr_line)
     }
   }
 
@@ -158,39 +158,39 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ..., max_header
   if (where > con$linum[1L]) {
     skip_lines(
       con,
-      n = where - env(con)$curr_line,
+      n = where - .env(con)$curr_line,
       blank.lines.skip = TRUE,
       comment.char = "#"
     )
   } else {
-    skip_lines(con, n = where - env(con)$curr_line)
+    skip_lines(con, n = where - .env(con)$curr_line)
   }
 
   invisible(con)
 }
 
 .current_index_position <- function(index) {
-  i <- max(0L, which(index$linum <= env(index)$curr_line))
+  i <- max(0L, which(index$linum <= .env(index)$curr_line))
   res <- as.data.frame(index[max(i, 1L), , drop = FALSE])
   rownames(res) <- i
 
   # Check if pointer is outside current entry
-  res_diff <- env(index)$curr_line - res$linum
+  res_diff <- .env(index)$curr_line - res$linum
   if (res_diff < 0L || res_diff >= res$n_lines) {
     for (idx in seq_along(res)) res[[idx]] <- NA
     if (i == nrow(index)) {
       res$n_lines <- index$n_lines[i] - res_diff
     } else {
-      res$n_lines <- index$linum[i + 1L] - env(index)$curr_line
+      res$n_lines <- index$linum[i + 1L] - .env(index)$curr_line
     }
   } else {
-    res$n_lines <- res$linum + res$n_lines - env(index)$curr_line
+    res$n_lines <- res$linum + res$n_lines - .env(index)$curr_line
   }
 
-  res$linum <- env(index)$curr_line
+  res$linum <- .env(index)$curr_line
   res
 }
 
 .seek_passes_header <- function(con, where) {
-  env(con)$curr_line < con$linum[1L] &&  where >= con$linum[1L]
+  .env(con)$curr_line < con$linum[1L] &&  where >= con$linum[1L]
 }

@@ -22,7 +22,7 @@ next_lines.varkit_index <- function(x, n_max = NULL) {
   # Stay below N_MAX whilst never reading more than one chunk
   n_max <- min(as.integer(n_max), next_idx$n_lines, na.rm = TRUE)
 
-  lines <- scan(env(x)$con,
+  lines <- scan(.env(x)$con,
     what = character(),
     sep = "\n",
     nlines = n_max,
@@ -37,14 +37,14 @@ next_lines.varkit_index <- function(x, n_max = NULL) {
   n <- length(lines)
 
   # Check if we got the expected number of sites as long as we are within the index's range
-  if (n != n_max && env(x)$curr_line <= x$linum[nrow(x)]) {
+  if (n != n_max && .env(x)$curr_line <= x$linum[nrow(x)]) {
     warning("At index row ", rownames(seek(x)), ": expected ", .frmt_big(n_max),
             " sites, but got ", .frmt_big(n), " sites.")
     n <- n_max
   }
 
   # Increment index
-  env(x)$curr_line <- env(x)$curr_line + n
+  .env(x)$curr_line <- .env(x)$curr_line + n
 
   if (n == 0L)
     return(NULL)

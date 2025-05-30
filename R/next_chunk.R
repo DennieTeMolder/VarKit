@@ -31,7 +31,7 @@ next_chunk.varkit_index <- function(x, col_select = NULL, ...) {
 
   # Stay below N_MAX whilst never reading more than one chunk
   args$n_max <- min(as.integer(args$n_max), next_idx$n_lines, na.rm = TRUE)
-  args$file <- env(x)$con
+  args$file <- .env(x)$con
 
   vcf <- do.call(read_vcf, args)
   if (is.null(vcf))
@@ -40,14 +40,14 @@ next_chunk.varkit_index <- function(x, col_select = NULL, ...) {
   n <- n_sites.varkit(vcf, mask = FALSE)
 
   # Check if we got the expected number of sites as long as we are within the index's range
-  if (n != args$n_max && env(x)$curr_line <= x$linum[nrow(x)]) {
+  if (n != args$n_max && .env(x)$curr_line <= x$linum[nrow(x)]) {
     warning("At index row ", rownames(seek(x)), ": expected ", .frmt_big(args$n_max),
             " sites, but got ", .frmt_big(n), " sites.")
     n <- args$n_max
   }
 
   # Increment index
-  env(x)$curr_line <- env(x)$curr_line + n
+  .env(x)$curr_line <- .env(x)$curr_line + n
 
   vcf
 }

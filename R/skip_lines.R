@@ -30,11 +30,11 @@ skip_lines <- function(con,
 
   .skip_lines_internal <- function(con, n) {
     if (real_lines) {
-      readLines(if (index_p) env(con)$con else con, n = n)
+      readLines(if (index_p) .env(con)$con else con, n = n)
     } else {
       # This is about 30% slower than readLines()
       scan(
-        if (index_p) env(con)$con else con,
+        if (index_p) .env(con)$con else con,
         what = list(NULL),
         sep = "\n",
         nlines = n,
@@ -48,7 +48,7 @@ skip_lines <- function(con,
     }
 
     if (index_p)
-      env(con)$curr_line <- env(con)$curr_line + n
+      .env(con)$curr_line <- .env(con)$curr_line + n
 
     invisible(NULL)
   }
