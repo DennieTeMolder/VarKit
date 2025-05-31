@@ -31,7 +31,7 @@ index_vcf <- function(file, size_bp = -1, chunk_size = 1e4, ...) {
   use_pos <- size_bp >= 1
 
   # Open the file for reading
-  file <- file(file, "r")
+  file <- file_con(file, "r")
   .defer(close(file))
 
   .msg_step("Reading VCF header")

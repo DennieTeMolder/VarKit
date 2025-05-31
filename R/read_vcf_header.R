@@ -16,7 +16,7 @@ read_vcf_header <- function(file, max_lines = 1e6) {
       )
     }
   } else {
-    file <- file(file, "r")
+    file <- file_con(file, "r")
     .defer(close(file))
   }
 

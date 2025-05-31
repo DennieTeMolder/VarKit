@@ -1,7 +1,7 @@
 ##' @export
 find_header_line <- function(file) {
   if (!.is_connection(file)) {
-    file <- file(file, "r")
+    file <- file_con(file, "r")
     .defer(close(file))
   }
 

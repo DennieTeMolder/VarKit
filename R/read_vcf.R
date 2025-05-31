@@ -34,7 +34,7 @@ read_vcf <- function(file,
 
   # Turn file into a connection
   if (!.is_connection(file)) {
-    file <- file(file, "r")
+    file <- file_con(file, "r")
     .defer(close(file))
   }
 

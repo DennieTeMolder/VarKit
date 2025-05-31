@@ -32,7 +32,7 @@ guess_col_classes <- function(file,
     .defer(close(con))
   } else {
     stopifnot(file.exists(file))
-    con <- file(file, "r")
+    con <- file_con(file, "r")
     .defer(close(con))
 
     if (as.integer(skip) > 0L) skip_lines(con, n = skip, progress = FALSE)

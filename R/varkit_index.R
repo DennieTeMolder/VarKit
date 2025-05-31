@@ -86,7 +86,7 @@ open.varkit_index <- function(con, open = "r", blocking = TRUE, ...) {
 
   if (!is_open.varkit_index(con)) {
     validate_varkit_index(con)
-    .env(con)$con <- file(.env(con)$file, open = open, blocking = blocking, ...)
+    .env(con)$con <- file_con(.env(con)$file, open = open, blocking = blocking, ...)
     .env(con)$curr_line <- 1L
   }
   invisible(con)

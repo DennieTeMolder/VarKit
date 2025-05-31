@@ -1,6 +1,7 @@
 ##' @export
 file_con <- function(description, open = "", ..., compression = NULL) {
-  stopifnot(is.character(description), length(description) == 1L)
+  if (!(is.character(description) && length(description) == 1L))
+    stop("'", substitute(description), "' should be a file path description!")
   stopifnot(is.character(open), length(open) == 1L)
 
   type <- substr(open, 1L, 1L)
