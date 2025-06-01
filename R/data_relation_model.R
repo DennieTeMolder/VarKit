@@ -167,6 +167,20 @@ drm_add <- function(x, drmodel, dim_links, shortname = NULL) {
 }
 
 ##' @export
+drm_remove <- function(x) {
+  # Recurse over lists/dataframes
+  if (is.list(x)) {
+    for (i in seq_along(x)) {
+      x[[i]] <- drm_remove(x[[i]])
+    }
+  }
+
+  attr(x, "data_relation_model") <- NULL
+  attr(x, "data_relation_uuid") <- NULL
+  x
+}
+
+##' @export
 drm_get <- function(x) {
   if (is_drm(x))
     return(x)
@@ -301,9 +315,7 @@ drm_pull <- function(x, ..., drop = FALSE) {
   x <- do.call(`[`, args = c(list(x), dots, list(drop = drop)))
 
   # Remove DRM attributes as size no longer matches the original object
-  attr(x, "data_relation_model") <- NULL
-  attr(x, "data_relation_uuid") <- NULL
-  x
+  drm_remove(x)
 }
 
 # REVIEW drop support for atomic arguments? Use single column df instead.
@@ -352,7 +364,7 @@ drm_match <- function(x, ..., .override = FALSE) {
   dots <- purrr::imap(dots, function(dot, name) {
     keys <- if (!.override) drmodel[["selectors"]][[name]][["match_on"]]
     if (is.null(keys)) {
-      drmodel[["selectors"]][[name]][["match_on"]] <- dot
+      drmodel[["selectors"]][[name]][["match_on"]] <- drm_remove(dot)
       return(rlang::missing_arg())
     }
 

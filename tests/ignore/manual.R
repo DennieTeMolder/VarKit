@@ -131,6 +131,11 @@ drm_pull(x)
 drm_pull(y)
 drm_pull(y, , "ref", drop = TRUE)
 
+z <- samples(vcf)
+z <- drm_add(z, my_drm, "samples")
+drm_preselect(my_drm, samples = z %in% z[1:5])
+drm_get(z)
+
 drm_deselect(my_drm, sites)
 drm_get(y)
 
