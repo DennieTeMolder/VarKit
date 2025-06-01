@@ -25,7 +25,8 @@ Imports:
     rlang,
     stringr (>= 1.5.0),
     tibble,
-    tidyselect
+    tidyselect,
+    uuid
 Suggests: 
     adegenet,
     igraph,

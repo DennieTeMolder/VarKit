@@ -110,6 +110,38 @@ test <- rbind(
 seek(test, 1)
 seq_index(test)
 
+### Data relation model ------
+my_drm <- drm_create()
+
+x <- geno(vcf)
+has_drm(x)
+drm_get(x)
+
+x <- drm_add(x, my_drm, c(NA, "sites"))
+has_drm(x)
+drm_get(x)
+
+y <- site(vcf)
+y <- drm_add(y, my_drm, c("sites", NA))
+
+drm_preselect(my_drm, sites = y$chrom == "I")
+drm_preselect(my_drm, sites = drm_pull(y, , "ref") == "C")
+
+drm_pull(x)
+drm_pull(y)
+drm_pull(y, , "ref", drop = TRUE)
+
+drm_deselect(my_drm, sites)
+drm_get(y)
+
+drm_match(y, sites = list(chrom = y$chrom, pos = y$pos, alt = y$alt))
+drm_get(y)
+
+drm_match(y, sites = y$pos, .override = T)
+drm_get(y)
+
+drm_forget(my_drm)
+
 ### Tests ------
 ## Geno ------
 header <- read_vcf_header(example)
