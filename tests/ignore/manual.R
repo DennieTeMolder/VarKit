@@ -134,16 +134,15 @@ drm_pull(y, , "ref", drop = TRUE)
 z <- samples(vcf)
 z <- drm_add(z, my_drm, "samples")
 drm_preselect(my_drm, samples = z %in% z[1:5])
-drm_get(z)
-
-drm_deselect(my_drm, sites)
-drm_get(y)
+drm_pull(z)
 
 drm_match(y, sites = list(chrom = y$chrom, pos = y$pos, alt = y$alt))
 drm_get(y)
 
 drm_match(y, sites = y$pos, .override = T)
 drm_get(y)
+
+drm_deselect(my_drm, sites)
 
 drm_forget(my_drm)
 
