@@ -1,3 +1,4 @@
+# REVIEW adopt use of .dim()[margin]?
 # REVIEW make each lapply its own function? We currently reference vars from the enclosing envs
 ##' @export
 splitm <- function(x,

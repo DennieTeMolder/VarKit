@@ -3,6 +3,18 @@
   c("chrom", "pos", "id", "ref", "alt", "qual", "filter", "info", "format")
 }
 
+# Dim functions that also work on vectors
+.dim <- function(x) {
+  res <- dim(x)
+  if (!is.null(res))
+    return(res)
+  length(x)
+}
+
+.ndim <- function(x) {
+  length(.dim(x))
+}
+
 # Simplified version of withr::defer()
 .defer <- function(expr, envir = parent.frame(), after = FALSE) {
   thunk <- as.call(list(function() expr))
