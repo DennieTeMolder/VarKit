@@ -361,21 +361,27 @@ drm_match <- function(x, ..., .override = FALSE) {
     if (nrow(dot) != nrow(keys))
       stop("Expected keys to have length ", .frmt_big(nrow(keys)), ", but got ", .frmt_big(nrow(dot)), "!")
 
-    .match_key <- function(y, name = NULL) {
-      key <- if (is.null(name)) keys else keys[[name]]
-      res <- match(y, table = key)
-      if (anyNA(res))
-        stop("Unable to match all key values!")
-      res
-    }
+    # Drop unused columns
+    dot <- dot[, names(keys), drop = FALSE]
 
-    if (!is.data.frame(dot)) {
-      dot <- .match_key(dot)
-    } else {
-      dot <- purrr::imap(dot, .match_key)
-    }
+    # Check if sorting is needed else return an empty argument to skip indexing
+    if (identical(dot, keys))
+      return(rlang::missing_arg())
 
-    do.call(order, args = dot)
+    # Determine the permutation that would sort the objects to be matched (Ref: wrapr::match_order())
+    dot_order <- do.call(order, args = dot)
+    key_order <- do.call(order, args = keys)
+
+    # Determine the premutation that would give DOT the same order as KEYS (Ref: wrapr::invert_perm())
+    key_order_inverse <- seq_along(key_order)
+    key_order_inverse[key_order] <- key_order_inverse
+    dot_match_key <- dot_order[key_order_inverse]
+
+    # Ensure that reordering gives identical objects
+    if (!identical(dot[dot_match_key, , drop = FALSE], keys))
+      stop("Could not match all key values!")
+
+    dot_match_key
   })
 
   # Match arguments to 'dim_links' of X

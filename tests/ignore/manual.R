@@ -138,10 +138,16 @@ drm_preselect(my_drm, samples = z %in% z[1:5])
 drm_pull(z)
 drm_pull(x)
 
-drm_match(y, sites = list(chrom = y$chrom, pos = y$pos, alt = y$alt))
+drm_match(y, sites = dplyr::select(dplyr::arrange(y, qual), chrom, pos), .override = T)
 drm_get(y)
 
-drm_match(y, sites = y$pos, .override = T)
+all.equal(
+  drm_match(y, sites = list(chrom = y$chrom, pos = y$pos)),
+  dplyr::inner_join(my_drm$nodes$sites$match_on, y),
+  check.attributes = FALSE
+)
+
+drm_match(y, sites = list(pos = y$pos), .override = T)
 drm_get(y)
 
 drm_deselect(my_drm, sites)
