@@ -362,26 +362,13 @@ drm_match <- function(x, ..., .override = FALSE) {
       stop("Expected keys to have length ", .frmt_big(nrow(keys)), ", but got ", .frmt_big(nrow(dot)), "!")
 
     # Drop unused columns
-    dot <- dot[, names(keys), drop = FALSE]
+    dot <- dot[names(keys)]
 
     # Check if sorting is needed else return an empty argument to skip indexing
     if (identical(dot, keys))
       return(rlang::missing_arg())
 
-    # Determine the permutation that would sort the objects to be matched (Ref: wrapr::match_order())
-    dot_order <- do.call(order, args = dot)
-    key_order <- do.call(order, args = keys)
-
-    # Determine the premutation that would give DOT the same order as KEYS (Ref: wrapr::invert_perm())
-    key_order_inverse <- seq_along(key_order)
-    key_order_inverse[key_order] <- key_order_inverse
-    dot_match_key <- dot_order[key_order_inverse]
-
-    # Ensure that reordering gives identical objects
-    if (!identical(dot[dot_match_key, , drop = FALSE], keys))
-      stop("Could not match all key values!")
-
-    dot_match_key
+    match_order(dot, keys, by = FALSE)
   })
 
   # Match arguments to 'dim_links' of X
@@ -391,4 +378,66 @@ drm_match <- function(x, ..., .override = FALSE) {
 
   # Apply re-oredering
   do.call(`[`, args = c(list(x), args, list(drop = FALSE)))
+}
+
+# Returns indices that would match the order of X to Y
+# This is an extension of wrapr::match_order()
+##' @export
+match_order <- function(x, y, by = names(y), check_identical = TRUE) {
+  stopifnot(is.list(x) == is.list(y))
+  .stopifnotsingle(check_identical, what = "logical")
+  if (is.logical(by))
+    by <- if (isTRUE(by)) names(y)
+  if (!is.null(by))
+    stopifnot(is.character(by))
+
+  # Store for when raising errors later
+  subs_x <- deparse(substitute(x), width.cutoff = 20)
+  subs_y <- deparse(substitute(y), width.cutoff = 20)
+
+  # The BY argument only applies if arguments are list-like
+  if (is.list(x)) {
+    if (!is.null(by)) {
+      # Check BY
+      stopifnot(rlang::is_named(x), rlang::is_named(y))
+      by_x <- if (rlang::is_named(by)) names(by) else by
+      stopifnot(by_x %in% names(x))
+      by_y <- unname(by)
+      stopifnot(by_y %in% names(y))
+      # Reorder based on BY
+      x <- x[by_x]
+      y <- y[by_y]
+    }
+    # Convert to data frame to facilitate the identical() check
+    if (!is.data.frame(x)) {
+      stopifnot(length(x[[1L]]) == sapply(x, length))
+      stopifnot(length(y[[1L]]) == sapply(y, length))
+      x <- as.data.frame(x)
+      y <- as.data.frame(y)
+    }
+  } else {
+    x <- data.frame(X1 = x)
+    y <- data.frame(X1 = y)
+  }
+
+  # Determine the permutation that would sort the objects to be matched
+  x_order <- do.call(order, args = unname(as.list(x)))
+  y_order <- do.call(order, args = unname(as.list(y)))
+
+  # Determine the permutation that would give X the same order as Y
+  y_order_inverse <- seq_along(y_order)
+  y_order_inverse[y_order] <- y_order_inverse
+  x_match_y <- x_order[y_order_inverse]
+
+  # Ensure that reordering gives identical objects
+  if (check_identical &&
+        !isTRUE(all.equal(
+          current = x[x_match_y, , drop = FALSE],
+          target = y,
+          check.class = FALSE,
+          check.attributes = FALSE
+        )))
+    stop("Could not match all values of '", subs_x, "' to '", subs_y, "'!")
+
+  x_match_y
 }

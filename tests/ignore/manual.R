@@ -141,9 +141,10 @@ drm_pull(x)
 drm_match(y, sites = dplyr::select(dplyr::arrange(y, qual), chrom, pos), .override = T)
 drm_get(y)
 
+check_cols <- names(my_drm$nodes$sites$match_on)
 all.equal(
-  drm_match(y, sites = list(chrom = y$chrom, pos = y$pos)),
-  dplyr::inner_join(my_drm$nodes$sites$match_on, y),
+  drm_match(y, sites = list(chrom = y$chrom, pos = y$pos))[check_cols],
+  dplyr::inner_join(my_drm$nodes$sites$match_on, y)[check_cols],
   check.attributes = FALSE
 )
 
