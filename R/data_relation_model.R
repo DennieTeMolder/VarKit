@@ -100,13 +100,9 @@ print.data_relation_model <- function(x, ...) {
       if (is.null(sset[["match_on"]])) {
         keys <- NULL
       } else {
-        if (is.atomic(sset[["match_on"]])) {
-          keys <- "*"
-        } else {
-          keys <- .collapse(names(sset[["match_on"]]), delim = ",")
-        }
-        keys <- paste0("[", keys, "]")
+        keys <- sprintf("{%s}", .collapse(names(sset[["match_on"]]), delim = ","))
       }
+
       cli::cat_bullet(paste0(name, keys, ": ", msg))
     })
   }
@@ -313,7 +309,6 @@ drm_pull <- function(x, ..., drop = FALSE) {
   drm_remove(x)
 }
 
-# REVIEW drop support for atomic arguments? Use single column df instead.
 ##' @export
 drm_match <- function(x, ..., .override = FALSE) {
   if (!has_drm(x))
@@ -341,15 +336,12 @@ drm_match <- function(x, ..., .override = FALSE) {
   dots <- purrr::map(dots, function(dot) {
     if (is.list(dot)) {
       if (!rlang::is_named(dot))
-        stop("When providing a list, all elements should be named!")
-      dot <- tibble::as_tibble(dot)
-      is_distinct <- nrow(dot) == nrow(dplyr::distinct(dot))
-    } else if (is.atomic(dot)) {
-      is_distinct <- anyDuplicated(dot, nmax = length(dot)) == 0L
+        stop("All list elements should be named!")
     } else {
-        stop("Additional arguments can only be atomic vectors or lists!")
+        stop("All additional arguments should be named lists!")
     }
-    if (!is_distinct)
+    dot <- tibble::as_tibble(dot)
+    if (nrow(dot) != nrow(dplyr::distinct(dot)))
       stop("Provided combination of match keys are not unique!")
     dot
   })
@@ -363,13 +355,11 @@ drm_match <- function(x, ..., .override = FALSE) {
       return(rlang::missing_arg())
     }
 
-    if (typeof(dot) != typeof(keys))
-      stop("Data relation model expects a ", typeof(keys), ", but got a ", typeof(dot), "!")
-    if (is.data.frame(dot)) {
-      missing <- setdiff(names(keys), names(dot))
-      if (length(missing) != 0L)
-        stop("The following match keys are expected but missing: ", .quote_collapse(missing))
-    }
+    missing <- setdiff(names(keys), names(dot))
+    if (length(missing) != 0L)
+      stop("The following match keys are expected but missing: ", .quote_collapse(missing))
+    if (nrow(dot) != nrow(keys))
+      stop("Expected keys to have length ", .frmt_big(nrow(keys)), ", but got ", .frmt_big(nrow(dot)), "!")
 
     .match_key <- function(y, name = NULL) {
       key <- if (is.null(name)) keys else keys[[name]]
