@@ -66,6 +66,7 @@ length(groups)
 length(unlist(groups))
 
 ## Index ------
+# TODO test N_MAX
 index <- index_vcf(example, col_select = -info)
 print(index)
 
@@ -117,14 +118,14 @@ x <- geno(vcf)
 has_drm(x)
 drm_get(x)
 
-x <- drm_add(x, my_drm, c(NA, "sites"))
+x <- drm_add(x, my_drm, c("samples", "sites"))
 has_drm(x)
 drm_get(x)
 
 y <- site(vcf)
 y <- drm_add(y, my_drm, c("sites", NA))
 
-drm_preselect(my_drm, sites = y$chrom == "I")
+drm_preselect(my_drm, sites = y$qual > 2000)
 drm_preselect(my_drm, sites = drm_pull(y, , "ref") == "C")
 
 drm_pull(x)
@@ -135,6 +136,7 @@ z <- samples(vcf)
 z <- drm_add(z, my_drm, "samples")
 drm_preselect(my_drm, samples = z %in% z[1:5])
 drm_pull(z)
+drm_pull(x)
 
 drm_match(y, sites = list(chrom = y$chrom, pos = y$pos, alt = y$alt))
 drm_get(y)

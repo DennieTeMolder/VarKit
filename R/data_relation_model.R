@@ -1,10 +1,10 @@
 ##' @export
-new_drm <- function(links = NULL, shortnames = NULL, selectors = NULL) {
+new_drm <- function(links = NULL, labels = NULL, nodes = NULL) {
   if (is.null(links)) links <- list()
-  if (is.null(shortnames)) shortnames <- character()
-  if (is.null(selectors)) selectors <- list()
+  if (is.null(labels)) labels <- character()
+  if (is.null(nodes)) nodes <- list()
   env <- list2env(
-    list(links = links, shortnames = shortnames, selectors = selectors),
+    list(links = links, labels = labels, nodes = nodes),
     parent = rlang::empty_env()
   )
   structure(env, class = c("data_relation_model", "environment"))
@@ -19,10 +19,10 @@ is_drm <- function(x) {
 validate_drm <- function(x) {
   # Requirements for empty models
   stopifnot(is_drm(x))
-  stopifnot(c("links", "shortnames", "selectors") %in% names(x))
+  stopifnot(c("links", "labels", "nodes") %in% names(x))
   stopifnot(is.list(x$links))
-  stopifnot(is.character(x$shortnames))
-  stopifnot(is.list(x$selectors))
+  stopifnot(is.character(x$labels))
+  stopifnot(is.list(x$nodes))
 
   # Requirements for populated models
   if (length(x[["links"]]) > 0L) {
@@ -31,37 +31,32 @@ validate_drm <- function(x) {
     stopifnot(purrr::map_lgl(x$links, is.character))
     stopifnot(!purrr::map_lgl(x$links, anyNA))
 
-    # drm$selector
-    stopifnot(rlang::is_named(x$selectors))
+    # drm$nodes
+    stopifnot(rlang::is_named(x$nodes))
     missing <- setdiff(
       unique(purrr::list_c(x[["links"]])),
-      c(names(x$selectors), "")
+      c(names(x$nodes), "")
     )
     if (length(missing) > 0L)
-      stop("The following 'dim_links' have no selector: ", .quote_collapse(missing))
+      stop("The following 'dim_links' have no node: ", .quote_collapse(missing))
 
-    purrr::walk(x$selectors, function(selector) {
-      # drm$selector$length
-      stopifnot("length" %in% names(selector))
-      .stopifnotsingle(selector$length, what = "integer")
+    purrr::walk(x$nodes, function(node) {
+      # drm$node$length
+      stopifnot("length" %in% names(node))
+      .stopifnotsingle(node$length, what = "integer")
 
-      # drm$selector$select_which
-      if (!is.null(selector[["select_which"]]))
-        stopifnot(is.integer(selector$select_which), !anyNA(selector$select_which))
+      # drm$node$select_which
+      if (!is.null(node[["select_which"]]))
+        stopifnot(is.integer(node$select_which), !anyNA(node$select_which))
 
-      # drm$selector$match_on
-      match_on <- selector[["match_on"]]
+      # drm$node$match_on
+      match_on <- node[["match_on"]]
       if (!is.null(match_on)) {
-        if (is.data.frame(match_on)) {
-          match_len <- nrow(match_on)
-        } else if (is.atomic(match_on)) {
-          match_len <- length(match_on)
-        } else {
-          stop("Match keys should be an atomic vector or data frame, not ", class(match_on))
-        }
-        if (match_len != selector[["length"]]) {
-          expected <- .frmt_big(selector[["length"]])
-          observed <- .frmt_big(match_len)
+        if (!is.data.frame(match_on))
+          stop("Match keys should be a data frame, not ", class(match_on))
+        if (nrow(match_on) != node[["length"]]) {
+          expected <- .frmt_big(node[["length"]])
+          observed <- .frmt_big(match_on)
           stop("Expected match keys to have length ", expected, ", but found ", observed)
         }
       }
@@ -71,26 +66,26 @@ validate_drm <- function(x) {
 }
 
 ##' @export
-drm_create <- function(links = NULL, shortnames = NULL, selectors = NULL) {
-  validate_drm(new_drm(links = links, shortnames = shortnames, selectors = selectors))
+drm_create <- function(links = NULL, labels = NULL, nodes = NULL) {
+  validate_drm(new_drm(links = links, labels = labels, nodes = nodes))
 }
 
 ##' @export
 print.data_relation_model <- function(x, ...) {
   .msg_h1("Data relation model <", rlang::env_label(x), ">")
-  if (length(x[["selectors"]]) == 0L) {
+  if (length(x[["nodes"]]) == 0L) {
     message("Empty model...")
   } else {
     .msg_h2("Links")
     print(tibble::tibble(
-      name = x[["shortnames"]][names(x[["links"]])],
-      dim_links = vapply(x[["links"]], .collapse, character(1L)),
+      label = x[["labels"]][names(x[["links"]])],
+      dim_links = sprintf("[%s]", purrr::map_chr(x[["links"]], .collapse)),
       uuid = names(x[["links"]])
     ))
     cat("\n")
 
-    .msg_h2("Selectors [match_on]")
-    purrr::iwalk(x[["selectors"]], function(sset, name) {
+    .msg_h2("Nodes")
+    purrr::iwalk(x[["nodes"]], function(sset, name) {
       if (is.null(sset[["select_which"]])) {
         msg <- paste("use all", .frmt_big(sset[["length"]]), "elements")
       } else {
@@ -120,13 +115,13 @@ print.data_relation_model <- function(x, ...) {
 }
 
 ##' @export
-drm_add <- function(x, drmodel, dim_links, shortname = NULL) {
+drm_add <- function(x, drmodel, dim_links, label = NULL) {
   validate_drm(drmodel)
   stopifnot(is.vector(dim_links), is.character(dim_links))
-  if (is.null(shortname)) {
-    shortname <- deparse(substitute(x))
+  if (is.null(label)) {
+    label <- deparse(substitute(x))
   } else {
-    .stopifnotsingle(shortname, what = "character")
+    .stopifnotsingle(label, what = "character")
   }
 
   # Check DIM_LINKS, convert NA to empty string
@@ -141,15 +136,15 @@ drm_add <- function(x, drmodel, dim_links, shortname = NULL) {
   if (is.null(uuid) || !uuid %in% names(drmodel[["links"]]))
     uuid <- uuid::UUIDgenerate()
 
-  # Add DIM_LINKS to DRMODEL selectors
+  # Add DIM_LINKS to DRMODEL nodes
   x_dim <- .dim(x)
   for (i in seq_along(dim_links)[dim_links != ""]) {
     id <- dim_links[i]
-    curr_sel <- drmodel[["selectors"]][[id]]
-    if (is.null(curr_sel)) {
-      drmodel[["selectors"]][[id]] <- list(length = x_dim[i])
-    } else if (x_dim[i] != curr_sel[["length"]]) {
-      expected <- .frmt_big(curr_sel[["length"]])
+    curr_node <- drmodel[["nodes"]][[id]]
+    if (is.null(curr_node)) {
+      drmodel[["nodes"]][[id]] <- list(length = x_dim[i])
+    } else if (x_dim[i] != curr_node[["length"]]) {
+      expected <- .frmt_big(curr_node[["length"]])
       observed <- .frmt_big(x_dim[i])
       warning("At dimension ", i, "(", id, "): expected length ", expected, ", but got ", observed, "!")
     }
@@ -157,7 +152,7 @@ drm_add <- function(x, drmodel, dim_links, shortname = NULL) {
 
   # Add X and DIM_LINKS to DRMODEL links
   drmodel[["links"]][[uuid]] <- dim_links
-  drmodel[["shortnames"]][uuid] <- shortname
+  drmodel[["labels"]][uuid] <- label
 
   # Add DRMODEL to X
   attr(x, "data_relation_model") <- drmodel
@@ -206,35 +201,35 @@ drm_preselect <- function(x, ...) {
   # Check elements
   for (current in names(dots)) {
     curr_dots <- dots[[current]]
-    curr_sel <- drmodel[["selectors"]][[current]]
-    if (is.null(curr_sel))
+    curr_node <- drmodel[["nodes"]][[current]]
+    if (is.null(curr_node))
       stop("At '", current, "': entry not found in data relation model!")
     if (!is.logical(curr_dots))
       stop("At '", current, "': should be a vector of logical values!")
 
-    check_len <- c(length(curr_sel[["select_which"]]), curr_sel[["length"]])
+    check_len <- c(length(curr_node[["select_which"]]), curr_node[["length"]])
     check_len <- check_len[check_len > 0L]
     if (!any(length(curr_dots) == check_len)) {
-      stop("At '", current, "': selector should have a length of ",
+      stop("At '", current, "': node should have a length of ",
            .collapse(.frmt_big(check_len), delim = " or "),
            ", but got ", length(curr_dots))
     }
 
     if (!any(curr_dots))
-      stop("At '", current, "': no elements remaining after applying selector!")
+      stop("At '", current, "': no elements remaining after applying node!")
   }
 
-  # Apply selectors
+  # Apply selections
   for (current in names(dots)) {
     curr_dots <- dots[[current]]
-    if (length(curr_dots) == drmodel[["selectors"]][[current]][["length"]]) {
+    if (length(curr_dots) == drmodel[["nodes"]][[current]][["length"]]) {
       if (all(curr_dots)) {
-        drmodel[["selectors"]][[current]][["select_which"]] <- NULL
+        drmodel[["nodes"]][[current]][["select_which"]] <- NULL
       } else {
-        drmodel[["selectors"]][[current]][["select_which"]] <- which(curr_dots)
+        drmodel[["nodes"]][[current]][["select_which"]] <- which(curr_dots)
       }
     } else {
-      drmodel$selectors[[current]]$select_which <- drmodel$selectors[[current]]$select_which[curr_dots]
+      drmodel$nodes[[current]]$select_which <- drmodel$nodes[[current]]$select_which[curr_dots]
     }
   }
 
@@ -250,22 +245,22 @@ drm_forget <- function(x, ..., .forget_select = TRUE, .forget_match = TRUE) {
   .stopifnotsingle(.forget_select, what = "logical")
   .stopifnotsingle(.forget_match, what = "logical")
 
-  # Parse ... for selectors to clear, if empty clear all selectors
+  # Parse ... for nodes to clear, if empty clear all nodes
   if (...length() > 0L) {
     dots <- as.character(substitute(list(...))[-1L])
-    missing <- setdiff(dots, names(drmodel[["selectors"]]))
+    missing <- setdiff(dots, names(drmodel[["nodes"]]))
     if (length(missing) > 0L)
-      stop("The following selectors are not recognised: ", .quote_collapse(missing))
+      stop("The following nodes are not recognised: ", .quote_collapse(missing))
   } else {
-    dots <- names(drmodel[["selectors"]])
+    dots <- names(drmodel[["nodes"]])
   }
 
-  # Clear selectors
+  # Clear nodes
   for (name in dots) {
     if (.forget_select)
-      drmodel[["selectors"]][[name]][["select_which"]] <- NULL
+      drmodel[["nodes"]][[name]][["select_which"]] <- NULL
     if (.forget_match)
-      drmodel[["selectors"]][[name]][["match_on"]] <- NULL
+      drmodel[["nodes"]][[name]][["match_on"]] <- NULL
   }
 
   x
@@ -279,7 +274,7 @@ drm_deselect <- function(x, ...) {
 ##' @export
 drm_pull <- function(x, ..., drop = FALSE) {
   if (!has_drm(x))
-    stop(substitute(x), "has no associated data relation model!")
+    stop(substitute(x), " has no associated data relation model!")
   drmodel <- validate_drm(drm_get(x))
 
   # Allow for additional user provided indices, these take precedence
@@ -297,19 +292,19 @@ drm_pull <- function(x, ..., drop = FALSE) {
   # Extent ... to match the dimensions of X
   dots <- c(dots, rep(list(rlang::missing_arg()), length(x_dim) - length(dots)))
 
-  # Pull selector indices from relation data model
+  # Pull node indices from relation data model
   for (i in seq_along(x_dim)) {
     if (!rlang::is_missing(dots[[i]]) || links[[i]] == "")
       next()
 
-    curr_sel <- drmodel[["selectors"]][[links[[i]]]]
-    if (x_dim[i] != curr_sel[["length"]]) {
+    curr_node <- drmodel[["nodes"]][[links[[i]]]]
+    if (x_dim[i] != curr_node[["length"]]) {
       stop("At dimension ", i, ": '", links[i], "' expects length ",
-          curr_sel[["length"]], ", but got ", x_dim[i])
+          curr_node[["length"]], ", but got ", x_dim[i])
     }
 
-    if (!is.null(curr_sel[["select_which"]]))
-      dots[[i]] <- curr_sel[["select_which"]]
+    if (!is.null(curr_node[["select_which"]]))
+      dots[[i]] <- curr_node[["select_which"]]
   }
 
   x <- do.call(`[`, args = c(list(x), dots, list(drop = drop)))
@@ -322,7 +317,7 @@ drm_pull <- function(x, ..., drop = FALSE) {
 ##' @export
 drm_match <- function(x, ..., .override = FALSE) {
   if (!has_drm(x))
-    stop(substitute(x), "has no associated data relation model!")
+    stop(substitute(x), " has no associated data relation model!")
   drmodel <- validate_drm(drm_get(x))
   rlang::check_dots_used()
 
@@ -330,9 +325,9 @@ drm_match <- function(x, ..., .override = FALSE) {
   if (!rlang::is_named(dots))
     stop("All additional arguments should be named!")
 
-  missing <- setdiff(names(dots), names(drmodel[["selectors"]]))
+  missing <- setdiff(names(dots), names(drmodel[["nodes"]]))
   if (length(missing) != 0L)
-    stop("The following arguments do not match a selector: ", .quote_collapse(missing))
+    stop("The following arguments do not match a node: ", .quote_collapse(missing))
 
   links <- drmodel[["links"]][[attr(x, "data_relation_uuid")]]
   if (is.null(links))
@@ -359,12 +354,12 @@ drm_match <- function(x, ..., .override = FALSE) {
     dot
   })
 
-  # If a selector has no stored keys or if .OVERRIDE, store the provided keys
-  # Else match the provided keys to the stored ones to match the order
+  # If a node has no stored keys or if .OVERRIDE, store the provided keys
+  # Else match the provided keys to the stored ones to match the order of both
   dots <- purrr::imap(dots, function(dot, name) {
-    keys <- if (!.override) drmodel[["selectors"]][[name]][["match_on"]]
+    keys <- if (!.override) drmodel[["nodes"]][[name]][["match_on"]]
     if (is.null(keys)) {
-      drmodel[["selectors"]][[name]][["match_on"]] <- drm_remove(dot)
+      drmodel[["nodes"]][[name]][["match_on"]] <- drm_remove(dot)
       return(rlang::missing_arg())
     }
 
