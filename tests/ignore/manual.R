@@ -126,17 +126,17 @@ y <- site(vcf)
 y <- drm_add(y, my_drm, c("sites", NA))
 
 drm_preselect(my_drm, sites = y$qual > 2000)
-drm_preselect(my_drm, sites = drm_pull(y, , "ref") == "C")
+drm_preselect(my_drm, sites = drm_subset(y, , "ref") == "C")
 
-drm_pull(x)
-drm_pull(y)
-drm_pull(y, , "ref", drop = TRUE)
+drm_subset(x)
+drm_subset(y)
+drm_subset(y, , "ref", drop = TRUE)
 
 z <- samples(vcf)
 z <- drm_add(z, my_drm, "samples")
 drm_preselect(my_drm, samples = z %in% z[1:5])
-drm_pull(z)
-drm_pull(x)
+drm_subset(z)
+drm_subset(x)
 
 drm_match(y, sites = dplyr::select(dplyr::arrange(y, qual), chrom, pos), .override = T)
 drm_get(y)
