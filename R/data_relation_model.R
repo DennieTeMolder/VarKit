@@ -55,10 +55,10 @@ validate_drm <- function(x) {
       match_on <- node[["match_on"]]
       if (!is.null(match_on)) {
         if (!is.data.frame(match_on))
-          stop("Match keys should be a data frame, not ", class(match_on))
+          stop("Match keys should be a data frame, not: ", .quote_collapse(class(match_on)))
         if (nrow(match_on) != node[["length"]]) {
           expected <- .frmt_big(node[["length"]])
-          observed <- .frmt_big(match_on)
+          observed <- .frmt_big(nrow(match_on))
           stop("Expected match keys to have length ", expected, ", but found ", observed)
         }
       }
