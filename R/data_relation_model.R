@@ -79,11 +79,19 @@ print.data_relation_model <- function(x, ...) {
     message("Empty model...")
   } else {
     .msg_h2("Links")
-    print(tibble::tibble(
-      label = x[["labels"]][names(x[["links"]])],
-      dim_links = sprintf("[%s]", purrr::map_chr(x[["links"]], .collapse)),
-      uuid = names(x[["links"]])
-    ))
+    if (length(x[["links"]]) > 0L) {
+      print(tibble::tibble(
+        label = x[["labels"]][names(x[["links"]])],
+        dim_links = sprintf("[%s]", purrr::map_chr(x[["links"]], .collapse)),
+        uuid = names(x[["links"]])
+      ))
+    } else {
+      print(tibble::tibble(
+        label = character(),
+        dim_links = character(),
+        uuid = character()
+      ))
+    }
     cat("\n")
 
     .msg_h2("Nodes")
