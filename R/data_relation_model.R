@@ -390,70 +390,6 @@ drm_match <- function(x, ..., .override = FALSE) {
   do.call(`[`, args = c(list(x), args, list(drop = FALSE)))
 }
 
-# Returns indices that would match the order of X to Y
-# This is an extension of wrapr::match_order()
-##' @export
-match_order <- function(x, y, by = names(y), check_equal = TRUE) {
-  stopifnot(is.list(x) == is.list(y))
-  .stopifnotsingle(check_equal, what = "logical")
-  if (is.logical(by))
-    by <- if (isTRUE(by)) names(y)
-  if (!is.null(by))
-    stopifnot(is.character(by))
-
-  # Store for when raising errors later
-  subs_x <- deparse(substitute(x), width.cutoff = 20)
-  subs_y <- deparse(substitute(y), width.cutoff = 20)
-
-  # The BY argument only applies if arguments are list-like
-  if (is.list(x)) {
-    if (!is.null(by)) {
-      # Check BY
-      stopifnot(rlang::is_named(x), rlang::is_named(y))
-      by_x <- if (rlang::is_named(by)) names(by) else by
-      stopifnot(by_x %in% names(x))
-      by_y <- unname(by)
-      stopifnot(by_y %in% names(y))
-      # Reorder based on BY
-      x <- x[by_x]
-      y <- y[by_y]
-    }
-    # Convert to data frame for easy row indexing later
-    if (!is.data.frame(x)) {
-      stopifnot(length(x[[1L]]) == sapply(x, length))
-      x <- as.data.frame(x)
-    }
-    if (!is.data.frame(y)) {
-      stopifnot(length(y[[1L]]) == sapply(y, length))
-      y <- as.data.frame(y)
-    }
-  } else {
-    x <- data.frame(x = x)
-    y <- data.frame(y = y)
-  }
-
-  # Determine the permutation that would sort the objects to be matched
-  x_order <- do.call(order, args = unname(as.list(x)))
-  y_order <- do.call(order, args = unname(as.list(y)))
-
-  # Determine the permutation that would give X the same order as Y
-  y_order_inverse <- seq_along(y_order)
-  y_order_inverse[y_order] <- y_order_inverse
-  x_match_y <- x_order[y_order_inverse]
-
-  # Ensure that reordering gives equal objects
-  if (check_equal &&
-        !isTRUE(all.equal(
-          current = unname(as.list(x[x_match_y, , drop = FALSE])),
-          target = unname(as.list(y)),
-          check.class = FALSE,
-          check.attributes = FALSE
-        )))
-    stop("Could not match all values of '", subs_x, "' to '", subs_y, "'!")
-
-  x_match_y
-}
-
 ##' @export
 has_join <- function(x, y, by = NULL, ...) {
   stopifnot(is.data.frame(x))
@@ -478,20 +414,16 @@ has_join <- function(x, y, by = NULL, ...) {
   y <- y[by_y]
 
   # Add a dummy column for checking if the join was successful
-  dummy_col <- ".IDX."
-  if (any(by_x == dummy_col) || any(by_y == dummy_col))
-    stop("Unexpected!")
-  y[[dummy_col]] <- TRUE
-
-  matches_y <- dplyr::left_join(
+  y[[length(y) + 1L]] <- TRUE
+  join_result <- dplyr::left_join(
     x = x,
     y = y,
     by = by,
     multiple = "any",
     suffix = c(".x", ""),
     ...
-  )[[dummy_col]]
+  )
 
   # Unsuccessful joins return NA
-  !is.na(matches_y)
+  !is.na(join_result[[length(join_result)]])
 }
