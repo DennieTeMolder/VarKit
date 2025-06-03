@@ -4,6 +4,7 @@ read_vcf_args <- function(index) {
   get("read_vcf_args", envir = .env(index), inherits = FALSE)
 }
 
+##' @export
 `read_vcf_args<-` <- function(index, value) {
   stopifnot(is_varkit_index(index))
   assign("read_vcf_args", value = value, envir = .env(index))
