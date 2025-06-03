@@ -369,6 +369,14 @@ drm_match <- function(x, ..., .override = FALSE) {
     if (isTRUE(all.equal(keys, dot, check.class = FALSE, check.attributes = FALSE)))
       return(rlang::missing_arg())
 
+    # This approach is 10x faster, but produces invalid results when there is >1 key
+    if (ncol(keys) == 1L) {
+      res <- match(dot[[1L]], keys[[1L]])
+      if (anyNA(res))
+        stop("Failed to match all key values!")
+      return(order(res))
+    }
+
     # Add indices and join to match the order
     dot[[length(dot) + 1L]] <- seq_len(nrow(dot))
     join_result <- dplyr::left_join(
