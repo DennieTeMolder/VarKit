@@ -155,6 +155,8 @@ drm_deselect(my_drm, sites)
 
 drm_forget(my_drm)
 
+drm_contains(my_drm, x)
+
 ### Tests ------
 ## Geno ------
 header <- read_vcf_header(example)
