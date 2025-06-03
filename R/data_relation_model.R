@@ -385,9 +385,9 @@ drm_match <- function(x, ..., .override = FALSE) {
 # Returns indices that would match the order of X to Y
 # This is an extension of wrapr::match_order()
 ##' @export
-match_order <- function(x, y, by = names(y), check_identical = TRUE) {
+match_order <- function(x, y, by = names(y), check_equal = TRUE) {
   stopifnot(is.list(x) == is.list(y))
-  .stopifnotsingle(check_identical, what = "logical")
+  .stopifnotsingle(check_equal, what = "logical")
   if (is.logical(by))
     by <- if (isTRUE(by)) names(y)
   if (!is.null(by))
@@ -410,16 +410,18 @@ match_order <- function(x, y, by = names(y), check_identical = TRUE) {
       x <- x[by_x]
       y <- y[by_y]
     }
-    # Convert to data frame to facilitate the identical() check
+    # Convert to data frame for easy row indexing later
     if (!is.data.frame(x)) {
       stopifnot(length(x[[1L]]) == sapply(x, length))
-      stopifnot(length(y[[1L]]) == sapply(y, length))
       x <- as.data.frame(x)
+    }
+    if (!is.data.frame(y)) {
+      stopifnot(length(y[[1L]]) == sapply(y, length))
       y <- as.data.frame(y)
     }
   } else {
-    x <- data.frame(X1 = x)
-    y <- data.frame(X1 = y)
+    x <- data.frame(x = x)
+    y <- data.frame(y = y)
   }
 
   # Determine the permutation that would sort the objects to be matched
@@ -431,11 +433,11 @@ match_order <- function(x, y, by = names(y), check_identical = TRUE) {
   y_order_inverse[y_order] <- y_order_inverse
   x_match_y <- x_order[y_order_inverse]
 
-  # Ensure that reordering gives identical objects
-  if (check_identical &&
+  # Ensure that reordering gives equal objects
+  if (check_equal &&
         !isTRUE(all.equal(
-          current = x[x_match_y, , drop = FALSE],
-          target = y,
+          current = unname(as.list(x[x_match_y, , drop = FALSE])),
+          target = unname(as.list(y)),
           check.class = FALSE,
           check.attributes = FALSE
         )))
