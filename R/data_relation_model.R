@@ -1,4 +1,3 @@
-# TODO drm_copy()
 # TODO drm_trim()
 ##' @export
 new_drm <- function(links = NULL, labels = NULL, nodes = NULL) {
@@ -208,6 +207,13 @@ drm_contains <- function(x, ...) {
       return(FALSE)
     any(names(x_drm[["links"]]) == attr(dot, "data_relation_uuid", exact = TRUE))
   })
+}
+
+##' @export
+drm_copy <- function(drmodel) {
+  stopifnot(is_drm(drmodel))
+  # Only copy nodes, other elements should be added using drm_add()
+  new_drm(nodes = drmodel[["nodes"]])
 }
 
 ##' @export
