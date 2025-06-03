@@ -122,6 +122,8 @@ print.data_relation_model <- function(x, ...) {
 
 ##' @export
 drm_add <- function(x, drmodel, dim_links, label = NULL) {
+  if (is_drm(x))
+    stop("'x' cannot be a data relation model itself!")
   validate_drm(drmodel)
   stopifnot(is.vector(dim_links), is.character(dim_links))
   if (is.null(label)) {
@@ -281,6 +283,8 @@ drm_deselect <- function(x, ...) {
 drm_pull <- function(x, ..., drop = FALSE) {
   if (!has_drm(x))
     stop(substitute(x), " has no associated data relation model!")
+  if (is_drm(x))
+    stop("Please provide the object to subset, not the data relation model itself!")
   drmodel <- validate_drm(drm_get(x))
 
   # Allow for additional user provided indices, these take precedence
@@ -323,6 +327,8 @@ drm_pull <- function(x, ..., drop = FALSE) {
 drm_match <- function(x, ..., .override = FALSE) {
   if (!has_drm(x))
     stop(substitute(x), " has no associated data relation model!")
+  if (is_drm(x))
+    stop("Please provide the object to match, not the data relation model itself!")
   drmodel <- validate_drm(drm_get(x))
 
   rlang::check_dots_used()
