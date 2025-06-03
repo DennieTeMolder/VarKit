@@ -316,8 +316,8 @@ drm_match <- function(x, ..., .override = FALSE) {
   if (!has_drm(x))
     stop(substitute(x), " has no associated data relation model!")
   drmodel <- validate_drm(drm_get(x))
-  rlang::check_dots_used()
 
+  rlang::check_dots_used()
   dots <- list(...)
   if (!rlang::is_named(dots))
     stop("All additional arguments should be named!")
@@ -336,14 +336,13 @@ drm_match <- function(x, ..., .override = FALSE) {
 
   # Validate arguments and cast lists to tibbles
   dots <- purrr::map(dots, function(dot) {
-    if (is.list(dot)) {
-      if (!rlang::is_named(dot))
-        stop("All list elements should be named!")
-    } else {
-        stop("All additional arguments should be named lists!")
+    if (!is.list(dot)) {
+      stop("All additional arguments should be named lists!")
+    } else if (!rlang::is_named(dot)) {
+      stop("All list elements should be named!")
     }
     dot <- tibble::as_tibble(dot)
-    if (nrow(dot) != nrow(dplyr::distinct(dot)))
+    if (nrow(dot) != dplyr::n_distinct(dot))
       stop("Provided combination of match keys are not unique!")
     dot
   })
@@ -367,10 +366,19 @@ drm_match <- function(x, ..., .override = FALSE) {
     dot <- dot[names(keys)]
 
     # Check if sorting is needed else return an empty argument to skip indexing
-    if (identical(dot, keys))
+    if (isTRUE(all.equal(keys, dot, check.class = FALSE, check.attributes = FALSE)))
       return(rlang::missing_arg())
 
-    match_order(dot, keys, by = FALSE)
+    # Add indices and join to match the order
+    dot[[length(dot) + 1L]] <- seq_len(nrow(dot))
+    join_result <- dplyr::left_join(
+      x = keys,
+      y = dot,
+      by = names(keys),
+      unmatched = "error",
+      relationship = "one-to-one"
+    )
+    join_result[[length(join_result)]]
   })
 
   # Match arguments to 'dim_links' of X
