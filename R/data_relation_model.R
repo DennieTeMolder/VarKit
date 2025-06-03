@@ -1,4 +1,3 @@
-# TODO drm_trim()
 ##' @export
 new_drm <- function(links = NULL, labels = NULL, nodes = NULL) {
   if (is.null(links)) links <- list()
@@ -214,6 +213,35 @@ drm_copy <- function(drmodel) {
   stopifnot(is_drm(drmodel))
   # Only copy nodes, other elements should be added using drm_add()
   new_drm(nodes = drmodel[["nodes"]])
+}
+
+##' @export
+drm_trim <- function(drmodel, ..., .trim_nodes = TRUE) {
+  validate_drm(drmodel)
+  .stopifnotsingle(.trim_nodes, what = "logical")
+
+  # Trim drmodel$links to contain only ... if provided
+  if (...length() != 0L) {
+    stopifnot(drm_contains(drmodel, ...))
+
+    uuids <- purrr::map_chr(list(...), function(dot) {
+      attr(dot, "data_relation_uuid")
+    })
+
+    drmodel[["links"]] <- drmodel[["links"]][uuids]
+  }
+
+  # Trim drmodel$labels to match drmodel$links
+  drmodel[["labels"]] <- drmodel[["labels"]][names(drmodel[["links"]])]
+
+  # Trim drmodel$nodes to match drmodel$links
+  if (.trim_nodes) {
+    links <- unlist(drmodel[["links"]], use.names = FALSE)
+    links <- unique(links[links != ""])
+    drmodel[["nodes"]] <- drmodel[["nodes"]][links]
+  }
+
+  drmodel
 }
 
 ##' @export
