@@ -20,7 +20,10 @@ is_varkit_geno <- function(x) {
 }
 
 ##' @export
-print.varkit_geno <- function(x, ..., n = .max_print_col(x), n_samples = 10) {
+print.varkit_geno <- function(x, ..., n = NULL, n_samples = 10) {
+  if (is.null(n))
+    n <- .max_print_col(x)
+
   site_trunc <- isTRUE(n < n_sites.varkit_geno(x))
   sample_trunc <- isTRUE(n_samples < n_samples.varkit_geno(x))
   if (!site_trunc)

@@ -142,19 +142,18 @@
     cname_len <- nchar(colnames(mat)) + 3L
   }
 
-  col_len <- apply(mat, 2L, .max_nchar) + 1L
+  # Add 2 for the quotes around character values
+  cval_len <- apply(mat, 2, .max_nchar) + 1L
   if (is.character(mat))
-    col_len <- col_len + 2L
+    cval_len <- cval_len + 2L
 
   # Check if col name or col value is widest, add row name width to first element
-  col_widths <- pmax.int(cname_len, col_len)
+  col_widths <- pmax.int(cname_len, cval_len)
   col_widths[1L] <- col_widths[1L] + rname_len
 
   # Return the index of the last column that fits within width
   which_fit <- which(cumsum(col_widths) < width)
-  if (length(which_fit) == 0L)
-      return(1L)
-  max(which_fit)
+  max(which_fit, 1L)
 }
 
 # X should be ordered from large to small (computationally)
