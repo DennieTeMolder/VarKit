@@ -195,7 +195,8 @@ has_drm <- function(x) {
 
 ##' @export
 drm_contains <- function(x, ...) {
-  rlang::check_dots_used()
+  rlang::check_dots_unnamed()
+
   x_drm <- drm_get(x)
 
   purrr::map_lgl(list(...), function(dot) {
@@ -211,7 +212,7 @@ drm_contains <- function(x, ...) {
 ##' @export
 drm_copy <- function(drmodel) {
   stopifnot(is_drm(drmodel))
-  # Only copy nodes, other elements should be added using drm_add()
+  # Only copy nodes, other elements should be added using: x <- drm_add(drm, x)
   new_drm(nodes = drmodel[["nodes"]])
 }
 
@@ -219,6 +220,7 @@ drm_copy <- function(drmodel) {
 drm_trim <- function(drmodel, ..., .trim_nodes = TRUE) {
   validate_drm(drmodel)
   .stopifnotsingle(.trim_nodes, what = "logical")
+  rlang::check_dots_unnamed()
 
   # Trim drmodel$links to contain only ... if provided
   if (...length() != 0L) {
@@ -247,9 +249,8 @@ drm_trim <- function(drmodel, ..., .trim_nodes = TRUE) {
 ##' @export
 drm_preselect <- function(x, ...) {
   drmodel <- validate_drm(drm_get(x))
-  if (is.null(drmodel))
-    stop(substitute(x), " has no associated data relation model!")
-  rlang::check_dots_used()
+  if (...length() == 0L)
+    stop("Please provide the nodes to delete as additional arguments!")
 
   dots <- list(...)
   if (!rlang::is_named(dots))
@@ -330,20 +331,21 @@ drm_deselect <- function(x, ...) {
 drm_subset <- function(x, ..., drop = FALSE) {
   if (is_drm(x))
     stop("Please provide the object to subset, not the data relation model itself!")
+  rlang::check_dots_unnamed()
+
+  # Allow for additional user provided indices, these take precedence
+  dots <- rlang::dots_list(..., .preserve_empty = TRUE, .ignore_empty = "none")
+
   drmodel <- validate_drm(drm_get(x))
   if (!drm_contains(drmodel, x))
     stop("The associated data relation model no longer contains '", substitute(x), "'!")
-
-  # Allow for additional user provided indices, these take precedence
-  rlang::check_dots_unnamed()
-  dots <- rlang::dots_list(..., .preserve_empty = TRUE, .ignore_empty = "none")
 
   links <- drmodel[["links"]][[attr(x, "data_relation_uuid")]]
   x_dim <- .dim(x)
   if (length(links) != length(x_dim))
     stop("Data relation model expects ", length(links), "dimensions, but got ", length(x_dim), "!")
   if (length(dots) > length(x_dim))
-    stop("Provided more additional arguments than the number of dimensions of '", substitute(x), "'!")
+    stop("Provided more additional arguments than the number of dimensions in '", substitute(x), "'!")
 
   # Extent ... to match the dimensions of X
   dots <- c(dots, rep(list(rlang::missing_arg()), length(x_dim) - length(dots)))
@@ -377,11 +379,12 @@ drm_match <- function(x, ..., .override = FALSE) {
   drmodel <- validate_drm(drm_get(x))
   if (!drm_contains(drmodel, x))
     stop("The associated data relation model no longer contains '", substitute(x), "'!")
+  if (...length() == 0L)
+    stop("Please provide the keys to match on as additional arguments!")
 
-  rlang::check_dots_used()
   dots <- list(...)
   if (!rlang::is_named(dots))
-    stop("All additional arguments should be named!")
+    stop("All additional arguments should be named by the nodes to match!")
 
   missing <- setdiff(names(dots), names(drmodel[["nodes"]]))
   if (length(missing) != 0L)
