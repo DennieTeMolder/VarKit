@@ -55,11 +55,12 @@ links <- find_linked_sites(vcf, windows = -1, return_r2 = TRUE, cores = 1)
 lgraph <- resolve_links(links, cores = 1)
 summary(lgraph, vcf = vcf)
 
+summary(mask(vcf, lgraph))
+summary(is_linked(lgraph, vcf))
+
 temp_file <- tempfile(fileext = ".xml")
 write_graph(lgraph, temp_file)
 read_graph(temp_file)
-
-summary(mask(vcf, lgraph))
 
 groups <- igraph::groups(lgraph)
 length(groups)
