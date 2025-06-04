@@ -191,6 +191,30 @@ drm_do_remove <- function(x) {
 }
 
 ##' @export
+drm_delete <- function(drmodel, ...) {
+  validate_drm(drmodel)
+  if (...length() == 0L)
+    stop("Please provide the nodes to delete as additional arguments!")
+  rlang::check_dots_unnamed()
+
+  # ... contains the names of the nodes to delete
+  dots <- as.character(substitute(list(...))[-1L])
+  if (any(dots == ""))
+    stop("Arguments cannot be empty/zero characters!")
+
+  # Links cannot reference the deleted nodes, find those who do se they can be removed
+  link_has_dots <- purrr::map_lgl(drmodel[["links"]], function(link) any(link %in% dots))
+  keep_uuid <- names(which(!link_has_dots))
+
+  # Remove nodes and any links referencing them
+  drmodel[["links"]] <- drmodel[["links"]][keep_uuid]
+  drmodel[["labels"]] <- drmodel[["labels"]][keep_uuid]
+  drmodel[["nodes"]][dots] <- NULL
+
+  drmodel
+}
+
+##' @export
 drm_get <- function(x) {
   if (is_drm(x))
     return(x)
