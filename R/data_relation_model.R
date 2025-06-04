@@ -128,7 +128,7 @@ summary.data_relation_model <- function(object, ...) {
 }
 
 ##' @export
-drm_add <- function(x, drmodel, dim_links, label = NULL) {
+drm_do_add <- function(x, drmodel, dim_links, label = NULL) {
   if (is_drm(x))
     stop("'x' cannot be a data relation model itself!")
   validate_drm(drmodel)
@@ -177,11 +177,11 @@ drm_add <- function(x, drmodel, dim_links, label = NULL) {
 }
 
 ##' @export
-drm_remove <- function(x) {
+drm_do_remove <- function(x) {
   # Recurse over lists/dataframes
   if (is.list(x)) {
     for (i in seq_along(x)) {
-      x[[i]] <- drm_remove(x[[i]])
+      x[[i]] <- drm_do_remove(x[[i]])
     }
   }
 
@@ -337,7 +337,7 @@ drm_deselect <- function(x, ...) {
 }
 
 ##' @export
-drm_subset <- function(x, ..., drop = FALSE) {
+drm_do_subset <- function(x, ..., drop = FALSE) {
   if (is_drm(x))
     stop("Please provide the object to subset, not the data relation model itself!")
   rlang::check_dots_unnamed()
@@ -378,11 +378,11 @@ drm_subset <- function(x, ..., drop = FALSE) {
   x <- do.call(`[`, args = c(list(x), dots, list(drop = drop)))
 
   # Remove DRM attributes as size no longer matches the original object
-  drm_remove(x)
+  drm_do_remove(x)
 }
 
 ##' @export
-drm_match <- function(x, ..., .override = FALSE) {
+drm_do_match <- function(x, ..., .override = FALSE) {
   if (is_drm(x))
     stop("Please provide the object to match, not the data relation model itself!")
   drmodel <- validate_drm(drm_get(x))
@@ -422,7 +422,7 @@ drm_match <- function(x, ..., .override = FALSE) {
   dots <- purrr::imap(dots, function(dot, name) {
     keys <- if (!.override) drmodel[["nodes"]][[name]][["match_on"]]
     if (is.null(keys)) {
-      drmodel[["nodes"]][[name]][["match_on"]] <- drm_remove(dot)
+      drmodel[["nodes"]][[name]][["match_on"]] <- drm_do_remove(dot)
       return(rlang::missing_arg())
     }
 

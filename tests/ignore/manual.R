@@ -118,37 +118,37 @@ x <- geno(vcf)
 has_drm(x)
 drm_get(x)
 
-x <- drm_add(x, my_drm, c("samples", "sites"))
+x <- drm_do_add(x, my_drm, c("samples", "sites"))
 has_drm(x)
 drm_get(x)
 
 y <- site(vcf)
-y <- drm_add(y, my_drm, c("sites", NA))
+y <- drm_do_add(y, my_drm, c("sites", NA))
 
 drm_preselect(my_drm, sites = y$qual > 2000)
-drm_preselect(my_drm, sites = drm_subset(y, , "ref") == "C")
+drm_preselect(my_drm, sites = drm_do_subset(y, , "ref") == "C")
 
-drm_subset(x)
-drm_subset(y)
-drm_subset(y, , "ref", drop = TRUE)
+drm_do_subset(x)
+drm_do_subset(y)
+drm_do_subset(y, , "ref", drop = TRUE)
 
 z <- samples(vcf)
-z <- drm_add(z, my_drm, "samples")
+z <- drm_do_add(z, my_drm, "samples")
 drm_preselect(my_drm, samples = z %in% z[1:5])
-drm_subset(z)
-drm_subset(x)
+drm_do_subset(z)
+drm_do_subset(x)
 
-drm_match(y, sites = dplyr::select(dplyr::arrange(y, qual), chrom, pos), .override = T)
+drm_do_match(y, sites = dplyr::select(dplyr::arrange(y, qual), chrom, pos), .override = T)
 drm_get(y)
 
 check_cols <- names(my_drm$nodes$sites$match_on)
 all.equal(
-  drm_match(y, sites = list(chrom = y$chrom, pos = y$pos))[check_cols],
+  drm_do_match(y, sites = list(chrom = y$chrom, pos = y$pos))[check_cols],
   dplyr::inner_join(my_drm$nodes$sites$match_on, y)[check_cols],
   check.attributes = FALSE
 )
 
-drm_match(y, sites = list(pos = y$pos), .override = T)
+drm_do_match(y, sites = list(pos = y$pos), .override = T)
 drm_get(y)
 
 drm_deselect(my_drm, sites)
