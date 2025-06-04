@@ -321,19 +321,17 @@ A condensed version of the example given before:
 geno(vcf) <- parse_geno(unmaks_all(vcf), type = "GT")
 ```
 
-This is how you would modify the object directly (using one of the handy apply wrappers):
+This is how you would modify the object directly:
 
 ```{r apply}
 # Here `x` contains all genotypes for a single site (length == # samples)
-vcf$geno <- apply_sites(vcf$geno, function(x) x + 1)
+vcf$geno <- varkit_geno(apply(vcf$geno, "sites", function(x) x + 1))
 
 # Here `x` contains all genotypes for a sample (length == # sites)
-vcf$geno <- apply_samples(vcf$geno, function(x) x - 1)
+vcf$geno <- varkit_geno(t(apply(vcf$geno, "samples", function(x) x - 1)))
 ```
 
-Be warned that, in the above example, **you** will responsible for ensuring that
-the previously mentioned constraints are satisfied! Also note that we do not use
-`geno(vcf)` as that function only returns the non-masked sites.
-
-> NOTE: the `apply` wrappers will only retain the "varkit_geno" class if the
-> function returns a vector of the same length as the input.
+Be warned that, when modifying the object direcetly, **you** are responsible for
+ensuring that the previously mentioned constraints are satisfied! You can always
+check if the object has remained valid using `validate_varkit(vcf)`. Also note
+that we use `vcf$geno` to quickly obtain all sites (both masked and unmasked).

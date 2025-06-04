@@ -46,6 +46,9 @@ read_vcf(temp_file)
 
 summary(delete_masked_sites(vcf))
 
+## Varkit_geno object ------
+apply(geno(vcf), "samples", length)
+apply(geno(vcf), "sites", length)
 
 ## Linked sites ------
 vcf <- unmask_all(read_vcf(example))
