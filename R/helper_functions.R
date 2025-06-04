@@ -116,8 +116,10 @@
   cli::cli_progress_step(msg_time, msg_done = msg, .envir = .envir)
 }
 
-.max_print_col <- function(mat, width = getOption("width")) {
+.max_print_col <- function(mat, row_idx = NULL, width = getOption("width")) {
   stopifnot(is.matrix(mat))
+  if (is.null(row_idx))
+    row_idx <- rlang::missing_arg()
 
   .max_nchar <- function(x) {
     max(nchar(format(x, trim = TRUE)))
@@ -126,7 +128,7 @@
   # Reduce size of matrix to the maximum possible number of columns
   n_max <- max(1L, as.integer(floor(width / 2L)) - 1L)
   if (ncol(mat) > n_max)
-    mat <- mat[, seq_len(n_max), drop = FALSE]
+    mat <- mat[row_idx, seq_len(n_max), drop = FALSE]
 
   if (is.null(rownames(mat))) {
     rname_len <- nchar(nrow(mat)) + 3L

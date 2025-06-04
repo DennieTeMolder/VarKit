@@ -101,13 +101,13 @@ is_varkit <- function(x) {
 }
 
 ##' @export
-print.varkit <- function(x, ..., n = NULL, n_samples = 10) {
+print.varkit <- function(x, ..., n = NULL, n_samples = NULL) {
+  if (is.null(n_samples))
+    n_samples <- 10L
   n_samples <- min(n_samples, n_samples.varkit(x))
-  if (is.null(n)) {
-    width <- getOption("width")
-    which_show <- utils::head(which(x$use_site), n = max(1, floor(width / 2) - 1))
-    n <- .max_print_col(x$geno[seq_len(n_samples), which_show, drop = FALSE], width = width)
-  }
+
+  if (is.null(n))
+    n <- .max_print_col(x$geno, row_idx = seq_len(n_samples))
 
   .msg_h1("VarKit Variant Object")
   if (!is.null(x$meta)) {
@@ -125,7 +125,7 @@ print.varkit <- function(x, ..., n = NULL, n_samples = 10) {
   cat("\n")
 
   .msg_h2("Transposed genotype matrix, `geno(vcf)`")
-  print(geno.varkit(x), ..., n = n, n_samples = n_samples)
+  print(geno.varkit(x), ..., n = n_samples, ncol = n)
   cat("\n")
 
   if (all(x$use_site)) {

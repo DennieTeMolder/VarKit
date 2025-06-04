@@ -10,6 +10,7 @@ varkit_geno.data.frame <- function(x) {
 
 ##' @export
 varkit_geno.matrix <- function(x) {
+  x <- mtrx(x, dim_names = c("samples", "sites"))
   class(x) <- c("varkit_geno", setdiff(class(x), "varkit_geno"))
   x
 }
@@ -17,39 +18,6 @@ varkit_geno.matrix <- function(x) {
 ##' @export
 is_varkit_geno <- function(x) {
   inherits(x, "varkit_geno")
-}
-
-##' @export
-print.varkit_geno <- function(x, ..., n = NULL, n_samples = 10) {
-  if (is.null(n))
-    n <- .max_print_col(x)
-
-  site_trunc <- isTRUE(n < n_sites.varkit_geno(x))
-  sample_trunc <- isTRUE(n_samples < n_samples.varkit_geno(x))
-  if (!site_trunc)
-    n <- n_sites.varkit_geno(x)
-  if (!sample_trunc)
-    n_samples <- n_samples.varkit_geno(x)
-
-  cat(sprintf(
-    "# A matrix<%s>: %s samples x %s sites; %.2f%% is NA\n",
-    typeof(x), .frmt_big(nrow(x)), .frmt_big(ncol(x)), mean(is.na(x)) * 100
-  ))
-
-  print(unclass(x[seq_len(n_samples), seq_len(n), drop = FALSE]), ...)
-
-  if (sample_trunc)
-    .msg_info(n_samples.varkit_geno(x) - n_samples, " more samples")
-
-  if (site_trunc && sample_trunc) {
-    .msg_info("Use `print(n = ..., n_samples = ...)` to see more sites and samples respectively.")
-  } else if (site_trunc) {
-    .msg_info("Use `print(n = ...)` to see more sites")
-  } else if (sample_trunc) {
-    .msg_info("Use `print(n_samples = ...)` to see more samples")
-  }
-
-  invisible(x)
 }
 
 ##' @export
