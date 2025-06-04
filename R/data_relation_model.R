@@ -119,6 +119,15 @@ print.data_relation_model <- function(x, ...) {
 }
 
 ##' @export
+summary.data_relation_model <- function(object, ...) {
+  tibble::tibble(
+    drm_label = rlang::env_label(object),
+    n_links = length(object[["links"]]),
+    n_nodes = length(object[["nodes"]])
+  )
+}
+
+##' @export
 drm_add <- function(x, drmodel, dim_links, label = NULL) {
   if (is_drm(x))
     stop("'x' cannot be a data relation model itself!")
