@@ -1,11 +1,11 @@
 ##' @export
 apply_sites <- function(x, FUN, ..., simplify = TRUE) {
-  lifecycle::deprecate_stop("v0.9.0", "apply_sites()", I("apply(MARGIN = 'sites')"))
+  lifecycle::deprecate_stop("v0.8.6", "apply_sites()", I("apply(MARGIN = 'sites')"))
 }
 
 ##' @export
 apply_samples <- function(x, FUN, ..., simplify = TRUE) {
-  lifecycle::deprecate_stop("v0.9.0", "apply_samples()", I("apply(MARGIN = 'samples')"))
+  lifecycle::deprecate_stop("v0.8.6", "apply_samples()", I("apply(MARGIN = 'samples')"))
 }
 
 ##' @export
