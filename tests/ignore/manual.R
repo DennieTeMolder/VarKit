@@ -118,12 +118,12 @@ x <- geno(vcf)
 has_drm(x)
 drm_get(x)
 
-x <- drm_do_add(x, my_drm, c("samples", "sites"))
+x <- drm_do_attach(x, my_drm, c("samples", "sites"))
 has_drm(x)
 drm_get(x)
 
 y <- site(vcf)
-y <- drm_do_add(y, my_drm, c("sites", NA))
+y <- drm_do_attach(y, my_drm, c("sites", NA))
 
 drm_preselect(my_drm, sites = y$qual > 2000)
 drm_preselect(my_drm, sites = drm_do_subset(y, , "ref") == "C")
@@ -133,7 +133,7 @@ drm_do_subset(y)
 drm_do_subset(y, , "ref", drop = TRUE)
 
 z <- samples(vcf)
-z <- drm_do_add(z, my_drm, "samples")
+z <- drm_do_attach(z, my_drm, "samples")
 drm_preselect(my_drm, samples = z %in% z[1:5])
 drm_do_subset(z)
 drm_do_subset(x)

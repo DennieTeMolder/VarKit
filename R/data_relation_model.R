@@ -128,7 +128,14 @@ summary.data_relation_model <- function(object, ...) {
 }
 
 ##' @export
-drm_do_add <- function(x, drmodel, dim_links, label = NULL) {
+drm_copy <- function(drmodel) {
+  stopifnot(is_drm(drmodel))
+  # Only copy nodes, other elements should be added using: x <- drm_add(drm, x)
+  new_drm(nodes = drmodel[["nodes"]])
+}
+
+##' @export
+drm_do_attach <- function(x, drmodel, dim_links, label = NULL) {
   if (is_drm(x))
     stop("'x' cannot be a data relation model itself!")
   validate_drm(drmodel)
@@ -169,7 +176,7 @@ drm_do_add <- function(x, drmodel, dim_links, label = NULL) {
   drmodel[["links"]][[uuid]] <- dim_links
   drmodel[["labels"]][uuid] <- label
 
-  # Add DRMODEL to X
+  # Attach DRMODEL to X
   attr(x, "data_relation_model") <- drmodel
   attr(x, "data_relation_uuid") <- uuid
 
@@ -177,41 +184,17 @@ drm_do_add <- function(x, drmodel, dim_links, label = NULL) {
 }
 
 ##' @export
-drm_do_remove <- function(x) {
+drm_do_detach <- function(x) {
   # Recurse over lists/dataframes
   if (is.list(x)) {
     for (i in seq_along(x)) {
-      x[[i]] <- drm_do_remove(x[[i]])
+      x[[i]] <- drm_do_detach(x[[i]])
     }
   }
 
   attr(x, "data_relation_model") <- NULL
   attr(x, "data_relation_uuid") <- NULL
   x
-}
-
-##' @export
-drm_delete <- function(drmodel, ...) {
-  validate_drm(drmodel)
-  if (...length() == 0L)
-    stop("Please provide the nodes to delete as additional arguments!")
-  rlang::check_dots_unnamed()
-
-  # ... contains the names of the nodes to delete
-  dots <- as.character(substitute(list(...))[-1L])
-  if (any(dots == ""))
-    stop("Arguments cannot be empty/zero characters!")
-
-  # Links cannot reference the deleted nodes, find those who do se they can be removed
-  link_has_dots <- purrr::map_lgl(drmodel[["links"]], function(link) any(link %in% dots))
-  keep_uuid <- names(which(!link_has_dots))
-
-  # Remove nodes and any links referencing them
-  drmodel[["links"]] <- drmodel[["links"]][keep_uuid]
-  drmodel[["labels"]] <- drmodel[["labels"]][keep_uuid]
-  drmodel[["nodes"]][dots] <- NULL
-
-  drmodel
 }
 
 ##' @export
@@ -243,10 +226,27 @@ drm_contains <- function(x, ...) {
 }
 
 ##' @export
-drm_copy <- function(drmodel) {
-  stopifnot(is_drm(drmodel))
-  # Only copy nodes, other elements should be added using: x <- drm_add(drm, x)
-  new_drm(nodes = drmodel[["nodes"]])
+drm_delete <- function(drmodel, ...) {
+  validate_drm(drmodel)
+  if (...length() == 0L)
+    stop("Please provide the nodes to delete as additional arguments!")
+  rlang::check_dots_unnamed()
+
+  # ... contains the names of the nodes to delete
+  dots <- as.character(substitute(list(...))[-1L])
+  if (any(dots == ""))
+    stop("Arguments cannot be empty/zero characters!")
+
+  # Links cannot reference the deleted nodes, find those who do se they can be removed
+  link_has_dots <- purrr::map_lgl(drmodel[["links"]], function(link) any(link %in% dots))
+  keep_uuid <- names(which(!link_has_dots))
+
+  # Remove nodes and any links referencing them
+  drmodel[["links"]] <- drmodel[["links"]][keep_uuid]
+  drmodel[["labels"]] <- drmodel[["labels"]][keep_uuid]
+  drmodel[["nodes"]][dots] <- NULL
+
+  drmodel
 }
 
 ##' @export
@@ -402,7 +402,7 @@ drm_do_subset <- function(x, ..., drop = FALSE) {
   x <- do.call(`[`, args = c(list(x), dots, list(drop = drop)))
 
   # Remove DRM attributes as size no longer matches the original object
-  drm_do_remove(x)
+  drm_do_detach(x)
 }
 
 ##' @export
@@ -446,7 +446,7 @@ drm_do_match <- function(x, ..., .override = FALSE) {
   dots <- purrr::imap(dots, function(dot, name) {
     keys <- if (!.override) drmodel[["nodes"]][[name]][["match_on"]]
     if (is.null(keys)) {
-      drmodel[["nodes"]][[name]][["match_on"]] <- drm_do_remove(dot)
+      drmodel[["nodes"]][[name]][["match_on"]] <- drm_do_detach(dot)
       return(rlang::missing_arg())
     }
 
