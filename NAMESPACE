@@ -2,8 +2,6 @@
 
 S3method("[",varkit_geno)
 S3method(apply_index,varkit_index)
-S3method(apply_samples,varkit_geno)
-S3method(apply_sites,varkit_geno)
 S3method(as.data.frame,varkit)
 S3method(as_genlight,varkit)
 S3method(as_vcfR,varkit)
