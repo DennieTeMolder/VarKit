@@ -71,8 +71,8 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
   # Geno
   if (is.null(x$geno))
     stop("The 'geno()' slot is missing!")
-  if (!is.matrix(x$geno))
-    stop("The 'geno()' slot should be a matrix!")
+  if (!is_varkit_geno(x$geno))
+    stop("The 'geno()' slot should be of class 'varkit_geno'!")
   if (nrow(x$geno) < 1L)
     stop("The 'geno()' slot should contain at least a single sample/row!")
   if (is.null(rownames(x$geno)) || any(nchar(rownames(x$geno)) == 0L))
