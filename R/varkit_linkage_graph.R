@@ -19,7 +19,7 @@ is_varkit_linkage_graph <- function(x) {
 }
 
 ##' @export
-summary.varkit_linkage_graph <- function(object, ..., vcf = NULL) {
+summary.varkit_linkage_graph <- function(object, vcf = NULL, ...) {
   .ensure_igraph()
   if (!is.null(vcf))
     stopifnot(is_varkit(vcf), originates_from(object, origin = vcf))
@@ -27,11 +27,11 @@ summary.varkit_linkage_graph <- function(object, ..., vcf = NULL) {
   tbl <- tibble::tibble(
     n_remove = sum(igraph::degree(object, mode = "in") == 1),
     n_proxy = sum(igraph::degree(object, mode = "out") > 0),
-    n_singletons = igraph::vcount(object) - .data$n_proxy - .data$n_remove
   )
 
   if (!is.null(vcf)) {
-    tbl$n_total <- sum(vcf$use_site)
+    tbl$n_singletons <- n_sites.varkit(vcf) - tbl$n_proxy - tbl$n_remove
+    tbl$n_total <- with(tbl, n_remove + n_proxy + n_singletons)
     tbl$frac_remove <- tbl$n_remove / tbl$n_total
   }
 
