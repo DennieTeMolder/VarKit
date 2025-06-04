@@ -116,48 +116,6 @@
   cli::cli_progress_step(msg_time, msg_done = msg, .envir = .envir)
 }
 
-.max_print_col <- function(mat, row_idx = NULL, width = getOption("width")) {
-  stopifnot(is.matrix(mat))
-  if (is.null(row_idx))
-    row_idx <- rlang::missing_arg()
-
-  .max_nchar <- function(x) {
-    max(nchar(format(x, trim = TRUE)))
-  }
-
-  # Reduce size of matrix to the maximum possible number of columns
-  n_max <- max(1L, as.integer(floor(width / 2L)) - 1L)
-  if (ncol(mat) > n_max)
-    mat <- mat[row_idx, seq_len(n_max), drop = FALSE]
-
-  if (is.null(rownames(mat))) {
-    rname_len <- nchar(nrow(mat)) + 3L
-  } else {
-    rname_len <- .max_nchar(rownames(mat))
-  }
-
-  if (is.null(colnames(mat))) {
-    # We add 3 for the [,] and 1 for the space before the column
-    cname_len <- nchar(seq_len(ncol(mat))) + 4L
-  } else {
-    # We add 2 here for the potential `` around var names + 1 for the space
-    cname_len <- nchar(colnames(mat)) + 3L
-  }
-
-  # Add 2 for the quotes around character values
-  cval_len <- apply(mat, 2, .max_nchar) + 1L
-  if (is.character(mat))
-    cval_len <- cval_len + 2L
-
-  # Check if col name or col value is widest, add row name width to first element
-  col_widths <- pmax.int(cname_len, cval_len)
-  col_widths[1L] <- col_widths[1L] + rname_len
-
-  # Return the index of the last column that fits within width
-  which_fit <- which(cumsum(col_widths) < width)
-  max(which_fit, 1L)
-}
-
 # X should be ordered from large to small (computationally)
 .split_load_balance <- function(x, cores, each = 4L) {
   stopifnot(is.vector(x))

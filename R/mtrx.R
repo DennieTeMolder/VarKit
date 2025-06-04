@@ -15,19 +15,22 @@ is_mtrx <- function(x) {
 
 ##' @export
 print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
+  rlang::check_dots_used()
+
   if (is.null(n))
     n <- getOption("print_min", 10L)
-  if (is.null(n_col))
-    n_col <- .max_print_col(x, row_idx = seq_len(n))
+  n <- min(n, nrow(x))
 
   row_trunc <- isTRUE(n < nrow(x))
-  col_trunc <- isTRUE(n_col < ncol(x))
-  if (!row_trunc)
-    n <- nrow(x)
-  if (!col_trunc)
-    n_col <- ncol(x)
+  row_idx <- if (row_trunc) seq_len(n) else rlang::missing_arg()
 
-  # Fetch and remove dim names to prevent them from printing
+  if (is.null(n_col))
+    n_col <- .max_print_col(x, row_idx = row_idx)
+  n_col <- min(n_col, ncol(x))
+
+  col_trunc <- isTRUE(n_col < ncol(x))
+  col_idx <- if (col_trunc) seq_len(n_col) else rlang::missing_arg()
+
   if (is.null(names(dimnames(x)))) {
     row_name <- col_name <- NA
   } else {
@@ -44,20 +47,67 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
     round(mean(is.na(x)) * 100, digits = 2)
   ))
 
+  # Remove the dimnames names te prevent them from printing
   xp <- x
   names(dimnames(xp)) <- NULL
-  print(unclass(xp[seq_len(n), seq_len(n_col), drop = FALSE]), ...)
-
-  if (row_trunc)
-    .msg_info(nrow(x) - n, " more", row_name)
+  print.default(unclass(xp[row_idx, col_idx, drop = FALSE]))
 
   if (row_trunc && col_trunc) {
+    .msg_info(.frmt_big(nrow(x) - n), " more", row_name, " and ", .frmt_big(ncol(x) - n_col), " more", col_name)
     .msg_info("Use `print(n = ..., n_col = ...)` to see more", row_name, " and", col_name, " respectively.")
   } else if (row_trunc) {
+    .msg_info(.frmt_big(nrow(x) - n), " more", row_name)
     .msg_info("Use `print(n_col = ...)` to see more", row_name)
   } else if (col_trunc) {
+    .msg_info(.frmt_big(ncol(x) - n_col), " more", col_name)
     .msg_info("Use `print(n = ...)` to see more", col_name)
   }
 
   invisible(x)
+}
+
+.max_print_col <- function(mat, row_idx = NULL, width = getOption("width")) {
+  stopifnot(is.matrix(mat))
+  if (is.null(row_idx))
+    row_idx <- rlang::missing_arg()
+  width <- as.integer(width)
+
+  .max_nchar <- function(x) {
+    max(nchar(format(x, trim = TRUE)))
+  }
+
+  # Reduce size of matrix to the maximum possible number of columns
+  n_max <- max(1L, as.integer(floor(width / 2L)) - 1L)
+  if (ncol(mat) > n_max) {
+    mat <- mat[row_idx, seq_len(n_max), drop = FALSE]
+  } else {
+    mat <- mat[row_idx, , drop = FALSE]
+  }
+
+  if (is.null(rownames(mat))) {
+    rname_len <- nchar(nrow(mat)) + 3L
+  } else {
+    rname_len <- .max_nchar(rownames(mat))
+  }
+
+  if (is.null(colnames(mat))) {
+    # Add 3 for the [,] and 1 for the space before the column
+    cname_len <- nchar(seq_len(ncol(mat))) + 4L
+  } else {
+    # Add 2 here for the potential `` around var names + 1 for the space
+    cname_len <- nchar(colnames(mat)) + 3L
+  }
+
+  # Add 1 for space between columns and 2 for the quotes around character values
+  cval_len <- apply(mat, 2, .max_nchar) + 1L
+  if (is.character(mat))
+    cval_len <- cval_len + 2L
+
+  # Check if col name or col value is widest, add row name width to first element
+  col_widths <- pmax.int(cname_len, cval_len)
+  col_widths[1L] <- col_widths[1L] + rname_len
+
+  # Return the index of the last column that fits within width
+  which_fit <- which(cumsum(col_widths) < width)
+  max(which_fit, 1L)
 }

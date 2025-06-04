@@ -125,7 +125,7 @@ print.varkit <- function(x, ..., n = NULL, n_samples = NULL) {
   cat("\n")
 
   .msg_h2("Transposed genotype matrix, `geno(vcf)`")
-  print(geno.varkit(x), ..., n = n_samples, ncol = n)
+  print(geno.varkit(x), n = n_samples, n_col = n)
   cat("\n")
 
   if (all(x$use_site)) {
