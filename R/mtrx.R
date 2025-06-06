@@ -78,7 +78,7 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
 
 .max_print_col <- function(mat, row_idx = NULL, width = getOption("width")) {
   stopifnot(is.matrix(mat))
-  if (is.null(row_idx))
+  if (!missing(row_idx) && is.null(row_idx))
     row_idx <- rlang::missing_arg()
   width <- as.integer(width)
 
