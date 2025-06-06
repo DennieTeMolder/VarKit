@@ -1,11 +1,19 @@
 ##' @export
-mtrx <- function(x, dim_names = NULL) {
-  x <- as.matrix(x)
-  if (!is.null(dim_names))
-    names(dimnames(x)) <- dim_names
+mtrx <- function(data, nrow, ncol, byrow = FALSE, dimnames = NULL) {
+  if (is.character(dimnames) && any(length(dimnames) == 1:2))
+    dimnames <- setNames(vector("list", 2L), dimnames)
 
-  class(x) <- c("mtrx", setdiff(class(x), "mtrx"))
-  x
+  # Passing rlang::missing_arg() raises an error
+  res <- if (missing(nrow) && missing(ncol)) {
+    matrix(data, byrow = byrow, dimnames = dimnames)
+  } else if (missing(ncol)) {
+    matrix(data, nrow, byrow = byrow, dimnames = dimnames)
+  } else {
+    res <- matrix(data, nrow, ncol, byrow = byrow, dimnames = dimnames)
+  }
+
+  class(res) <- c("mtrx", class(res))
+  res
 }
 
 ##' @export
@@ -14,9 +22,21 @@ is_mtrx <- function(x) {
 }
 
 ##' @export
-print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
-  rlang::check_dots_used()
+as_mtrx <- function(x, dimnames = NULL, ...) {
+  if (!is_mtrx(x)) {
+    x <- as.matrix(x, ...)
+    class(x) <- c("mtrx", class(x))
+  }
+  if (!is.null(dimnames)) {
+    if (is.character(dimnames) && any(length(dimnames) == 1:2))
+      dimnames <- setNames(list(rownames(x), colnames(x)), dimnames)
+    dimnames(x) <- dimnames
+  }
+  x
+}
 
+##' @export
+print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
   if (is.null(n))
     n <- getOption("print_min", 10L)
   n <- min(n, nrow(x))
@@ -31,15 +51,14 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
   col_trunc <- isTRUE(n_col < ncol(x))
   col_idx <- if (col_trunc) seq_len(n_col) else rlang::missing_arg()
 
-  if (is.null(names(dimnames(x)))) {
-    row_name <- col_name <- NA
+  if (is.null(dimnames(x))) {
+    has_name <- c(FALSE, FALSE)
   } else {
-    row_name <- names(dimnames(x))[1L]
-    col_name <- names(dimnames(x))[2L]
+    has_name <- rlang::have_name(dimnames(x))
+    dnn <- names(dimnames(x))
   }
-
-  row_name <- if (is.na(row_name)) " rows" else paste0(" ", row_name)
-  col_name <- if (is.na(col_name)) " columns" else paste0(" ", col_name)
+  row_name <- if (has_name[1L]) paste0(" ", dnn[1L]) else " rows"
+  col_name <- if (has_name[2L]) paste0(" ", dnn[2L]) else " columns"
 
   cat(sprintf(
     "# A matrix<%s>: %s%s x %s%s; %s%% is NA/NaN\n",
@@ -54,7 +73,7 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
 
   if (row_trunc && col_trunc) {
     .msg_info(.frmt_big(nrow(x) - n), " more", row_name, " and ", .frmt_big(ncol(x) - n_col), " more", col_name)
-    .msg_info("Use `print(n = ..., n_col = ...)` to see more", row_name, " and", col_name, " respectively.")
+    .msg_info("Use `print(n = ..., n_col = ...)` to see more", row_name, " and", col_name, " respectively")
   } else if (row_trunc) {
     .msg_info(.frmt_big(nrow(x) - n), " more", row_name)
     .msg_info("Use `print(n_col = ...)` to see more", row_name)

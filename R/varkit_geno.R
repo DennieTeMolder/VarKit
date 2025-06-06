@@ -10,7 +10,7 @@ varkit_geno.data.frame <- function(x) {
 
 ##' @export
 varkit_geno.matrix <- function(x) {
-  x <- mtrx(x, dim_names = c("samples", "sites"))
+  x <- as_mtrx(x, dimnames = c("samples", "sites"))
   class(x) <- c("varkit_geno", setdiff(class(x), "varkit_geno"))
   x
 }
