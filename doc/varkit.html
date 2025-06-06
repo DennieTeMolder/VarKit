@@ -376,14 +376,12 @@ the <code>varkit</code> package.</p>
 file we wish to load. The file can be either compressed or uncompressed,
 but for this example we will use a block-gzipped VCF:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(varkit)</span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="co">#&gt; Warning: S3 methods &#39;apply_samples.varkit_geno&#39;, &#39;apply_sites.varkit_geno&#39; were</span></span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="co">#&gt; declared in NAMESPACE but not found</span></span>
-<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>file <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;celegans.vcf.bgz&quot;</span>, <span class="at">package =</span> <span class="st">&quot;varkit&quot;</span>)</span></code></pre></div>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>file <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;celegans.vcf.bgz&quot;</span>, <span class="at">package =</span> <span class="st">&quot;varkit&quot;</span>)</span></code></pre></div>
 </div>
 <div id="loading-a-vcf-into-r" class="section level2">
 <h2>Loading a VCF into R</h2>
-<p>In it’s simplest form you would load a VCF file into memory like
+<p>In its simplest form you would load a VCF file into memory like
 so:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>vcf <span class="ot">&lt;-</span> <span class="fu">read_vcf</span>(file)</span></code></pre></div>
 <p>However, it is good practice to first validate if the VCF header is
@@ -428,16 +426,16 @@ memory.</p>
 <p>For example here we exclude the “INFO” and “FILTER” fixed fields and
 the sample “N2”:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>vcf <span class="ot">&lt;-</span> <span class="fu">read_vcf</span>(file, <span class="at">col_select =</span> <span class="fu">c</span>(<span class="sc">-</span>info, <span class="sc">-</span>filter, <span class="sc">-</span>N2))</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; ℹ Reading VCF header &lt;Wed 17:08&gt;</span></span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt; ✔ Reading VCF header [18ms]</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; ℹ Reading VCF header &lt;Fri 18:32&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt; ✔ Reading VCF header [21ms]</span></span>
 <span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co">#&gt; ℹ Guessing data type of genotype matrix &lt;Wed 17:08&gt;</span></span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">#&gt; ✔ Guessing data type of genotype matrix [13ms]</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co">#&gt; ℹ Guessing data type of genotype matrix &lt;Fri 18:32&gt;</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">#&gt; ✔ Guessing data type of genotype matrix [15ms]</span></span>
 <span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt; ℹ Reading VCF body &lt;Wed 17:08&gt;</span></span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt; ✔ Reading VCF body [51ms]</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt; ℹ Reading VCF body &lt;Fri 18:32&gt;</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt; ✔ Reading VCF body [53ms]</span></span>
 <span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt; ℹ Collecting results &lt;Wed 17:08&gt;</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt; ℹ Collecting results &lt;Fri 18:32&gt;</span></span>
 <span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt; ✔ Collecting results [15ms]</span></span>
 <span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="fu">print</span>(vcf)</span>
@@ -484,7 +482,7 @@ the sample “N2”:</p>
 <span id="cb4-55"><a href="#cb4-55" tabindex="-1"></a><span class="co">#&gt; JU310  &quot;0/0:16,0:16:PASS:45:0,45,675&quot;  &quot;0/0:22,0:22:PASS:63:.:.:0,63,731&quot;  </span></span>
 <span id="cb4-56"><a href="#cb4-56" tabindex="-1"></a><span class="co">#&gt; MY2147 &quot;0/0:24,0:24:PASS:51:0,51,765&quot;  &quot;0/0:39,0:39:PASS:99:.:.:0,103,1413&quot;</span></span>
 <span id="cb4-57"><a href="#cb4-57" tabindex="-1"></a><span class="co">#&gt; # ℹ 5 more samples and 58 more sites</span></span>
-<span id="cb4-58"><a href="#cb4-58" tabindex="-1"></a><span class="co">#&gt; # ℹ Use `print(n = ..., n_col = ...)` to see more samples and sites respectively.</span></span>
+<span id="cb4-58"><a href="#cb4-58" tabindex="-1"></a><span class="co">#&gt; # ℹ Use `print(n = ..., n_col = ...)` to see more samples and sites respectively</span></span>
 <span id="cb4-59"><a href="#cb4-59" tabindex="-1"></a><span class="co">#&gt; ✔ No mask is active, using all 60 sites. See `summary(vcf)`</span></span></code></pre></div>
 </div>
 <div id="accessing-specific-fields" class="section level2">
@@ -527,7 +525,7 @@ important of which are:</p>
 <span id="cb5-32"><a href="#cb5-32" tabindex="-1"></a><span class="co">#&gt; JU310  &quot;0/0:16,0:16:PASS:45:0,45,675&quot;  &quot;0/0:22,0:22:PASS:63:.:.:0,63,731&quot;  </span></span>
 <span id="cb5-33"><a href="#cb5-33" tabindex="-1"></a><span class="co">#&gt; MY2147 &quot;0/0:24,0:24:PASS:51:0,51,765&quot;  &quot;0/0:39,0:39:PASS:99:.:.:0,103,1413&quot;</span></span>
 <span id="cb5-34"><a href="#cb5-34" tabindex="-1"></a><span class="co">#&gt; # ℹ 5 more samples and 58 more sites</span></span>
-<span id="cb5-35"><a href="#cb5-35" tabindex="-1"></a><span class="co">#&gt; # ℹ Use `print(n = ..., n_col = ...)` to see more samples and sites respectively.</span></span></code></pre></div>
+<span id="cb5-35"><a href="#cb5-35" tabindex="-1"></a><span class="co">#&gt; # ℹ Use `print(n = ..., n_col = ...)` to see more samples and sites respectively</span></span></code></pre></div>
 <blockquote>
 <p>This syntax is similar to for example accessing the column names of a
 data frame <code>colnames(df)</code>.</p>
@@ -711,12 +709,13 @@ be excluded:</p>
 <p>A common task after subsetting or converting VCF files is
 removing/masking sites that no longer contain variation. VarKit provides
 a convenient function to achieve this:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>vcf <span class="ot">&lt;-</span> <span class="fu">mask_sites_without_variation</span>(vcf)</span>
-<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="fu">summary</span>(vcf)</span>
-<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a><span class="co">#&gt; # A tibble: 1 × 4</span></span>
-<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="co">#&gt;   samples sites_visible sites_total visible_frac</span></span>
-<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a><span class="co">#&gt;     &lt;int&gt;         &lt;int&gt;       &lt;int&gt;        &lt;dbl&gt;</span></span>
-<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a><span class="co">#&gt; 1      15            38          60        0.633</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="co"># Only look at the GT field, obtained by parse_geno(vcf, type = &quot;GT&quot;)</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>vcf <span class="ot">&lt;-</span> <span class="fu">mask_sites_without_variation</span>(vcf, <span class="at">parse_geno_type =</span> <span class="st">&quot;GT&quot;</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a><span class="fu">summary</span>(vcf)</span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="co">#&gt; # A tibble: 1 × 4</span></span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a><span class="co">#&gt;   samples sites_visible sites_total visible_frac</span></span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a><span class="co">#&gt;     &lt;int&gt;         &lt;int&gt;       &lt;int&gt;        &lt;dbl&gt;</span></span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="co">#&gt; 1      15            37          60        0.617</span></span></code></pre></div>
 <p>If you compare with the previous <code>summary()</code> you can see
 that 1 additional site was masked because it lacked variation.</p>
 </div>
@@ -745,7 +744,7 @@ it:</p>
 <span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a><span class="co">#&gt; # A tibble: 1 × 4</span></span>
 <span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="co">#&gt;   samples sites_visible sites_total visible_frac</span></span>
 <span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a><span class="co">#&gt;     &lt;int&gt;         &lt;int&gt;       &lt;int&gt;        &lt;dbl&gt;</span></span>
-<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a><span class="co">#&gt; 1      15            38          60        0.633</span></span></code></pre></div>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a><span class="co">#&gt; 1      15            37          60        0.617</span></span></code></pre></div>
 <p>In this way you could use different masks for different parts of your
 analysis/script.</p>
 </div>
@@ -759,7 +758,7 @@ they cannot be retrieved by unmasking):</p>
 <span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a><span class="co">#&gt; # A tibble: 1 × 4</span></span>
 <span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a><span class="co">#&gt;   samples sites_visible sites_total visible_frac</span></span>
 <span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a><span class="co">#&gt;     &lt;int&gt;         &lt;int&gt;       &lt;int&gt;        &lt;dbl&gt;</span></span>
-<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a><span class="co">#&gt; 1      15            38          38            1</span></span></code></pre></div>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a><span class="co">#&gt; 1      15            37          37            1</span></span></code></pre></div>
 </div>
 </div>
 <div id="writing-vcf-files" class="section level2">
@@ -773,24 +772,24 @@ load a masked VCF:</p>
 <div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a>temp_file <span class="ot">&lt;-</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">&quot;.vcf&quot;</span>)</span>
 <span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a><span class="fu">write_vcf</span>(vcf, <span class="at">file =</span> temp_file, <span class="at">replace_filter =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a><span class="co">#&gt; ℹ Creating missing columns: FILTER, INFO</span></span>
-<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a><span class="co">#&gt; ℹ Writing VCF header &lt;Wed 17:08&gt;</span></span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a><span class="co">#&gt; ℹ Writing VCF header &lt;Fri 18:32&gt;</span></span>
 <span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a><span class="co">#&gt; ✔ Writing VCF header [6ms]</span></span>
 <span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a><span class="co">#&gt; ℹ Writing VCF body &lt;Wed 17:08&gt;</span></span>
-<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a><span class="co">#&gt; ✔ Writing VCF body [12ms]</span></span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a><span class="co">#&gt; ℹ Writing VCF body &lt;Fri 18:32&gt;</span></span>
+<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a><span class="co">#&gt; ✔ Writing VCF body [9ms]</span></span>
 <span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a></span>
 <span id="cb17-11"><a href="#cb17-11" tabindex="-1"></a><span class="fu">read_vcf</span>(temp_file)</span>
-<span id="cb17-12"><a href="#cb17-12" tabindex="-1"></a><span class="co">#&gt; ℹ Reading VCF header &lt;Wed 17:08&gt;</span></span>
+<span id="cb17-12"><a href="#cb17-12" tabindex="-1"></a><span class="co">#&gt; ℹ Reading VCF header &lt;Fri 18:32&gt;</span></span>
 <span id="cb17-13"><a href="#cb17-13" tabindex="-1"></a><span class="co">#&gt; ✔ Reading VCF header [7ms]</span></span>
 <span id="cb17-14"><a href="#cb17-14" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb17-15"><a href="#cb17-15" tabindex="-1"></a><span class="co">#&gt; ℹ Guessing data type of genotype matrix &lt;Wed 17:08&gt;</span></span>
+<span id="cb17-15"><a href="#cb17-15" tabindex="-1"></a><span class="co">#&gt; ℹ Guessing data type of genotype matrix &lt;Fri 18:32&gt;</span></span>
 <span id="cb17-16"><a href="#cb17-16" tabindex="-1"></a><span class="co">#&gt; ✔ Guessing data type of genotype matrix [11ms]</span></span>
 <span id="cb17-17"><a href="#cb17-17" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb17-18"><a href="#cb17-18" tabindex="-1"></a><span class="co">#&gt; ℹ Reading VCF body &lt;Wed 17:08&gt;</span></span>
-<span id="cb17-19"><a href="#cb17-19" tabindex="-1"></a><span class="co">#&gt; ✔ Reading VCF body [10ms]</span></span>
+<span id="cb17-18"><a href="#cb17-18" tabindex="-1"></a><span class="co">#&gt; ℹ Reading VCF body &lt;Fri 18:32&gt;</span></span>
+<span id="cb17-19"><a href="#cb17-19" tabindex="-1"></a><span class="co">#&gt; ✔ Reading VCF body [11ms]</span></span>
 <span id="cb17-20"><a href="#cb17-20" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb17-21"><a href="#cb17-21" tabindex="-1"></a><span class="co">#&gt; ℹ Collecting results &lt;Wed 17:08&gt;</span></span>
+<span id="cb17-21"><a href="#cb17-21" tabindex="-1"></a><span class="co">#&gt; ℹ Collecting results &lt;Fri 18:32&gt;</span></span>
 <span id="cb17-22"><a href="#cb17-22" tabindex="-1"></a><span class="co">#&gt; ✔ Collecting results [11ms]</span></span>
 <span id="cb17-23"><a href="#cb17-23" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb17-24"><a href="#cb17-24" tabindex="-1"></a><span class="co">#&gt; ══ VarKit Variant Object ═══════════════════════════════════════════════════════</span></span>
@@ -815,45 +814,45 @@ load a masked VCF:</p>
 <span id="cb17-43"><a href="#cb17-43" tabindex="-1"></a><span class="co">#&gt; MY2693, NIC2, NIC526, QX1794, XZ1516</span></span>
 <span id="cb17-44"><a href="#cb17-44" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb17-45"><a href="#cb17-45" tabindex="-1"></a><span class="co">#&gt; ── Site information, `site(vcf)` ───────────────────────────────────────────────</span></span>
-<span id="cb17-46"><a href="#cb17-46" tabindex="-1"></a><span class="co">#&gt; # A tibble: 38 × 9</span></span>
-<span id="cb17-47"><a href="#cb17-47" tabindex="-1"></a><span class="co">#&gt;   chrom     pos id    ref   alt      qual filter info  format                   </span></span>
-<span id="cb17-48"><a href="#cb17-48" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;   &lt;int&gt; &lt;lgl&gt; &lt;chr&gt; &lt;chr&gt;   &lt;dbl&gt; &lt;chr&gt;  &lt;lgl&gt; &lt;chr&gt;                    </span></span>
-<span id="cb17-49"><a href="#cb17-49" tabindex="-1"></a><span class="co">#&gt; 1 II    1467505 NA    C     T       5380. PASS   NA    GT:AD:DP:FT:GQ:PL        </span></span>
-<span id="cb17-50"><a href="#cb17-50" tabindex="-1"></a><span class="co">#&gt; 2 II    1468119 NA    A     T     359841  PASS   NA    GT:AD:DP:FT:GQ:HP:HP_VAL…</span></span>
-<span id="cb17-51"><a href="#cb17-51" tabindex="-1"></a><span class="co">#&gt; # ℹ 36 more rows</span></span>
+<span id="cb17-46"><a href="#cb17-46" tabindex="-1"></a><span class="co">#&gt; # A tibble: 37 × 9</span></span>
+<span id="cb17-47"><a href="#cb17-47" tabindex="-1"></a><span class="co">#&gt;   chrom     pos id    ref                  alt      qual filter info  format    </span></span>
+<span id="cb17-48"><a href="#cb17-48" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;   &lt;int&gt; &lt;lgl&gt; &lt;chr&gt;                &lt;chr&gt;   &lt;dbl&gt; &lt;chr&gt;  &lt;lgl&gt; &lt;chr&gt;     </span></span>
+<span id="cb17-49"><a href="#cb17-49" tabindex="-1"></a><span class="co">#&gt; 1 II    1468119 NA    A                    T     359841  PASS   NA    GT:AD:DP:…</span></span>
+<span id="cb17-50"><a href="#cb17-50" tabindex="-1"></a><span class="co">#&gt; 2 II    1468175 NA    CTGGCACCCCATCCATCGTT C      23761. PASS   NA    GT:AD:DP:…</span></span>
+<span id="cb17-51"><a href="#cb17-51" tabindex="-1"></a><span class="co">#&gt; # ℹ 35 more rows</span></span>
 <span id="cb17-52"><a href="#cb17-52" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb17-53"><a href="#cb17-53" tabindex="-1"></a><span class="co">#&gt; ── Transposed genotype matrix, `geno(vcf)` ─────────────────────────────────────</span></span>
-<span id="cb17-54"><a href="#cb17-54" tabindex="-1"></a><span class="co">#&gt; # A matrix&lt;character&gt;: 15 samples x 38 sites; 0% is NA/NaN</span></span>
-<span id="cb17-55"><a href="#cb17-55" tabindex="-1"></a><span class="co">#&gt;        [,1]                            </span></span>
-<span id="cb17-56"><a href="#cb17-56" tabindex="-1"></a><span class="co">#&gt; CB4856 &quot;0/0:40,0:40:PASS:99:0,111,1665&quot;</span></span>
-<span id="cb17-57"><a href="#cb17-57" tabindex="-1"></a><span class="co">#&gt; DL238  &quot;0/0:46,0:46:PASS:99:0,99,1485&quot; </span></span>
-<span id="cb17-58"><a href="#cb17-58" tabindex="-1"></a><span class="co">#&gt; ECA36  &quot;0/0:20,0:20:PASS:54:0,54,810&quot;  </span></span>
-<span id="cb17-59"><a href="#cb17-59" tabindex="-1"></a><span class="co">#&gt; ECA396 &quot;0/0:35,0:35:PASS:99:0,99,1485&quot; </span></span>
-<span id="cb17-60"><a href="#cb17-60" tabindex="-1"></a><span class="co">#&gt; EG4725 &quot;0/0:46,0:46:PASS:99:0,99,1485&quot; </span></span>
-<span id="cb17-61"><a href="#cb17-61" tabindex="-1"></a><span class="co">#&gt; JU1400 &quot;0/0:46,0:46:PASS:99:0,108,1620&quot;</span></span>
-<span id="cb17-62"><a href="#cb17-62" tabindex="-1"></a><span class="co">#&gt; JU2526 &quot;0/0:33,0:33:PASS:93:0,93,1395&quot; </span></span>
-<span id="cb17-63"><a href="#cb17-63" tabindex="-1"></a><span class="co">#&gt; JU2600 &quot;0/0:21,0:21:PASS:63:0,63,807&quot;  </span></span>
-<span id="cb17-64"><a href="#cb17-64" tabindex="-1"></a><span class="co">#&gt; JU310  &quot;0/0:34,0:34:PASS:99:0,99,1444&quot; </span></span>
-<span id="cb17-65"><a href="#cb17-65" tabindex="-1"></a><span class="co">#&gt; MY2147 &quot;0/0:34,0:34:PASS:60:0,60,1205&quot; </span></span>
-<span id="cb17-66"><a href="#cb17-66" tabindex="-1"></a><span class="co">#&gt;        [,2]                                     </span></span>
-<span id="cb17-67"><a href="#cb17-67" tabindex="-1"></a><span class="co">#&gt; CB4856 &quot;0/0:40,0:40:PASS:99:.:.:0,111,1665&quot;     </span></span>
-<span id="cb17-68"><a href="#cb17-68" tabindex="-1"></a><span class="co">#&gt; DL238  &quot;0/0:45,0:45:PASS:99:.:.:0,114,1710&quot;     </span></span>
-<span id="cb17-69"><a href="#cb17-69" tabindex="-1"></a><span class="co">#&gt; ECA36  &quot;1/1:0,8:8:PASS:30:.:.:441,30,0&quot;         </span></span>
-<span id="cb17-70"><a href="#cb17-70" tabindex="-1"></a><span class="co">#&gt; ECA396 &quot;1/1:2,41:43:PASS:44:BB:0.0252:1749,0,44&quot;</span></span>
-<span id="cb17-71"><a href="#cb17-71" tabindex="-1"></a><span class="co">#&gt; EG4725 &quot;0/0:20,0:20:PASS:60:.:.:0,60,750&quot;       </span></span>
-<span id="cb17-72"><a href="#cb17-72" tabindex="-1"></a><span class="co">#&gt; JU1400 &quot;0/0:33,0:33:PASS:96:.:.:0,96,1440&quot;      </span></span>
-<span id="cb17-73"><a href="#cb17-73" tabindex="-1"></a><span class="co">#&gt; JU2526 &quot;1/1:0,20:20:PASS:60:.:.:893,60,0&quot;       </span></span>
-<span id="cb17-74"><a href="#cb17-74" tabindex="-1"></a><span class="co">#&gt; JU2600 &quot;0/0:28,0:28:PASS:75:.:.:0,75,1125&quot;      </span></span>
-<span id="cb17-75"><a href="#cb17-75" tabindex="-1"></a><span class="co">#&gt; JU310  &quot;0/0:33,0:33:PASS:81:.:.:0,81,1215&quot;      </span></span>
-<span id="cb17-76"><a href="#cb17-76" tabindex="-1"></a><span class="co">#&gt; MY2147 &quot;0/0:28,0:28:PASS:72:.:.:0,72,1080&quot;      </span></span>
-<span id="cb17-77"><a href="#cb17-77" tabindex="-1"></a><span class="co">#&gt; # ℹ 5 more samples and 36 more sites</span></span>
-<span id="cb17-78"><a href="#cb17-78" tabindex="-1"></a><span class="co">#&gt; # ℹ Use `print(n = ..., n_col = ...)` to see more samples and sites respectively.</span></span>
-<span id="cb17-79"><a href="#cb17-79" tabindex="-1"></a><span class="co">#&gt; ! A mask is active, using 63.3% of all sites (38/60). See `summary(vcf)`</span></span></code></pre></div>
+<span id="cb17-54"><a href="#cb17-54" tabindex="-1"></a><span class="co">#&gt; # A matrix&lt;character&gt;: 15 samples x 37 sites; 0% is NA/NaN</span></span>
+<span id="cb17-55"><a href="#cb17-55" tabindex="-1"></a><span class="co">#&gt;        [,1]                                     </span></span>
+<span id="cb17-56"><a href="#cb17-56" tabindex="-1"></a><span class="co">#&gt; CB4856 &quot;0/0:40,0:40:PASS:99:.:.:0,111,1665&quot;     </span></span>
+<span id="cb17-57"><a href="#cb17-57" tabindex="-1"></a><span class="co">#&gt; DL238  &quot;0/0:45,0:45:PASS:99:.:.:0,114,1710&quot;     </span></span>
+<span id="cb17-58"><a href="#cb17-58" tabindex="-1"></a><span class="co">#&gt; ECA36  &quot;1/1:0,8:8:PASS:30:.:.:441,30,0&quot;         </span></span>
+<span id="cb17-59"><a href="#cb17-59" tabindex="-1"></a><span class="co">#&gt; ECA396 &quot;1/1:2,41:43:PASS:44:BB:0.0252:1749,0,44&quot;</span></span>
+<span id="cb17-60"><a href="#cb17-60" tabindex="-1"></a><span class="co">#&gt; EG4725 &quot;0/0:20,0:20:PASS:60:.:.:0,60,750&quot;       </span></span>
+<span id="cb17-61"><a href="#cb17-61" tabindex="-1"></a><span class="co">#&gt; JU1400 &quot;0/0:33,0:33:PASS:96:.:.:0,96,1440&quot;      </span></span>
+<span id="cb17-62"><a href="#cb17-62" tabindex="-1"></a><span class="co">#&gt; JU2526 &quot;1/1:0,20:20:PASS:60:.:.:893,60,0&quot;       </span></span>
+<span id="cb17-63"><a href="#cb17-63" tabindex="-1"></a><span class="co">#&gt; JU2600 &quot;0/0:28,0:28:PASS:75:.:.:0,75,1125&quot;      </span></span>
+<span id="cb17-64"><a href="#cb17-64" tabindex="-1"></a><span class="co">#&gt; JU310  &quot;0/0:33,0:33:PASS:81:.:.:0,81,1215&quot;      </span></span>
+<span id="cb17-65"><a href="#cb17-65" tabindex="-1"></a><span class="co">#&gt; MY2147 &quot;0/0:28,0:28:PASS:72:.:.:0,72,1080&quot;      </span></span>
+<span id="cb17-66"><a href="#cb17-66" tabindex="-1"></a><span class="co">#&gt;        [,2]                            </span></span>
+<span id="cb17-67"><a href="#cb17-67" tabindex="-1"></a><span class="co">#&gt; CB4856 &quot;0/0:40,0:40:PASS:99:0,111,1665&quot;</span></span>
+<span id="cb17-68"><a href="#cb17-68" tabindex="-1"></a><span class="co">#&gt; DL238  &quot;0/0:35,0:35:PASS:90:0,90,1350&quot; </span></span>
+<span id="cb17-69"><a href="#cb17-69" tabindex="-1"></a><span class="co">#&gt; ECA36  &quot;0/0:8,0:8:PASS:24:0,24,311&quot;    </span></span>
+<span id="cb17-70"><a href="#cb17-70" tabindex="-1"></a><span class="co">#&gt; ECA396 &quot;0/0:34,0:34:PASS:99:0,99,1275&quot; </span></span>
+<span id="cb17-71"><a href="#cb17-71" tabindex="-1"></a><span class="co">#&gt; EG4725 &quot;0/0:34,0:34:PASS:99:0,99,1485&quot; </span></span>
+<span id="cb17-72"><a href="#cb17-72" tabindex="-1"></a><span class="co">#&gt; JU1400 &quot;0/0:38,0:38:PASS:99:0,102,1520&quot;</span></span>
+<span id="cb17-73"><a href="#cb17-73" tabindex="-1"></a><span class="co">#&gt; JU2526 &quot;1/1:0,26:26:PASS:80:1095,80,0&quot; </span></span>
+<span id="cb17-74"><a href="#cb17-74" tabindex="-1"></a><span class="co">#&gt; JU2600 &quot;0/0:19,0:19:PASS:54:0,54,810&quot;  </span></span>
+<span id="cb17-75"><a href="#cb17-75" tabindex="-1"></a><span class="co">#&gt; JU310  &quot;0/0:27,0:27:PASS:81:0,81,1070&quot; </span></span>
+<span id="cb17-76"><a href="#cb17-76" tabindex="-1"></a><span class="co">#&gt; MY2147 &quot;0/0:17,0:17:PASS:48:0,48,720&quot;  </span></span>
+<span id="cb17-77"><a href="#cb17-77" tabindex="-1"></a><span class="co">#&gt; # ℹ 5 more samples and 35 more sites</span></span>
+<span id="cb17-78"><a href="#cb17-78" tabindex="-1"></a><span class="co">#&gt; # ℹ Use `print(n = ..., n_col = ...)` to see more samples and sites respectively</span></span>
+<span id="cb17-79"><a href="#cb17-79" tabindex="-1"></a><span class="co">#&gt; ! A mask is active, using 61.7% of all sites (37/60). See `summary(vcf)`</span></span></code></pre></div>
 <blockquote>
-<p>NOTE: the <code>readr</code> library (which is used internally) does
-not support writing in the block-gzipped format that is expected by many
-other tools. To achieve this you can export to plain “.vcf” and convert
-the file using the “bgzip” CLI (and “tabix” for indexing).</p>
+<p>NOTE: R does not support writing in the block-gzipped format (only
+the regular gzip format) that is expected by many other tools. To
+achieve this you can export to plain “.vcf” and convert the file using
+the “bgzip” CLI (and “tabix” for indexing).</p>
 </blockquote>
 </div>
 <div id="detecting-linkage-between-sites" class="section level2">
@@ -886,7 +885,7 @@ determine which sites should be excluded if we want to remove as many of
 the detected links as possible (very few links could remain).</p>
 <div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a>links <span class="ot">&lt;-</span> <span class="fu">find_linked_sites</span>(vcf, <span class="at">cutoff =</span> <span class="fl">0.9</span>, <span class="at">size_bp =</span> <span class="fl">1e5</span>, <span class="at">windows =</span> <span class="dv">2</span>, <span class="at">by_chrom =</span> <span class="cn">TRUE</span>, <span class="at">cores =</span> <span class="dv">1</span>)</span>
 <span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a><span class="co">#&gt; ℹ Running 5 comparisons between 4 windows</span></span>
-<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a><span class="co">#&gt; ℹ Collecting results &lt;Wed 17:08&gt;</span></span>
+<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a><span class="co">#&gt; ℹ Collecting results &lt;Fri 18:32&gt;</span></span>
 <span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a><span class="co">#&gt; ✔ Collecting results [5ms]</span></span>
 <span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb19-6"><a href="#cb19-6" tabindex="-1"></a>lgraph <span class="ot">&lt;-</span> <span class="fu">resolve_links</span>(links, <span class="at">cores =</span> <span class="dv">1</span>)</span></code></pre></div>
@@ -910,7 +909,7 @@ the VCF are compared).</p>
 <span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a><span class="co">#&gt; # A tibble: 1 × 5</span></span>
 <span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a><span class="co">#&gt;   n_remove n_proxy n_singletons n_total frac_remove</span></span>
 <span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a><span class="co">#&gt;      &lt;int&gt;   &lt;int&gt;        &lt;int&gt;   &lt;int&gt;       &lt;dbl&gt;</span></span>
-<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a><span class="co">#&gt; 1       35      13           12      60       0.583</span></span></code></pre></div>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a><span class="co">#&gt; 1       34      13           13      60       0.567</span></span></code></pre></div>
 <p>This will return a directed acyclic graph in which each node is
 labeled with the (column) index of a site in the
 <strong>unmasked</strong> vcf. Each node that should be removed to
@@ -929,7 +928,7 @@ the least amount of variants.</p>
 <span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a><span class="co">#&gt; # A tibble: 1 × 4</span></span>
 <span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a><span class="co">#&gt;   samples sites_visible sites_total visible_frac</span></span>
 <span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a><span class="co">#&gt;     &lt;int&gt;         &lt;int&gt;       &lt;int&gt;        &lt;dbl&gt;</span></span>
-<span id="cb21-6"><a href="#cb21-6" tabindex="-1"></a><span class="co">#&gt; 1      15            25          60        0.417</span></span></code></pre></div>
+<span id="cb21-6"><a href="#cb21-6" tabindex="-1"></a><span class="co">#&gt; 1      15            26          60        0.433</span></span></code></pre></div>
 </div>
 <div id="notes-for-advanced-users" class="section level2">
 <h2>Notes for advanced users</h2>

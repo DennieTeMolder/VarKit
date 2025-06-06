@@ -35,7 +35,7 @@ file <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
 
 ## Loading a VCF into R
 
-In it's simplest form you would load a VCF file into memory like so:
+In its simplest form you would load a VCF file into memory like so:
 
 ```{r read_simple, eval = FALSE}
 vcf <- read_vcf(file)
@@ -171,7 +171,8 @@ that no longer contain variation. VarKit provides a convenient function to achie
 this:
 
 ```{r mask_variation}
-vcf <- mask_sites_without_variation(vcf)
+# Only look at the GT field, obtained by parse_geno(vcf, type = "GT")
+vcf <- mask_sites_without_variation(vcf, parse_geno_type = "GT")
 summary(vcf)
 ```
 
@@ -231,10 +232,10 @@ write_vcf(vcf, file = temp_file, replace_filter = TRUE)
 read_vcf(temp_file)
 ```
 
-> NOTE: the `readr` library (which is used internally) does not support writing
-> in the block-gzipped format that is expected by many other tools. To achieve
-> this you can export to plain ".vcf" and convert the file using the "bgzip"
-> CLI (and "tabix" for indexing).
+> NOTE: R does not support writing in the block-gzipped format (only the regular
+> gzip format) that is expected by many other tools. To achieve this you can
+> export to plain ".vcf" and convert the file using the "bgzip" CLI (and "tabix"
+> for indexing).
 
 ## Detecting linkage between sites
 
