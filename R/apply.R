@@ -36,7 +36,7 @@ apply_index.varkit_index <- function(x, FUN, ..., .from_start = TRUE, .progress 
     cli::cli_progress_step(
       paste0(msg, "... {i}/{n_chunks} | ETA: {cli::pb_eta}"),
       paste0(msg, " finished, processed { .frmt_big(cli::pb_total)} variants @{cli::pb_rate}"),
-      paste0(msg, " failed at index row {idx[i]}")
+      paste0(msg, " failed at chunk {i}/{n_chunks}, after { .frmt_big(cli::pb_current)} variants)")
     )
     cli::cli_progress_update(
       set = 0L,
