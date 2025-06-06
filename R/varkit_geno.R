@@ -21,10 +21,11 @@ is_varkit_geno <- function(x) {
 }
 
 ##' @export
-`[.varkit_geno` <- function(x, ...) {
-  res <- NextMethod()
+`[.varkit_geno` <- function(x, i, j, drop = FALSE, ...) {
+  class(x) <- setdiff(class(x), "varkit_geno")
+  res <- x[i, j, drop = drop]
   if (is.matrix(res))
-    class(res) <- class(x)
+    class(res) <- c("varkit_geno", class(res))
   res
 }
 

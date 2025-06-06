@@ -66,6 +66,16 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
   invisible(x)
 }
 
+# Contrary to base R we set 'drop = F' mirroring tibble:::`[.tbl_df`
+##' @export
+`[.mtrx` <- function(x, i, j, drop = FALSE, ...) {
+  class(x) <- setdiff(class(x), "mtrx")
+  res <- x[i, j, drop = drop]
+  if (is.matrix(res))
+    class(res) <- c("mtrx", class(res))
+  res
+}
+
 .max_print_col <- function(mat, row_idx = NULL, width = getOption("width")) {
   stopifnot(is.matrix(mat))
   if (is.null(row_idx))
