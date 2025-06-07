@@ -91,7 +91,9 @@ read_vcf <- function(file,
   colClasses[is.na(colClasses)] <- geno_class
 
   .msg_step("Reading VCF body")
-  body <- do.call(read_tbl, c(shared_args, list(col.names = colClasses, nrows = n_max)))
+
+  # We have already performed the guessing if requested, disable GUESS.MAX here
+  body <- do.call(read_tbl, c(shared_args, list(col.names = colClasses, nrows = n_max, guess.max = -1)))
 
   if (nrow(body) < 1)
     return(NULL)
