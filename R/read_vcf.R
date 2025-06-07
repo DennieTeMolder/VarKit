@@ -28,9 +28,9 @@ read_vcf <- function(file,
   col_select <- rlang::enquo(col_select)
   na.strings <- unique(c("", ".", na_geno))
 
-  # Disable guessing if a prototype is provided or fewer variants are requested
-  if (!is.null(geno_ptype) || (n_max > 0L && guess_max >= n_max))
-    guess_max <- -1L
+  # Disable guessing if fewer variants are requested
+  if (n_max >= 1 && guess_max >= n_max)
+    guess_max <- -1
 
   # Turn file into a connection
   if (!.is_connection(file)) {
@@ -55,12 +55,14 @@ read_vcf <- function(file,
 
   # Fill in known classes, chrom & pos cannot be skipped, others are optional
   colClasses[c("chrom", "pos")] <- c("c", "i")
-  na_cols <- names(which(is.na(colClasses)))
   optional_classes <- c(id = "c", ref = "c", alt = "c", qual = "n", filter = "c", info = "c", format = "c")
-  colClasses[na_cols] <- optional_classes[na_cols]
+  optional_cols <- intersect(names(which(is.na(colClasses))), names(optional_classes))
+  colClasses[optional_cols] <- optional_classes[optional_cols]
 
   # The remaining NAs represent the genotype columns
-  if (!anyNA(colClasses)) {
+  geno_cols <- names(which(is.na(colClasses)))
+
+  if (length(geno_cols) == 0L) {
     null_geno <- setdiff(names(which(colClasses == "NULL")), names(optional_classes))
     if (length(null_geno) > 0L)
       stop("All genotypes were removed by 'col_select'!")
@@ -75,20 +77,23 @@ read_vcf <- function(file,
 
   # The genotypes will be combined into a single matrix, coercing all values to a shared type
   # Knowing the type beforehand improves the speed & memory usage of read_tbl & simplifies coercion
-  geno_class <- if (is.null(geno_ptype)) NA_character_ else typeof(geno_ptype)
-
-  if (guess_max >= 1L) {
+  if (!is.null(geno_ptype)) {
+    geno_class <- typeof(geno_ptype)
+  } else if (guess_max >= 1) {
     .msg_step("Guessing data type of genotype matrix")
     skip_known <- rlang::rep_named(names(which(!is.na(colClasses))), "NULL")
     geno_col_classes <- do.call(guess_col_classes, c(shared_args, list(
       nmax = guess_max, col.names = names(colClasses), colClasses = skip_known
     )))
 
-    geno_class <- lapply(geno_col_classes, function(class) methods::as(0.0, class))
-    geno_class <- class(do.call(c, geno_class))[1L]
+    # Try to determine the common type, this is not bullet proof, but should work for atomic types
+    geno_class <- purrr::map(geno_col_classes, function(class) methods::new(class))
+    geno_class <- typeof(do.call(c, geno_class))
+  } else {
+    geno_class <- NA_character_
   }
 
-  colClasses[is.na(colClasses)] <- geno_class
+  colClasses[geno_cols] <- geno_class
 
   .msg_step("Reading VCF body")
 
@@ -101,15 +106,12 @@ read_vcf <- function(file,
   .msg_step("Collecting results")
 
   # Move fixed fields to a separate df and convert genotypes to matrix
-  geno_cols <- setdiff(na_cols, names(optional_classes))
-  fxd <- body[, !colnames(body) %in% geno_cols]
-  body <- body[, geno_cols]
-  body <- varkit_geno(body)
+  fxd <- body[!colnames(body) %in% geno_cols]
+  body <- varkit_geno(body[geno_cols])
 
   # Convert columns that only contains NAs to logical for memory efficiency
-  fxd <- dplyr::mutate(fxd,
-    dplyr::across(tidyselect::where(~ all(is.na(.x))), as.logical)
-  )
+  all_na <- which(purrr::map_lgl(fxd, function(col) all(is.na(col))))
+  if (any(all_na)) fxd[all_na] <- NA
 
   varkit(site = fxd, geno = body, meta = meta(header))
 }
