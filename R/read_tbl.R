@@ -23,8 +23,8 @@ read_tbl <- function(file,
   col.select <- rlang::enquo(col.select)
 
   # Disable guessing if fewer rows are requested
-  if (nrows > 0L && guess.max >= nrows)
-    guess.max <- -1L
+  if (nrows >= 1 && guess.max >= nrows)
+    guess.max <- -1
 
   # if col.names is a named vector it doubles as the colClasses argument
   if (!is.null(names(col.names))) {
@@ -40,7 +40,7 @@ read_tbl <- function(file,
   }
 
   # We handle SKIP here to save us from figuring out which of the functions below gets to skip
-  if (skip > 0L) {
+  if (skip > 0) {
     if (!.is_connection(file)) {
       file <- file_con(file, "r")
       .defer(close(file))
@@ -88,7 +88,7 @@ read_tbl <- function(file,
   # If any col.names have an unknown class we guess their classes based on guess.max
   # Unknown colClasses are read as character, which inflates the string cache
   # Using a smaller portion of the file improves memory consumption & is up to 33% faster
-  if (guess.max >= 1L && anyNA(colClasses)) {
+  if (anyNA(colClasses) && guess.max >= 1) {
     skip_cols <- names(colClasses)[!is.na(colClasses)]
     skip_cols <- rlang::rep_named(skip_cols, "NULL")
     guessed_classes <- guess_col_classes(
