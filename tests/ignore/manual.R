@@ -3,6 +3,14 @@ library(devtools)
 load_all()
 example <- "./inst/extdata/celegans.vcf.bgz"
 
+header <- read_vcf_header(example)
+body <- read_tbl(example, col.names = header$col_names)
+site <- body[.fixed_columns()]
+geno <- varkit_geno(body[setdiff(colnames(body), colnames(site))])
+rm(body)
+
+varkit(site, geno, header$meta)
+
 ### Examples ------
 ## Varkit object ------
 read_vcf_header(example)
