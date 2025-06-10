@@ -47,7 +47,7 @@ validate_drm <- function(x) {
 
       # drm$node$select_which
       if (!is.null(node[["select_which"]]))
-        stopifnot(is.integer(node$select_which), !anyNA(node$select_which))
+        stopifnot(is.integer(node$select_which), !anyNA(node$select_which), length(node$select_which) > 0L)
 
       # drm$node$match_on
       match_on <- node[["match_on"]]
