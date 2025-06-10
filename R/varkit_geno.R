@@ -1,16 +1,19 @@
 ##' @export
-varkit_geno <- function(x) {
+varkit_geno <- function(x = NULL) {
   UseMethod("varkit_geno", x)
 }
 
 ##' @export
 varkit_geno.data.frame <- function(x) {
-  varkit_geno.matrix(t(as.matrix(x)))
+  varkit_geno.default(t(as.matrix(x)))
 }
 
 ##' @export
-varkit_geno.matrix <- function(x) {
-  x <- as_mtrx(x, dimnames = c("samples", "sites"))
+varkit_geno.default <- function(x = NULL) {
+  x <- as_mtrx(
+    x = if (is.null(x)) logical() else x,
+    dimnames = c("samples", "sites")
+  )
   class(x) <- c("varkit_geno", setdiff(class(x), "varkit_geno"))
   x
 }
