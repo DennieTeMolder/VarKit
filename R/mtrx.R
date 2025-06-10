@@ -101,6 +101,9 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
     row_idx <- rlang::missing_arg()
   width <- as.integer(width)
 
+  if (ncol(mat) <= 1L)
+    return(1L)
+
   .max_nchar <- function(x) {
     max(nchar(format(x, trim = TRUE)))
   }
