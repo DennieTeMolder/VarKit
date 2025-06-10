@@ -1,11 +1,23 @@
 ##' @export
-varkit <- function(site, geno, meta = NULL) {
+varkit <- function(site, geno, meta = NULL, drmodel = NULL) {
   site <- tibble::as_tibble(site)
   stopifnot(nrow(site) > 0L)
   geno <- varkit_geno(geno)
   stopifnot(ncol(geno) == nrow(site))
   if (!is.null(meta))
     meta <- tibble::as_tibble(meta)
+  if (is.null(drmodel)) {
+    drmodel <- drm_create()
+  } else {
+    stopifnot(is_drm(drmodel))
+  }
+
+  vcf <- validate_varkit(new_varkit(
+    meta = meta,
+    site = site,
+    geno = geno,
+    drmodel = drmodel
+  ))
 
   # Apply initial mask based on the FILTER column
   use_site <- FALSE
@@ -14,22 +26,28 @@ varkit <- function(site, geno, meta = NULL) {
   if (!any(use_site))
     use_site <- rep(TRUE, nrow(site))
 
-  vcf <- new_varkit(meta = meta, site = site, geno = geno, use_site = use_site)
-  validate_varkit(vcf)
+  drm_preselect(drmodel, sites = use_site)
+  vcf
 }
 
 ##' @export
-new_varkit <- function(meta = data.frame(), site = data.frame(), geno = matrix(), use_site = logical()) {
+new_varkit <- function(meta = data.frame(),
+                       site = data.frame(),
+                       geno = varkit_geno(),
+                       drmodel = drm_create()) {
   stopifnot(is.null(meta) || is.data.frame(meta))
   stopifnot(is.data.frame(site))
-  stopifnot(is.matrix(geno))
-  stopifnot(is.logical(use_site))
+  stopifnot(is_varkit_geno(geno))
+  stopifnot(is_drm(drmodel))
+
+  site <- drm_do_attach(site, drmodel = drmodel, dim_links = c("sites", NA), label = "site()")
+  geno <- drm_do_attach(geno, drmodel = drmodel, dim_links = c("samples", "sites"), label = "geno()")
+
   structure(
     list(
       meta = meta,
       site = site,
-      geno = geno,
-      use_site = use_site
+      geno = geno
     ),
     class = "varkit"
   )
@@ -42,6 +60,10 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
     stop("The 'site()' slot is missing!")
   if (!tibble::is_tibble(x$site))
     stop("The 'site()' slot should be a tibble!")
+  if (!has_drm(x$site))
+    stop("The 'site()' slot has no associated data relation model!")
+  if (!drm_contains(drm_get(x$site), x$site))
+    stop("The associated data relation model no longer contains 'site()'!")
   if (!any(colnames(x$site) == "chrom"))
     stop("The 'site()' slot should contain the 'chrom' column!")
   if (!is.character(x$site$chrom))
@@ -73,24 +95,17 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
     stop("The 'geno()' slot is missing!")
   if (!is_varkit_geno(x$geno))
     stop("The 'geno()' slot should be of class 'varkit_geno'!")
+  if (!has_drm(x$geno))
+    stop("The 'geno()' slot has no associated data relation model!")
+  if (!drm_contains(drm_get(x$geno), x$geno))
+    stop("The associated data relation model no longer contains 'geno()'!")
   if (nrow(x$geno) < 1L)
     stop("The 'geno()' slot should contain at least a single sample/row!")
   if (is.null(rownames(x$geno)) || any(nchar(rownames(x$geno)) == 0L))
     stop("The 'geno()' slot cannot have missing/zero-length rownames!")
 
-  # Use_site
-  if (is.null(x$use_site))
-    stop("The '$use_site' slot is missing!")
-  if (!is.vector(x$use_site) || !is.logical(x$use_site))
-    stop("The '$use_site' slot should be a boolean vector!")
-  if (all(!x$use_site))
-    stop("All elements of slot '$use_site' are FALSE!")
-
-  # Equal dimensions
-  if (nrow(x$site) != ncol(x$geno))
-    stop("The number of rows in slot 'site()' should match the number of column in 'geno()'!")
-  if (nrow(x$site) != length(x$use_site))
-    stop("The length of slot '$use_site' should match the number of rows of 'site()'!")
+  if (!identical(drm_get(x$site), drm_get(x$geno)))
+    stop("The 'site()' and 'geno()' slot are not in the same data relation model!")
 
   x
 }

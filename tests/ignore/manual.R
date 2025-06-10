@@ -9,7 +9,13 @@ site <- body[.fixed_columns()]
 geno <- varkit_geno(body[setdiff(colnames(body), colnames(site))])
 rm(body)
 
-varkit(site, geno, header$meta)
+vcf <- varkit(meta = header$meta, site, geno)
+drm_get(vcf$site)
+
+# TODO adjust methods, i.e. print(), summary()
+# TODO adjust site()/geno()
+# TODO adjust mask()/retain()
+# TODO drop get_site_idx()
 
 ### Examples ------
 ## Varkit object ------
