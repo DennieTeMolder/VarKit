@@ -375,6 +375,25 @@ drm_which <- function(x, node) {
 }
 
 ##' @export
+drm_n_total <- function(x, node) {
+  x_drm <- drm_get(x)
+  if (!any(names(x_drm[["nodes"]]) == node))
+    stop("No node entry found in data relation model for: ", node)
+
+  x_drm[["nodes"]][[node]][["length"]]
+}
+
+##' @export
+drm_n_selected <- function(x, node) {
+  select_which <- drm_which(x, node = node)
+  if (rlang::is_missing(select_which)) {
+    drm_get(x)[["nodes"]][[node]][["length"]]
+  } else {
+    length(select_which)
+  }
+}
+
+##' @export
 drm_do_subset <- function(x, ..., .drop = FALSE) {
   if (is_drm(x))
     stop("Please provide the object to subset, not the data relation model itself!")
