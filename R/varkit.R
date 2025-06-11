@@ -49,7 +49,8 @@ new_varkit <- function(meta = data.frame(),
       site = site,
       geno = geno
     ),
-    class = "varkit"
+    class = "varkit",
+    data_relation_model = drmodel
   )
 }
 
