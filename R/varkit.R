@@ -144,26 +144,49 @@ print.varkit <- function(x, ..., n = NULL, n_samples = NULL) {
   print(geno.varkit(x), n = n_samples, n_col = n)
   cat("\n")
 
-  if (all(x$use_site)) {
-    total <- .frmt_big(length(x$use_site))
-    cli::cli_alert_success("No mask is active, using all {total} sites. See `summary(vcf)`")
-  } else {
-    total <- n_sites.varkit(x, mask = FALSE)
-    current <- n_sites.varkit(x, mask = TRUE)
+  .msg_h2("Masks, `summary(vcf)`")
+
+  total <- drm_n_total(x$geno, "samples")
+  current <- drm_n_selected(x$geno, "samples")
+  samples_masked <- total != current
+  if (samples_masked) {
     cli::cli_alert_warning(sprintf(
-      "A mask is active, using %s%% of all sites (%s/%s). See `summary(vcf)`",
+      "Samples: using %s%% of total (%s/%s)",
       round(current / total * 100, digits = 1), .frmt_big(current), .frmt_big(total)
     ))
+  } else {
+    cli::cli_alert_success("Samples: Using all { .frmt_big(total)} samples")
+  }
+
+  total <- drm_n_total(x$geno, "sites")
+  current <- drm_n_selected(x$geno, "sites")
+  sites_masked <- total != current
+  if (sites_masked) {
+    cli::cli_alert_warning(sprintf(
+      "Sites: using %s%% of total (%s/%s)",
+      round(current / total * 100, digits = 1), .frmt_big(current), .frmt_big(total)
+    ))
+  } else {
+    cli::cli_alert_success("Sites: using all { .frmt_big(total)} sites")
+  }
+
+  cat("\n")
+  if (sites_masked || samples_masked) {
+    cli::cli_alert_warning("A mask is active!")
+  } else {
+    cli::cli_alert_success("No mask is active.")
   }
 }
 
 ##' @export
 summary.varkit <- function(object, ...) {
   tibble::tibble(
-    samples = n_samples.varkit(object),
+    samples_visible = n_samples.varkit(object, mask = TRUE),
+    samples_total = n_samples.varkit(object, mask = FALSE),
+    samples_frac = .data$samples_visible / .data$samples_total,
     sites_visible = n_sites.varkit(object, mask = TRUE),
     sites_total = n_sites.varkit(object, mask = FALSE),
-    visible_frac = .data$sites_visible / .data$sites_total
+    sites_frac = .data$sites_visible / .data$sites_total
   )
 }
 
