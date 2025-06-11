@@ -5,17 +5,20 @@ site <- function(x, ..., .add_index = FALSE) {
 
 ##' @export
 site.varkit <- function(x, ..., .add_index = FALSE) {
-  res <- x$site
-  if (...length() > 0L)
-    res <- dplyr::select(res, ...)
+  .stopifnotsingle(.add_index, what = "logical")
+
+  if (...length() > 0L) {
+    col_select <- tidyselect::eval_select(rlang::expr(c(...)), data = x$site)
+    res <- drm_do_subset(x$site, , col_select, .drop = is.null(...names()))
+    if (!is.vector(res))
+      colnames(res) <- names(col_select)
+  } else {
+    res <- drm_do_subset(x$site)
+  }
+
   if (.add_index)
     res$idx <- seq_len(nrow(res))
-  if (!all(x$use_site))
-    res <- res[x$use_site, ]
 
-  # Single column results are returned as vectors when ... are provided
-  if (ncol(res) == 1L && ...length() > 0L)
-    return(res[[1L]])
   res
 }
 
@@ -26,12 +29,12 @@ site.varkit <- function(x, ..., .add_index = FALSE) {
   if (!is.data.frame(value))
     stop("The new value must be a data frame!")
   if (nrow(value) != nrow(x$site)) {
-    if (!all(x$use_site))
+    if (drm_n_total(x) != drm_n_selected(x))
       stop("Remove current mask before modifying! See `unmask_all()`.")
     stop("The new value should have an equal number of rows!\n",
          "Use `mask()/retain()` (+ `delete_masked_sites()`) to remove rows/sites.")
   }
 
-  x$site <- value
+  x$site <- drm_do_attach(value, drmodel = drm_get(x$site), dim_links = c("sites", NA), label = "site()")
   validate_varkit(x)
 }

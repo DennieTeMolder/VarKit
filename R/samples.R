@@ -10,7 +10,7 @@ samples.varkit_geno <- function(x) {
 
 ##' @export
 samples.varkit <- function(x) {
-  samples.varkit_geno(x$geno)
+  samples.varkit_geno(drm_do_subset(x$geno, , integer()))
 }
 
 ##' @export

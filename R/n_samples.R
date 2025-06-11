@@ -1,17 +1,24 @@
 ##' @export
-n_samples <- function(x) {
+n_samples <- function(x, ...) {
   UseMethod("n_samples", x)
 }
 
 ##' @export
-n_samples.varkit <- function(x) {
-  length(samples(x))
+n_samples.varkit <- function(x, ..., mask = TRUE) {
+  .stopifnotsingle(mask, what = "logical")
+  if (mask) {
+    drm_n_selected(drm_get(x$geno), "samples")
+  } else {
+    drm_n_total(drm_get(x$geno), "samples")
+  }
 }
 
 ##' @export
-n_samples.varkit_header <- n_samples.varkit
+n_samples.varkit_header <- function(x, ...) {
+  length(samples.varkit_header(x))
+}
 
 ##' @export
-n_samples.varkit_geno <- function(x) {
+n_samples.varkit_geno <- function(x, ...) {
   nrow(x)
 }
