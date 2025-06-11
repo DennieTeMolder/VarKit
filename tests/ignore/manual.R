@@ -10,12 +10,22 @@ geno <- varkit_geno(body[setdiff(colnames(body), colnames(site))])
 rm(body)
 
 vcf <- varkit(meta = header$meta, site, geno)
-drm_get(vcf$site)
+drm_get(vcf)
 
-# TODO adjust methods, i.e. print(), summary()
-# TODO adjust site()/geno()
-# TODO adjust mask()/retain()
+drm_preselect(drm_get(vcf$site), sites = vcf$site$chrom == "I")
+
+drm_n_total(vcf$site, "sites")
+drm_n_selected(vcf$site, "sites")
+
+n_sites(vcf)
+
+site(vcf, chrom)
+
+# TODO adjust unmask_all()/delete_masked_sites()
 # TODO drop get_site_idx()
+# TODO tests for use_site references
+
+# REVIEW make site() never drop?
 
 ### Examples ------
 ## Varkit object ------
