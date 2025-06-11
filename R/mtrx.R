@@ -66,7 +66,7 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
     round(mean(is.na(x)) * 100, digits = 2)
   ))
 
-  # Remove the dimnames names te prevent them from printing
+  # Remove the dimnames names to prevent them from printing
   xp <- x
   names(dimnames(xp)) <- NULL
   print.default(unclass(xp[row_idx, col_idx, drop = FALSE]))
@@ -104,10 +104,6 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
   if (ncol(mat) <= 1L)
     return(1L)
 
-  .max_nchar <- function(x) {
-    max(nchar(format(x, trim = TRUE)))
-  }
-
   # Reduce size of matrix to the maximum possible number of columns
   n_max <- max(1L, as.integer(floor(width / 2L)) - 1L)
   if (ncol(mat) > n_max) {
@@ -116,7 +112,13 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
     mat <- mat[row_idx, , drop = FALSE]
   }
 
-  if (is.null(rownames(mat))) {
+  .max_nchar <- function(x) {
+    max(nchar(format(x, trim = TRUE)))
+  }
+
+  if (nrow(mat) == 0L) {
+    rname_len <- 4L
+  } else if (is.null(rownames(mat))) {
     rname_len <- nchar(nrow(mat)) + 3L
   } else {
     rname_len <- .max_nchar(rownames(mat))
@@ -130,13 +132,19 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
     cname_len <- nchar(colnames(mat)) + 3L
   }
 
-  # Add 1 for space between columns and 2 for the quotes around character values
-  cval_len <- apply(mat, 2, .max_nchar) + 1L
-  if (is.character(mat))
-    cval_len <- cval_len + 2L
+  if (nrow(mat) == 0L) {
+    col_widths <- cname_len
+  } else {
+    # Add 1 for space between columns and 2 for the quotes around character values
+    cval_len <- apply(mat, 2, .max_nchar) + 1L
+    if (is.character(mat))
+      cval_len <- cval_len + 2L
 
-  # Check if col name or col value is widest, add row name width to first element
-  col_widths <- pmax.int(cname_len, cval_len)
+    # Check if col name or col value is widest
+    col_widths <- pmax.int(cname_len, cval_len)
+  }
+
+  # Add row name width to first element
   col_widths[1L] <- col_widths[1L] + rname_len
 
   # Return the index of the last column that fits within width
