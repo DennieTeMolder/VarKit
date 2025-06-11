@@ -361,7 +361,7 @@ drm_deselect <- function(x, ...) {
 }
 
 ##' @export
-drm_do_subset <- function(x, ..., drop = FALSE) {
+drm_do_subset <- function(x, ..., .drop = FALSE) {
   if (is_drm(x))
     stop("Please provide the object to subset, not the data relation model itself!")
   rlang::check_dots_unnamed()
@@ -399,7 +399,7 @@ drm_do_subset <- function(x, ..., drop = FALSE) {
   }
 
   # Apply subsets
-  x <- do.call(`[`, args = c(list(x), dots, list(drop = drop)))
+  x <- do.call(`[`, args = c(list(x), dots, list(drop = .drop)))
 
   # Remove DRM attributes as size no longer matches the original object
   drm_do_detach(x)
