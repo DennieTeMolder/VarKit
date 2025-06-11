@@ -307,7 +307,7 @@ drm_preselect <- function(x, ...) {
     }
 
     if (!any(curr_dots))
-      stop("At '", current, "': no elements remaining after applying node!")
+      stop("At '", current, "': no elements remaining after applying selection!")
   }
 
   # Apply selections
@@ -358,6 +358,20 @@ drm_forget <- function(x, ..., .forget_select = TRUE, .forget_match = TRUE) {
 ##' @export
 drm_deselect <- function(x, ...) {
   drm_forget(x, ..., .forget_select = TRUE, .forget_match = FALSE)
+}
+
+##' @export
+drm_which <- function(x, node) {
+  x_drm <- drm_get(x)
+  if (!any(names(x_drm[["nodes"]]) == node))
+    stop("No node entry found in data relation model for: ", node)
+
+  select_which <- x_drm[["nodes"]][[node]][["select_which"]]
+  if (is.null(select_which)) {
+    rlang::missing_arg()
+  } else {
+    select_which
+  }
 }
 
 ##' @export
