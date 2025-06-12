@@ -33,5 +33,6 @@ is_varkit_geno <- function(x) {
 
 ##' @export
 t.varkit_geno <- function(x) {
-  t(unclass(x))
+  class(x) <- setdiff(class(x), "varkit_geno")
+  t.default(x)
 }
