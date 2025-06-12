@@ -65,7 +65,7 @@ temp_file <- tempfile(fileext = ".vcf.gz")
 write_vcf(vcf, temp_file, replace_filter = TRUE)
 read_vcf(temp_file)
 
-summary(delete_masked_sites(vcf))
+summary(delete_masked(vcf))
 
 ## Varkit_geno object ------
 apply(geno(vcf), "samples", length)
@@ -79,7 +79,7 @@ links <- find_linked_sites(vcf, windows = -1, return_r2 = TRUE, cores = 1)
 lgraph <- resolve_links(links, cores = 1)
 summary(lgraph, vcf = vcf)
 
-summary(mask(vcf, lgraph))
+summary(mask(vcf, is_linked(lgraph, vcf = .)))
 summary(is_linked(lgraph, vcf))
 
 temp_file <- tempfile(fileext = ".xml")
