@@ -158,7 +158,7 @@ sequence, which will cause sites in **either** mask to be excluded:
 # Let's use a data frame this time around
 sites_to_mask <- dplyr::filter(site(vcf), qual < 3000)
 nrow(sites_to_mask)
-vcf <- mask(vcf, site = sites_to_mask)
+vcf <- mask(vcf, site = has_join(site(., chrom, pos, alt), sites_to_mask))
 summary(vcf)
 ```
 
@@ -213,7 +213,7 @@ lookup speed, it is possible to entirely remove sites (meaning they cannot be
 retrieved by unmasking):
 
 ```{r mask_remove}
-reduced_vcf <- delete_masked_sites(vcf)
+reduced_vcf <- delete_masked(vcf)
 summary(reduced_vcf)
 ```
 
@@ -303,7 +303,7 @@ single best site is retained and all others are masked, thus representing the
 most amount of information with the least amount of variants.
 
 ```{r mask_linked}
-vcf <- mask(vcf, site = lgraph)
+vcf <- mask(vcf, site = is_linked(lgraph, vcf = .))
 summary(vcf)
 ```
 
