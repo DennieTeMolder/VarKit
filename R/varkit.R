@@ -105,8 +105,13 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
   if (is.null(rownames(x$geno)) || any(nchar(rownames(x$geno)) == 0L))
     stop("The 'geno()' slot cannot have missing/zero-length rownames!")
 
-  if (!identical(drm_get(x$site), drm_get(x$geno)))
-    stop("The 'site()' and 'geno()' slot are not in the same data relation model!")
+  # Data relation model
+  if (is.null(drm_get(x)))
+    stop("The 'varkit' object has no data relation model!")
+  if (!identical(drm_get(x$site), drm_get(x)))
+    stop("The 'site()' slot is associated with the wrong data relation model!")
+  if (!identical(drm_get(x$geno), drm_get(x)))
+    stop("The 'geno()' slot is associated with the wrong data relation model!")
 
   x
 }
@@ -192,9 +197,10 @@ summary.varkit <- function(object, ...) {
 
 ##' @export
 as.data.frame.varkit <- function(x, row.names = NULL, optional = FALSE, ...) {
+  validate_varkit(x)
   cbind(
-    as.data.frame(site(x), row.names = row.names, optional = optional, ...),
-    as.data.frame(t(geno(x)), optional = optional)
+    as.data.frame(site.varkit(x), row.names = row.names, optional = optional, ...),
+    as.data.frame(t.varkit_geno(geno.varkit(x)), optional = optional)
   )
 }
 
