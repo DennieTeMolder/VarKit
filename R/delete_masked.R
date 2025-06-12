@@ -23,7 +23,7 @@ delete_masked.varkit <- function(x, samples = TRUE, sites = TRUE) {
 
   new_varkit(
     meta = x$meta,
-    site = x$sites[sites, , drop = FALSE],
+    site = x$site[sites, , drop = FALSE],
     geno = x$geno[samples, sites, drop = FALSE],
     drmodel = drmodel
   )
