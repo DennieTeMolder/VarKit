@@ -30,7 +30,11 @@ example we will use a block-gzipped VCF:
 ```{r setup}
 library(varkit)
 
-file <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
+# Normally you would define a path like this:
+path <- "path/to/your/file.vcf.gz"
+
+# But we will use example data included with the package here
+path <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
 ```
 
 ## Loading a VCF into R
@@ -38,13 +42,13 @@ file <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
 In its simplest form you would load a VCF file into memory like so:
 
 ```{r read_simple, eval = FALSE}
-vcf <- read_vcf(file)
+vcf <- read_vcf(path)
 ```
 
 However, it is good practice to first validate if the VCF header is parsed correctly:
 
 ```{r header}
-header <- read_vcf_header(file)
+header <- read_vcf_header(path)
 print(header)
 ```
 
@@ -61,7 +65,7 @@ you know you are not going to use certain fixed fields and want to save memory.
 For example here we exclude the "INFO" and "FILTER" fixed fields and the sample "N2":
 
 ```{r read}
-vcf <- read_vcf(file, col_select = c(-info, -filter, -N2))
+vcf <- read_vcf(path, col_select = c(-info, -filter, -N2))
 print(vcf)
 ```
 
