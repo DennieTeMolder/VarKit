@@ -168,7 +168,7 @@ drm_do_attach <- function(x, drmodel, dim_links, label = NULL) {
     } else if (x_dim[i] != curr_node[["length"]]) {
       expected <- .frmt_big(curr_node[["length"]])
       observed <- .frmt_big(x_dim[i])
-      warning("At dimension ", i, "(", id, "): expected length ", expected, ", but got ", observed, "!")
+      warning("At dimension ", i, " (", id, "): expected length ", expected, ", but got ", observed, "!")
     }
   }
 
