@@ -5,5 +5,8 @@ export_mask <- function(x) {
 
 ##' @export
 export_mask.varkit <- function(x) {
-  x$use_site
+  list(
+    samples = .drm_if_else(x, node = "samples"),
+    sites = .drm_if_else(x, node = "sites")
+  )
 }

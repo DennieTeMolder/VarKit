@@ -5,17 +5,16 @@ import_mask <- function(x, mask, add = FALSE) {
 
 ##' @export
 import_mask.varkit <- function(x, mask, add = FALSE) {
-  # Checks
-  stopifnot(is.logical(mask))
-  if (length(mask) != n_sites.varkit(x, mask = FALSE))
-    stop("The number of sites in 'mask' doesn't match with 'x'!")
+  validate_varkit(x)
+  stopifnot(is.list(mask), c("samples", "sites") %in% names(mask))
+  stopifnot(is.logical(mask$samples), is.logical(mask$sites))
+  .stopifnotsingle(add, what = "logical")
 
-  if (add)
-    mask <- x$use_site & mask
-  if (!any(mask))
-    stop("The imported mask will hide all sites!")
+  if (add) {
+    mask$samples <- mask$samples & .drm_if_else(x, node = "samples")
+    mask$sites <- mask$sites & .drm_if_else(x, node = "sites")
+  }
 
   # Apply mask
-  x$use_site <- mask
-  x
+  drm_preselect(x, samples = mask$samples, sites = mask$sites)
 }
