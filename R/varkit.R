@@ -210,7 +210,7 @@ as_tibble.varkit <- function(x, ..., optional = TRUE) {
 }
 
 ##' @export
-split.varkit <- function(x, f, drop = FALSE, keep_f = FALSE, ...) {
+split.varkit <- function(x, f, drop = FALSE, ...) {
   if (missing(drop))
     drop <- TRUE
 
@@ -218,17 +218,20 @@ split.varkit <- function(x, f, drop = FALSE, keep_f = FALSE, ...) {
   x$site$idx <- seq_len(nrow(x$site))
 
   # Split sites and determine grouping using the index
-  split_site <- splitm(x$site, f = f, drop = drop, margin = 1, keep_f = keep_f, ...)
+  split_site <- splitm(x$site, f = f, drop = drop, margin = 1, keep_f = TRUE, ...)
   groups <- purrr::list_rbind(lapply(split_site, function(xx) xx[, "idx"]), names_to = "label")
   groups <- groups$label[order(groups$idx)]
 
   # Split the other parts of the varkit object in the same way
   split_geno <- splitm(x$geno, f = groups, margin = 2)
-  split_use <- split(x$use_site, f = groups)
+  split_mask <- export_mask.varkit(x)
+  split_mask$sites <- split(split_mask$sites, f = groups)
 
   # Recreate the varkit object for each split
-  splits <- lapply(names(split_geno), function(name) {
-    new_varkit(meta = x$meta, site = split_site[[name]], geno = split_geno[[name]], use_site = split_use[[name]])
+  lapply(setNames(nm = names(split_geno)), function(name) {
+    drm_preselect(
+      new_varkit(meta = x$meta, site = split_site[[name]], geno = split_geno[[name]]),
+      samples = split_mask$samples,
+      sites = split_mask$sites[[name]])
   })
-  setNames(splits, nm = names(split_geno))
 }
