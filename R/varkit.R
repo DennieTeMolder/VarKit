@@ -127,8 +127,9 @@ print.varkit <- function(x, ..., n = NULL, n_samples = NULL) {
     n_samples <- 10L
   n_samples <- min(n_samples, n_samples.varkit(x))
 
+  x_geno <- geno.varkit(x)
   if (is.null(n))
-    n <- .max_print_col(x$geno, row_idx = seq_len(n_samples))
+    n <- min(10L, .max_print_col(x_geno, row_idx = seq_len(n_samples)))
 
   .msg_h1("VarKit Variant Object")
   if (!is.null(x$meta)) {
@@ -146,10 +147,10 @@ print.varkit <- function(x, ..., n = NULL, n_samples = NULL) {
   cat("\n")
 
   .msg_h2("Transposed genotype matrix, `geno(vcf)`")
-  print(geno.varkit(x), n = n_samples, n_col = n)
+  print(x_geno, n = n_samples, n_col = n)
   cat("\n")
 
-  .msg_h2("Masks, `summary(vcf)`")
+  .msg_h2("Data masks, `summary(vcf)`")
 
   total <- drm_n_total(x$geno, "samples")
   current <- drm_n_selected(x$geno, "samples")
@@ -160,7 +161,7 @@ print.varkit <- function(x, ..., n = NULL, n_samples = NULL) {
       round(current / total * 100, digits = 1), .frmt_big(current), .frmt_big(total)
     ))
   } else {
-    cli::cli_alert_success("Samples: Using all { .frmt_big(total)} samples")
+    cli::cli_alert_info("Samples: Using all { .frmt_big(total)} samples")
   }
 
   total <- drm_n_total(x$geno, "sites")
@@ -172,10 +173,9 @@ print.varkit <- function(x, ..., n = NULL, n_samples = NULL) {
       round(current / total * 100, digits = 1), .frmt_big(current), .frmt_big(total)
     ))
   } else {
-    cli::cli_alert_success("Sites: using all { .frmt_big(total)} sites")
+    cli::cli_alert_info("Sites: using all { .frmt_big(total)} sites")
   }
 
-  cat("\n")
   if (sites_masked || samples_masked) {
     cli::cli_alert_warning("A mask is active!")
   } else {
@@ -188,9 +188,9 @@ summary.varkit <- function(object, ...) {
   tibble::tibble(
     samples_visible = n_samples.varkit(object, mask = TRUE),
     samples_total = n_samples.varkit(object, mask = FALSE),
-    samples_frac = .data$samples_visible / .data$samples_total,
     sites_visible = n_sites.varkit(object, mask = TRUE),
     sites_total = n_sites.varkit(object, mask = FALSE),
+    samples_frac = .data$samples_visible / .data$samples_total,
     sites_frac = .data$sites_visible / .data$sites_total
   )
 }
