@@ -35,6 +35,10 @@ site.varkit <- function(x, ..., .add_index = FALSE) {
          "Use `mask()/retain()` (+ `delete_masked_sites()`) to remove rows/sites.")
   }
 
-  x$site <- drm_do_attach(value, drmodel = drm_get(x$site), dim_links = c("sites", NA), label = "site()")
-  validate_varkit(x)
+  varkit(
+    meta = x$meta,
+    site = tibble::as_tibble(value),
+    geno = x$geno,
+    drmodel = drm_get(x)
+  )
 }

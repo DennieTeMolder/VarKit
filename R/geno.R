@@ -39,7 +39,10 @@ geno.varkit <- function(x, ..., .drop = FALSE) {
          "Use `mask()/retain()` (+ `remove_masked()`) to remove columns/sites.")
   }
 
-  value <- varkit_geno(value)
-  x$geno <- drm_do_attach(value, drmodel = drm_get(x$geno), dim_links = c("samples", "sites"), label = "geno()")
-  validate_varkit(x)
+  varkit(
+    meta = x$meta,
+    site = x$site,
+    geno = varkit_geno(value),
+    drmodel = drm_get(x)
+  )
 }
