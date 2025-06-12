@@ -27,7 +27,7 @@
     len <- length(x)
     x <- which(x)
   } else if (is.null(len)) {
-    stop("When 'x' is not boolean 'len' cannot not be NULL!")
+    stop("When 'x' is not logical 'len' cannot not be NULL!")
   }
 
   if (length(yes) == 1L) {

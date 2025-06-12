@@ -12,11 +12,11 @@ mask.varkit <- function(x, site, why = NULL, na_mask = TRUE, ...) {
   site <- with_vcf(x, expr = {{ site }})
 
   if (is.data.frame(site))
-    lifecycle::deprecate_stop("v0.9.0", "mask(site = 'should be boolean')", I("mask(site = has_join(df, site))"))
+    lifecycle::deprecate_stop("v0.9.0", "mask(site = 'should be of type logical')", I("mask(site = has_join(df, site))"))
   if (is_varkit_linkage_graph(site))
-    lifecycle::deprecate_stop("v0.9.0", "mask(site = 'should be boolean')", I("mask(site = is_linked(lgraph, .))"))
+    lifecycle::deprecate_stop("v0.9.0", "mask(site = 'should be of type logical')", I("mask(site = is_linked(lgraph, .))"))
   if (!is.logical(site))
-    stop("The value of 'site' should be logical/boolean!")
+    stop("The value of 'site' should be of type logical!")
 
   retain_site <- !site
   retain.varkit(x, site = retain_site, why = why, na_retain = !na_mask)
