@@ -5,7 +5,7 @@ unmask_all <- function(x, reset_filter = FALSE) {
 
 ##' @export
 unmask_all.varkit <- function(x, reset_filter = FALSE) {
-  x$use_site <- rep(TRUE, ncol(x$geno))
+  drm_deselect(x, "samples", "sites")
   if (reset_filter)
     x$site$filter <- "PASS"
   x
