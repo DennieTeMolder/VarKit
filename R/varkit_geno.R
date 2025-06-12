@@ -10,12 +10,11 @@ varkit_geno.data.frame <- function(x) {
 
 ##' @export
 varkit_geno.default <- function(x = NULL) {
-  x <- as_mtrx(
-    x = if (is.null(x)) logical() else x,
-    dimnames = c("samples", "sites")
+  add_class <- c("varkit_geno", "mtrx")
+  structure(
+    as_mtrx(x, dimnames = c("samples", "sites")),
+    class = c(add_class, if (!is.null(x)) setdiff(class(x), add_class))
   )
-  class(x) <- c("varkit_geno", setdiff(class(x), "varkit_geno"))
-  x
 }
 
 ##' @export
