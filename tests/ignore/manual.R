@@ -21,11 +21,8 @@ n_sites(vcf)
 
 site(vcf, chrom)
 
-# TODO adjust unmask_all()/delete_masked_sites()
-# TODO drop get_site_idx()
-# TODO tests for use_site references
-
 # REVIEW make site() never drop?
+# REVIEW allow all sites to masked in a VCF
 
 ### Examples ------
 ## Varkit object ------
