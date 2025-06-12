@@ -1,11 +1,7 @@
 ##' @export
 varkit <- function(site, geno, meta = NULL, drmodel = NULL) {
-  site <- tibble::as_tibble(site)
   stopifnot(nrow(site) > 0L)
-  geno <- varkit_geno(geno)
   stopifnot(ncol(geno) == nrow(site))
-  if (!is.null(meta))
-    meta <- tibble::as_tibble(meta)
   if (is.null(drmodel)) {
     drmodel <- drm_create()
   } else {
@@ -31,13 +27,10 @@ varkit <- function(site, geno, meta = NULL, drmodel = NULL) {
 }
 
 ##' @export
-new_varkit <- function(meta = data.frame(),
-                       site = data.frame(),
-                       geno = varkit_geno(),
-                       drmodel = drm_create()) {
+new_varkit <- function(site = data.frame(), geno = varkit_geno(), meta = NULL, drmodel = drm_create()) {
   stopifnot(is.null(meta) || is.data.frame(meta))
   stopifnot(is.data.frame(site))
-  stopifnot(is_varkit_geno(geno))
+  stopifnot(is.matrix(geno))
   stopifnot(is_drm(drmodel))
 
   site <- drm_do_attach(site, drmodel = drmodel, dim_links = c("sites", NA), label = "site()")
@@ -45,9 +38,9 @@ new_varkit <- function(meta = data.frame(),
 
   structure(
     list(
-      meta = meta,
-      site = site,
-      geno = geno
+      meta = if (is.null(meta)) NULL else tibble::as_tibble(meta),
+      site = tibble::as_tibble(site),
+      geno = varkit_geno(geno)
     ),
     class = "varkit",
     data_relation_model = drmodel
