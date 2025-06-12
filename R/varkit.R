@@ -190,10 +190,9 @@ summary.varkit <- function(object, ...) {
 
 ##' @export
 as.data.frame.varkit <- function(x, row.names = NULL, optional = FALSE, ...) {
-  validate_varkit(x)
   cbind(
     as.data.frame(site.varkit(x), row.names = row.names, optional = optional, ...),
-    as.data.frame(t.varkit_geno(geno.varkit(x)), optional = optional)
+    as.data.frame(t(geno.varkit(x)), optional = optional)
   )
 }
 
