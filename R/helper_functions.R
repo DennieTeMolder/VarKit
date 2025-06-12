@@ -21,6 +21,40 @@
   do.call(base::on.exit, args = list(thunk, TRUE, after), envir = envir)
 }
 
+# Fast ifelse() that can handle numerical, named, and missing() values of X
+.if_else <- function(x, yes = TRUE, no = FALSE, len = NULL) {
+  if (is.logical(x)) {
+    len <- length(x)
+    x <- which(x)
+  } else if (is.null(len)) {
+    stop("When 'x' is not boolean 'len' cannot not be NULL!")
+  }
+
+  if (length(yes) == 1L) {
+    yes <- rep(yes, len)
+  } else if (length(yes) != len) {
+    stop("Argument 'yes' has a length mismatch!")
+  }
+
+  if (rlang::is_missing(x))
+    return(yes)
+
+  if (length(no) == 1L) {
+    res <- rep(no, len)
+  } else if (length(no) != len) {
+    stop("Argument 'no' has a length mismatch!")
+  } else {
+    res <- no
+  }
+
+  res[x] <- yes[x]
+  res
+}
+
+.drm_if_else <- function(x, yes = TRUE, no = FALSE, node) {
+  .if_else(drm_which(x, node), yes, no, len = drm_n_total(x, node))
+}
+
 .stopifnotsingle <- function(x, what = NULL, allow_na = FALSE) {
   # Check class
   if (is.null(what)) {
