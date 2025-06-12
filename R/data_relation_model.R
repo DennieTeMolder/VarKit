@@ -527,21 +527,18 @@ drm_do_match <- function(x, ..., .override = FALSE) {
 
 ##' @export
 has_join <- function(x, y, by = NULL, ...) {
-  stopifnot(is.data.frame(x))
-  stopifnot(is.data.frame(y))
+  stopifnot(is.data.frame(x), is.data.frame(y))
 
   if (is.null(by)) {
     by_x <- by_y <- intersect(names(x), names(y))
+  } else if (inherits(by, "dplyr_join_by")) {
+    by_x <- by$x
+    by_y <- by$y
+  } else if (is.character(by)) {
+    by_x <- if (rlang::is_named(by)) names(by) else by
+    by_y <- unname(by)
   } else {
-    if (inherits(by, "dplyr_join_by")) {
-      by_x <- by$x
-      by_y <- by$y
-    } else if (is.character(by)) {
-      by_x <- if (rlang::is_named(by)) names(by) else by
-      by_y <- unname(by)
-    } else {
-      stop("The 'by' argument should be a character vector or `dplyr::join_by()`!")
-    }
+    stop("The 'by' argument should be a character vector or `dplyr::join_by()`!")
   }
 
   # Subset X and Y to save on memory
@@ -549,7 +546,7 @@ has_join <- function(x, y, by = NULL, ...) {
   y <- y[by_y]
 
   # Add a dummy column for checking if the join was successful
-  y[[length(y) + 1L]] <- TRUE
+  y[[ncol(y) + 1L]] <- TRUE
   join_result <- dplyr::left_join(
     x = x,
     y = y,
@@ -560,5 +557,5 @@ has_join <- function(x, y, by = NULL, ...) {
   )
 
   # Unsuccessful joins return NA
-  !is.na(join_result[[length(join_result)]])
+  !is.na(join_result[[ncol(join_result)]])
 }
