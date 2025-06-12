@@ -4,12 +4,14 @@ mtrx <- function(data, nrow, ncol, byrow = FALSE, dimnames = NULL) {
     dimnames <- setNames(vector("list", 2L), dimnames)
 
   # Passing rlang::missing_arg() raises an error
-  res <- if (missing(nrow) && missing(ncol)) {
+  res <- if (missing(data) || is.null(data)) {
+    matrix(logical(), dimnames = dimnames)[NULL, NULL]
+  } else if (missing(nrow) && missing(ncol)) {
     matrix(data, byrow = byrow, dimnames = dimnames)
   } else if (missing(ncol)) {
     matrix(data, nrow, byrow = byrow, dimnames = dimnames)
   } else {
-    res <- matrix(data, nrow, ncol, byrow = byrow, dimnames = dimnames)
+    matrix(data, nrow, ncol, byrow = byrow, dimnames = dimnames)
   }
 
   class(res) <- c("mtrx", class(res))
@@ -23,15 +25,20 @@ is_mtrx <- function(x) {
 
 ##' @export
 as_mtrx <- function(x, dimnames = NULL, ...) {
+  if (is.null(x))
+    return(mtrx(x, dimnames = dimnames))
+
   if (!is_mtrx(x)) {
     x <- as.matrix(x, ...)
     class(x) <- c("mtrx", class(x))
   }
+
   if (!is.null(dimnames)) {
     if (is.character(dimnames) && any(length(dimnames) == 1:2))
       dimnames <- setNames(list(rownames(x), colnames(x)), dimnames)
     dimnames(x) <- dimnames
   }
+
   x
 }
 
@@ -65,6 +72,9 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
     typeof(x), .frmt_big(nrow(x)), row_name, .frmt_big(ncol(x)), col_name,
     round(mean(is.na(x)) * 100, digits = 2)
   ))
+
+  if (nrow(x) == 0L && ncol(x) == 0L)
+    return(invisible(x))
 
   # Remove the dimnames names to prevent them from printing
   xp <- x
