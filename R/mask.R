@@ -18,18 +18,6 @@ mask.varkit <- function(x, site, why = NULL, na_mask = TRUE, ...) {
   if (!is.logical(site))
     stop("The value of 'site' should be logical/boolean!")
 
-  if (!is.null(why) && !"filter" %in% colnames(x$site)) {
-    x$site$filter <- "MASKED"
-    x$site$filter[drm_which(drm_get(x$site), "sites")] <- "PASS"
-  }
-
-  if (na_mask && anyNA(site))
-    site[is.na(site)] <- TRUE
-
-  drm_preselect(drm_get(x$site), sites = !site)
-
-  if (!is.null(why))
-    x$site$filter[drm_which(drm_get(x$site), "sites")] <- why
-
-  x
+  retain_site <- !site
+  retain.varkit(x, site = retain_site, why = why, na_retain = !na_mask)
 }
