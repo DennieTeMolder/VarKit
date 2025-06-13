@@ -1,7 +1,7 @@
 ##' @export
 unite_3d_to_mat <- function(x, delim = ",") {
   stopifnot(is.array(x), length(dim(x)) == 3L)
-  stopifnot(is.character(delim), length(delim) == 1L)
+  .stopifnotsingle(delim, what = "character")
 
   in_dim <- dim(x)
   in_names <- names(x)

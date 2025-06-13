@@ -22,9 +22,9 @@ read_vcf <- function(file,
                      guess_max = 100,
                      geno_ptype = NULL
                      ) {
-  stopifnot(is.numeric(n_max), length(n_max) == 1)
+  .stopifnotsingle(n_max, what = is.numeric)
   if (!is.null(na_geno)) stopifnot(is.character(na_geno))
-  stopifnot(is.numeric(guess_max), length(guess_max) == 1)
+  .stopifnotsingle(guess_max, what = is.numeric)
   col_select <- rlang::enquo(col_select)
   na.strings <- unique(c("", ".", na_geno))
 

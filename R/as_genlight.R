@@ -7,7 +7,8 @@ as_genlight <- function(x, ploidy, cores = 1, check_geno = TRUE) {
 as_genlight.varkit <- function(x, ploidy, cores = 1, check_geno = TRUE) {
   rlang::check_installed("adegenet", reason = "for as_genlight()")
   validate_varkit(x)
-  stopifnot(length(ploidy) == 1L, is.numeric(ploidy), ploidy >= 1L)
+  .stopifnotsingle(ploidy, what = is.numeric)
+  stopifnot(ploidy >= 1)
   ploidy <- as.integer(ploidy)
 
   if (any(is_indel.varkit(x)))

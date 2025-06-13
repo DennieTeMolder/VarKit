@@ -22,10 +22,13 @@ find_linked_sites.varkit <- function(x,
                                      min_ncol = 20
                                      ) {
   validate_varkit(x)
-  stopifnot(is.numeric(cutoff), length(cutoff) == 1)
-  stopifnot(is.numeric(size_bp), length(size_bp) == 1)
-  stopifnot(is.numeric(windows), length(windows) == 1)
-  stopifnot(is.numeric(min_ncol), length(min_ncol) == 1)
+  .stopifnotsingle(cutoff, what = is.numeric)
+  .stopifnotsingle(windows, what = is.numeric)
+  .stopifnotsingle(size_bp, what = is.numeric)
+  .stopifnotsingle(by_chrom, what = "logical")
+  .stopifnotsingle(return_r2, what = "logical")
+  .stopifnotsingle(cores, what = is.numeric)
+  .stopifnotsingle(min_ncol, what = is.numeric)
   if (!(is.matrix(x$geno) && is.numeric(x$geno)))
     stop("geno(x) should be a numeric matrix!")
 

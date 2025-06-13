@@ -59,7 +59,7 @@
     if (!isTRUE(what(x)))
       stop("`", substitute(what), "(", substitute(x), ")` is not TRUE!", call. = FALSE)
   } else if (!inherits(x, what = what)) {
-    stop("`", substitute(x), "` should be one of what: ", .collapse(what), "!", call. = FALSE)
+    stop("`", substitute(x), "` should be one of class/type: ", .collapse(what), "!", call. = FALSE)
   }
 
   # Check length

@@ -2,7 +2,7 @@
 file_con <- function(description, open = "", ..., compression = NULL) {
   if (!(is.character(description) && length(description) == 1L))
     stop("'", substitute(description), "' should be a file path description!")
-  stopifnot(is.character(open), length(open) == 1L)
+  .stopifnotsingle(open, what = "character")
 
   type <- substr(open, 1L, 1L)
   ext <- match(tools::file_ext(description), c("gz", "gzip", "bz2", "xz", "zip"), 0L)

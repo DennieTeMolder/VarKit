@@ -1,6 +1,7 @@
 ##' @export
 has_no_variation <- function(x, na.rm = TRUE, margin = 1) {
-  stopifnot(is.numeric(margin), length(margin) == 1, margin %in% 1:2)
+  .stopifnotsingle(margin, what = is.numeric)
+  stopifnot(margin %in% c(1, 2))
   if (is.vector(x))
     return(.has_no_variation.vector(x = x, na.rm = na.rm))
   if (is.matrix(x))

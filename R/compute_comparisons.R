@@ -1,6 +1,8 @@
 # Intended for use with splitm(by_na_pattern = TRUE)
 ##' @export
 compute_comparisons <- function(x, y = NULL, windows = -1, use = FALSE) {
+  .stopifnotsingle(windows, what = is.numeric)
+  .stopifnotsingle(use, what = "logical")
   if (!is.null(y) && windows >= 0)
     stop("A positive 'windows' argument produces nonsensical results if 'y' is supplied.")
 

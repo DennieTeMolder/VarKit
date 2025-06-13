@@ -1,13 +1,15 @@
 ##' @export
 which_nth_lowest <- function(mat, margin, n = 1, ...) {
   stopifnot(is.matrix(mat))
-  stopifnot(length(margin) == 1L)
-  stopifnot(is.numeric(n), length(n) == 1L)
+  .stopifnotsingle(margin, what = is.numeric)
+  .stopifnotsingle(n, what = is.numeric)
+
+  margin <- as.integer(margin)
   n <- as.integer(n)
 
-  if (margin == 1) {
+  if (identical(margin, 1L)) {
     rank_fun <- matrixStats::rowRanks
-  } else if (margin == 2) {
+  } else if (identical(margin, 1L)) {
     rank_fun <- matrixStats::colRanks
   } else {
     stop("Unknown value of argument 'margin': ", margin)

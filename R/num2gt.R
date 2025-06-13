@@ -3,7 +3,7 @@
 ##' @export
 num2gt <- function(x, cutoffs, sep = "/") {
   stopifnot(is.numeric(x), is.numeric(cutoffs))
-  stopifnot(is.character(sep), length(sep) == 1)
+  .stopifnotsingle(sep, what = "character")
 
   res <- rep("0", length(x))
   res <- lapply(sort(cutoffs, decreasing = TRUE), function(cutoff) {

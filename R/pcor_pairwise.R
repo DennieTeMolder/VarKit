@@ -2,10 +2,11 @@
 ##' @export
 pcor_pairwise <- function(x, y = NULL, min_ncol = 20) {
   use_y <- !is.null(y)
+
   stopifnot(is.matrix(x))
   if (use_y)
     stopifnot(is.matrix(y), nrow(x) == nrow(y))
-  stopifnot(is.numeric(min_ncol), length(min_ncol) == 1)
+  .stopifnotsingle(min_ncol, what = is.numeric)
 
   # If there are no NAs we can save ourselves a lot of hassle
   if (!anyNA(x) && !(use_y && anyNA(y)))

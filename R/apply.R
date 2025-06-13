@@ -15,8 +15,8 @@ apply_index <- function(x, FUN, ..., .from_start = TRUE, .progress = TRUE) {
 
 ##' @export
 apply_index.varkit_index <- function(x, FUN, ..., .from_start = TRUE, .progress = TRUE) {
-  stopifnot(is.logical(.from_start), length(.from_start) == 1, !anyNA(.from_start))
-  stopifnot(is.logical(.progress) | is.character(.progress), length(.progress) == 1, !anyNA(.progress))
+  .stopifnotsingle(.from_start, what = "logical")
+  .stopifnotsingle(.progress, what = c("logical", "character"))
 
   if (is.character(.progress)) {
     msg <- .progress

@@ -1,8 +1,10 @@
 ##' @export
 ad2aaf <- function(vcf, ad_cap = NULL, type = "AD", alt_idx = NULL) {
   stopifnot(is_varkit(vcf))
-  if (!is.null(ad_cap))
-    stopifnot(is.numeric(ad_cap), length(ad_cap) == 1, ad_cap >= 1)
+  if (!is.null(ad_cap)) {
+    .stopifnotsingle(ad_cap, what = is.numeric)
+    stopifnot(ad_cap >= 1)
+  }
   if (!is.null(alt_idx))
     stopifnot(is.numeric(alt_idx), is.vector(alt_idx), length(alt_idx) == n_sites(vcf))
 

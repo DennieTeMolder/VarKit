@@ -8,10 +8,12 @@ find_linked_cols <- function(mat,
                              min_ncol = 20
                              ) {
   stopifnot(is.matrix(mat), is.numeric(mat))
-  stopifnot(is.numeric(cutoff), length(cutoff) == 1)
-  stopifnot(is.numeric(cols_each), length(cols_each) == 1)
-  stopifnot(is.numeric(windows), length(windows) == 1)
-  stopifnot(is.numeric(min_ncol), length(min_ncol) == 1)
+  .stopifnotsingle(cutoff, what = is.numeric)
+  .stopifnotsingle(windows, what = is.numeric)
+  .stopifnotsingle(cols_each, what = is.numeric)
+  .stopifnotsingle(return_r2, what = "logical")
+  .stopifnotsingle(cores, what = is.numeric)
+  .stopifnotsingle(min_ncol, what = is.numeric)
 
   # Ensure the matrix has col names so it can be reconstructed
   if (is.null(colnames(mat)))

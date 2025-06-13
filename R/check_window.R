@@ -1,8 +1,9 @@
 ##' @export
 check_window <- function(vcf, windows, cols_each, probs = c(0, 0.025, 0.5, 0.975, 1)) {
   stopifnot(is_varkit(vcf))
-  stopifnot(is.numeric(cols_each), length(cols_each) == 1, cols_each > 0)
-  stopifnot(is.numeric(windows), length(windows) == 1)
+  .stopifnotsingle(windows, what = is.numeric)
+  .stopifnotsingle(cols_each, what = is.numeric)
+  stopifnot(cols_each > 0)
 
   locs <- split(site(vcf, "pos"), site(vcf, "chrom"))
   locs <- lapply(locs, sort)

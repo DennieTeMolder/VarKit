@@ -16,7 +16,8 @@ guess_col_classes <- function(file,
                               encoding = "unknown",
                               skipNul = FALSE,
                               ...) {
-  stopifnot(is.numeric(nmax), length(nmax) == 1L)
+  .stopifnotsingle(nmax, what = is.numeric)
+  .stopifnotsingle(skip, what = is.numeric)
   nmax <- max(2, nmax)
 
   if (.is_connection(file)) {
@@ -31,11 +32,11 @@ guess_col_classes <- function(file,
     con <- textConnection(lines, encoding = "UTF-8")
     .defer(close(con))
   } else {
-    stopifnot(file.exists(file))
     con <- file_con(file, "r")
     .defer(close(con))
 
-    if (as.integer(skip) > 0L) skip_lines(con, n = skip, progress = FALSE)
+    if (as.integer(skip) > 0L)
+      skip_lines(con, n = skip, progress = FALSE)
   }
 
   .read_table_fn <- function(...) {

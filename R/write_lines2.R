@@ -1,6 +1,6 @@
 ##' @export
 write_lines2 <- function(text, file, sep = "\n", na = "NA", append = FALSE, compression = NULL, ...) {
-  stopifnot(is.character(na), length(na) == 1)
+  .stopifnotsingle(na, what = "character")
 
   if (!.is_connection(file)) {
     file <- file_con(file, open = if (append) "a" else "w", compression = compression)

@@ -17,9 +17,9 @@ read_tbl <- function(file,
                      ...) {
   # Check args
   if (!is.null(col.names))
-    stopifnot(is.character(col.names), length(col.names) > 0)
-  stopifnot(is.numeric(nrows), length(nrows) == 1)
-  stopifnot(is.numeric(guess.max), length(guess.max) == 1)
+    stopifnot(is.character(col.names), length(col.names) > 0L)
+  .stopifnotsingle(nrows, what = is.numeric)
+  .stopifnotsingle(guess.max, what = is.numeric)
   col.select <- rlang::enquo(col.select)
 
   # Disable guessing if fewer rows are requested

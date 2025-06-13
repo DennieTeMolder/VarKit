@@ -1,8 +1,8 @@
 ##' @export
 index_vcf <- function(file, size_bp = -1, chunk_size = 1e4, ...) {
-  stopifnot(file.exists(file))
-  stopifnot(is.numeric(size_bp), length(size_bp) == 1L)
-  stopifnot(is.numeric(chunk_size), length(chunk_size) == 1L, chunk_size > 1)
+  .stopifnotsingle(size_bp, what = is.numeric)
+  .stopifnotsingle(chunk_size, what = is.numeric)
+  stopifnot(chunk_size > 1)
 
   # Loop over the file in chunks to index it
   index <- .index_vcf_internal(file = file, size_bp = size_bp, chunk_size = chunk_size)
