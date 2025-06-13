@@ -88,7 +88,7 @@ read_tbl <- function(file,
   # If any col.names have an unknown class we guess their classes based on guess.max
   # Unknown colClasses are read as character, which inflates the string cache
   # Using a smaller portion of the file improves memory consumption & is up to 33% faster
-  if (anyNA(colClasses) && guess.max >= 1) {
+  if (.any_na(colClasses) && guess.max >= 1) {
     skip_cols <- names(colClasses)[!is.na(colClasses)]
     skip_cols <- rlang::rep_named(skip_cols, "NULL")
     guessed_classes <- guess_col_classes(
@@ -137,7 +137,7 @@ read_tbl <- function(file,
     .ptype = character()
   )
 
-  if (anyNA(expanded)) {
+  if (.any_na(expanded)) {
     stop("\nThe following 'colClasses' are not recognised:\n\t",
          .quote_collapse(expand_me[is.na(expanded)]), call. = FALSE)
   }

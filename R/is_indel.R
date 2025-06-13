@@ -9,9 +9,9 @@ is_indel.varkit <- function(x) {
 }
 
 .is_indel <- function(ref, alt) {
-  if (anyNA(ref))
+  if (.any_na(ref))
     stop("The site$ref column contains missing values")
-  if (anyNA(alt))
+  if (.any_na(alt))
     stop("The site$alt column contains missing values")
 
   # INDELs have more than 1 character (ALT can be comma separated) or has a '*' at the ALT position

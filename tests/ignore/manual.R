@@ -80,7 +80,7 @@ lgraph <- resolve_links(links, cores = 1)
 summary(lgraph, vcf = vcf)
 
 summary(mask(vcf, is_linked(lgraph, vcf = .)))
-summary(is_linked(lgraph, vcf))
+summary(is_linked(lgraph, unmask_all(vcf)))
 
 temp_file <- tempfile(fileext = ".xml")
 write_graph(lgraph, temp_file)

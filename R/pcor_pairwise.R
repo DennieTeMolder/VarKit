@@ -8,6 +8,11 @@ pcor_pairwise <- function(x, y = NULL, min_ncol = 20) {
     stopifnot(is.matrix(y), nrow(x) == nrow(y))
   .stopifnotsingle(min_ncol, what = is.numeric)
 
+  # Unclass so primitive functions are always used
+  x <- unclass(x)
+  if (use_y)
+    y <- unclass(y)
+
   # If there are no NAs we can save ourselves a lot of hassle
   if (!anyNA(x) && !(use_y && anyNA(y)))
     return(.pcor_pairwise_internal(x, y, use = "everything"))

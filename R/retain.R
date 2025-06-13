@@ -24,7 +24,7 @@ retain.varkit <- function(x, site, why = NULL, na_retain = TRUE, ...) {
     x$site$filter[drm_which(drm_get(x$site), "sites")] <- "PASS"
   }
 
-  if (na_retain && anyNA(site))
+  if (na_retain && .any_na(site))
     site[is.na(site)] <- TRUE
 
   drm_preselect(drm_get(x$site), sites = site)

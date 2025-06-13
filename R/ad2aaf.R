@@ -18,6 +18,9 @@ ad2aaf <- function(vcf, ad_cap = NULL, type = "AD", alt_idx = NULL) {
   if (!is.matrix(ad) || !is.character(ad))
     stop(if (is.null(type)) "geno(vcf)" else "parse_geno(vcf, type)", " should return a character matrix!")
 
+  # Unclass so primitive functions are used everywhere
+  ad <- unclass(ad)
+
   d_names <- dimnames(ad)
   n_site <- ncol(ad)
   n_sample <- nrow(ad)

@@ -82,7 +82,7 @@ write_vcf.varkit <- function(x,
 }
 
 .replace_na_geno <- function(x, na_geno) {
-  if (!anyNA(x$geno))
+  if (!.any_na(x$geno))
     return(x)
 
   is_na <- which(is.na(x$geno), arr.ind = TRUE, useNames = FALSE)
@@ -96,7 +96,7 @@ write_vcf.varkit <- function(x,
 
     # Convert to VCF spec
     na_geno <- stringr::str_replace_all(na_geno, "[^|/:;,]+", ".")
-    if (anyNA(na_geno))
+    if (.any_na(na_geno))
       na_geno[is.na(na_geno)] <- "."
 
     # Expand to a vector that matches the number of columns

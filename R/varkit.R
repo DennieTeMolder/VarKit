@@ -62,20 +62,20 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
     stop("The 'site()' slot should contain the 'chrom' column!")
   if (!is.character(x$site$chrom))
     stop("The 'chrom' column in the 'site()' slot should be of type character!")
-  if (anyNA(x$site$chrom))
+  if (.any_na(x$site$chrom))
     stop("The 'chrom' column in the 'site()' slot contains NAs!")
   if (!any(colnames(x$site) == "pos"))
     stop("The 'site()' slot should contain the 'pos' column!")
   if (!is.numeric(x$site$pos))
     stop("The 'pos' column in the 'site()' slot should be numeric!")
-  if (anyNA(x$site$pos))
+  if (.any_na(x$site$pos))
     stop("The 'pos' column in the 'site()' slot contains NAs!")
   if (check_info && !any(colnames(x$site) == "info"))
     stop("The 'site()' slot is missing the 'info' column!")
   if (check_format) {
     if (!any(colnames(x$site) == "format"))
       stop("The 'site()' slot is missing the 'format' column!")
-    if (anyNA(x$site$format))
+    if (.any_na(x$site$format))
       stop("The 'format' column in the 'site()' slot contains NAs!")
   }
 

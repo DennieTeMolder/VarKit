@@ -15,6 +15,16 @@
   length(.dim(x))
 }
 
+# anyNA can be super slow on large non-primitive objects, like mtrx
+.any_na <- function(x, ...) {
+  # There are more methods defined, but we skip those
+  if (is.data.frame(x)) {
+    anyNA.data.frame(x, ...)
+  } else {
+    anyNA(unclass(x), ...)
+  }
+}
+
 # Simplified version of withr::defer()
 .defer <- function(expr, envir = parent.frame(), after = FALSE) {
   thunk <- as.call(list(function() expr))

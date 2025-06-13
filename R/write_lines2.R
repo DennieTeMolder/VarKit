@@ -7,7 +7,7 @@ write_lines2 <- function(text, file, sep = "\n", na = "NA", append = FALSE, comp
     .defer(close(file))
   }
 
-  if (anyNA(text))
+  if (.any_na(text))
     text[is.na(text)] <- na
 
   writeLines(text = text, con = file, sep = sep, ...)

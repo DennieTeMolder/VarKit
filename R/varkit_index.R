@@ -34,7 +34,7 @@ new_varkit_index <- function(index = data.frame(id = character(), linum = intege
 validate_varkit_index <- function(index) {
   if (!(is.data.frame(index) && all(c("id", "linum", "n_lines") %in% colnames(index))))
     stop("The index should be a data frame with columns 'id', 'linum', and 'n_lines'!")
-  if (anyNA(index$linum) || anyNA(index$n_lines))
+  if (.any_na(index$linum) || .any_na(index$n_lines))
     stop("The 'linum' and/or 'n_lines' columns contain NA values!")
   if (any(index$linum < 1L))
     stop("The 'linum' column contains values smaller then 1!")

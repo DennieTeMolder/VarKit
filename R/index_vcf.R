@@ -19,7 +19,7 @@ index_vcf <- function(file, size_bp = -1, chunk_size = 1e4, ...) {
   )[-1L]
 
   # Warn user about undesirable index properties
-  if (anyNA(index$id))
+  if (.any_na(index$id))
     warning("Some CHROM fields appear to be empty/NA. The index requires manual filtering.")
   if (anyDuplicated(index$id) != 0)
     warning("The VCF appears to be unsorted, this could cause errors later.")

@@ -13,7 +13,7 @@ has_no_variation <- function(x, na.rm = TRUE, margin = 1) {
   non_na <- x[match(FALSE, is.na(x))]
   if (is.na(non_na))
     return(TRUE)
-  if (!na.rm && anyNA(x))
+  if (!na.rm && .any_na(x))
     return(FALSE)
   all(x == non_na, na.rm = TRUE)
 }
@@ -40,7 +40,7 @@ has_no_variation <- function(x, na.rm = TRUE, margin = 1) {
   }
 
   # With NA.RM on, values can only be TRUE/FALSE
-  if (na.rm || !anyNA(all_equal))
+  if (na.rm || !.any_na(all_equal))
     return(all_equal)
 
   # If NAs are present in the output, variation can also occur between NA and non-NA values

@@ -35,7 +35,7 @@ validate_varkit_header <- function(x) {
     stop("The '$col_names' slot is empty!")
   if (!is.character(x$col_names))
     stop("The '$col_names' slot must be a character vector!")
-  if (anyNA(x$col_names) && any(nchar(x$col_names) < 1))
+  if (.any_na(x$col_names) && any(nchar(x$col_names) < 1))
     stop("The '$col_names' slot cannot be NA or a zero-length string!")
   if (anyDuplicated(x$col_names) != 0L)
     warning("Duplicate '$col_names' detected.")
@@ -48,7 +48,7 @@ validate_varkit_header <- function(x) {
     stop("The 'meta()' slot must be a tibble!", call. = FALSE)
   if (!identical(colnames(meta), c("name", "value")))
     stop("The 'meta()' slot can only have a 'name' & 'value' column!", call. = FALSE)
-  if (anyNA(meta$name))
+  if (.any_na(meta$name))
     stop("The 'name' column of the 'meta()' slot contains NAs!", call. = FALSE)
   meta
 }

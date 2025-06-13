@@ -31,7 +31,7 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
     stop("The matrix in the `geno()` slot should be of type character!")
 
   # Parse type from genotype fields
-  gt <- geno.varkit(x)
+  gt <- unclass(geno.varkit(x))
   if (all(frmt == frmt[[1L]])) {
     res <- matrix(
       .str_split_i(gt, on = ":", i = frmt[[1L]]),

@@ -135,7 +135,7 @@ splitm <- function(x,
         return(split2)
 
       # Split the current matrix further based on pattern of NA values if any
-      if (!anyNA(split2))
+      if (!.any_na(split2))
         return(setNames(list(split2), nm = paste(rep(0L, nrow(split2)), collapse = "")))
 
       # Paste together missing values as a pattern of 0/1s

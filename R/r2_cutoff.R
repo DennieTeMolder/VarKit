@@ -25,6 +25,11 @@ r2_cutoff <- function(x, y = NULL, cutoff, return_r2 = FALSE, use_colnames = FAL
     if (use_y)
       stopifnot(is.matrix(y), nrow(x) == nrow(y))
 
+    # Unclass so primitive functions are always used
+    x <- unclass(x)
+    if (use_y)
+      y <- unclass(y)
+
     # If there are no NAs we can save ourselves a lot of hassle
     if (!anyNA(x) && !(use_y && anyNA(y)))
       return(.pcor_pairwise_internal(x, y, use = "everything"))
@@ -77,8 +82,14 @@ r2_cutoff <- function(x, y = NULL, cutoff, return_r2 = FALSE, use_colnames = FAL
 
   total <- lapply_rowwise(comp_splits, function(i, j, use) {
     self_comp <- !use_y && i == j
-    xx <- x[[i]]
-    yy <- if (self_comp) NULL else if (use_y) y[[j]] else x[[j]]
+    xx <- unclass(x[[i]])
+    yy <- if (!self_comp) {
+      if (use_y) {
+        unclass(y[[j]])
+      } else {
+        unclass(x[[j]])
+      }
+    }
 
     # Returns an [i x j] matrix (i as rows, j as cols)
     r2 <- unname(.pcor_pairwise_internal(xx, yy, use = use))^2
