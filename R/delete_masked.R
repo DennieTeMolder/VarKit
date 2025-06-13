@@ -18,13 +18,14 @@ delete_masked.varkit <- function(x, samples = TRUE, sites = TRUE) {
   if (sites)
     drm_delete(drmodel, "sites")
 
-  samples <- if (samples) drm_which(x, "samples") else rlang::missing_arg()
-  sites <- if (sites) drm_which(x, "sites") else rlang::missing_arg()
+  # A value of NULL will use the stored mask, a value of TRUE will select all
+  samples <- if (samples) NULL else TRUE
+  sites <- if (sites) NULL else TRUE
 
   new_varkit(
     meta = x$meta,
-    site = x$site[sites, , drop = FALSE],
-    geno = x$geno[samples, sites, drop = FALSE],
+    site = drm_do_subset(x$site, sites = sites),
+    geno = drm_do_subset(x$geno, samples = samples, sites = sites),
     drmodel = drmodel
   )
 }

@@ -8,11 +8,11 @@ geno.varkit <- function(x, ..., .drop = FALSE) {
   if (...length() > 0L) {
     .data <- samples.varkit(x)
     .data <- setNames(seq_along(.data), nm = .data)
-    sample_select <- tidyselect::eval_select(rlang::expr(c(...)), data = .data)
+    loc <- tidyselect::eval_select(rlang::expr(c(...)), data = .data)
 
-    res <- drm_do_subset(x$geno, sample_select, , .drop = .drop)
+    res <- drm_do_subset(x$geno, samples = loc, .drop = .drop)
     if (!is.vector(res))
-      rownames(res) <- names(sample_select)
+      rownames(res) <- names(loc)
   } else {
     res <- drm_do_subset(x$geno, .drop = .drop)
   }
