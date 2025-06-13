@@ -547,6 +547,32 @@ drm_do_match <- function(x, ..., .override = FALSE) {
 }
 
 ##' @export
+drm_ifelse <- function(x, node, yes = TRUE, no = FALSE) {
+  len <- drm_n_total(x, node)
+  x <- drm_which(x, node)
+
+  if (length(yes) == 1L) {
+    yes <- rep(yes, len)
+  } else if (length(yes) != len) {
+    stop("Argument 'yes' should be length 1 or ", len, ", not", length(yes), " !")
+  }
+
+  if (rlang::is_missing(x))
+    return(yes)
+
+  if (length(no) == 1L) {
+    res <- rep(no, len)
+  } else if (length(no) != len) {
+    stop("Argument 'no' should be length 1 or ", len, ", not", length(no), " !")
+  } else {
+    res <- no
+  }
+
+  res[x] <- yes[x]
+  res
+}
+
+##' @export
 has_join <- function(x, y, by = NULL, ...) {
   stopifnot(is.data.frame(x), is.data.frame(y))
 

@@ -51,10 +51,6 @@
   res
 }
 
-.drm_if_else <- function(x, yes = TRUE, no = FALSE, node) {
-  .if_else(drm_which(x, node), yes, no, len = drm_n_total(x, node))
-}
-
 .stopifnotsingle <- function(x, what = NULL, allow_na = FALSE) {
   # Check class
   if (is.null(what)) {

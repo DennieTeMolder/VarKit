@@ -24,7 +24,7 @@ concat_vcf <- function(...) {
       site = do.call(rbind, lapply(dots, function(x) x$site)),
       geno = varkit_geno(do.call(cbind, lapply(dots, function(x) x$geno)))
     ),
-    samples = .drm_if_else(dots[[1L]], node = "samples"),
-    sites = do.call(c, lapply(dots, .drm_if_else, node = "sites"))
+    samples = drm_ifelse(dots[[1L]], node = "samples"),
+    sites = do.call(c, lapply(dots, drm_ifelse, node = "sites"))
   )
 }

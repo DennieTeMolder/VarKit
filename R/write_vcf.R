@@ -120,7 +120,7 @@ write_vcf.varkit <- function(x,
 .check_filter <- function(x, replace_filter) {
   is_na <- is.na(x$site$filter)
   if (all(is_na)) {
-    x$site$filter <- .drm_if_else(x, "PASS", "MASKED", node = "sites")
+    x$site$filter <- drm_ifelse(x, "PASS", "MASKED", node = "sites")
     return(x)
   }
 

@@ -11,8 +11,8 @@ import_mask.varkit <- function(x, mask, add = FALSE) {
   .stopifnotsingle(add, what = "logical")
 
   if (add) {
-    mask$samples <- mask$samples & .drm_if_else(x, node = "samples")
-    mask$sites <- mask$sites & .drm_if_else(x, node = "sites")
+    mask$samples <- mask$samples & drm_ifelse(x, node = "samples")
+    mask$sites <- mask$sites & drm_ifelse(x, node = "sites")
   }
 
   # Apply mask
