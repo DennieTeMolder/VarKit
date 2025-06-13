@@ -397,10 +397,12 @@ drm_n_selected <- function(x, node) {
 drm_do_subset <- function(x, ..., .drop = FALSE) {
   if (is_drm(x))
     stop("Please provide the object to subset, not the data relation model itself!")
-  rlang::check_dots_unnamed()
 
   # Allow for additional user provided indices, these take precedence
-  dots <- rlang::dots_list(..., .preserve_empty = TRUE, .ignore_empty = "none")
+  dots <- rlang::dots_list(..., .preserve_empty = TRUE)
+
+  # Convert NULL values to missing
+  dots[purrr::map_lgl(dots, is.null)] <- list(rlang::missing_arg())
 
   drmodel <- validate_drm(drm_get(x))
   if (!drm_contains(drmodel, x))
@@ -413,23 +415,42 @@ drm_do_subset <- function(x, ..., .drop = FALSE) {
   if (length(dots) > length(x_dim))
     stop("Provided more additional arguments than the number of dimensions in '", substitute(x), "'!")
 
-  # Extent ... to match the dimensions of X
-  dots <- c(dots, rep(list(rlang::missing_arg()), length(x_dim) - length(dots)))
+  # Align DOTS with LINKS, dots can reference links either by position or name
+  named_dots <- dots[rlang::have_name(dots)]
+  if (!all(names(named_dots) %in% links))
+    stop("The following arguments do not match any 'dim_links': ", .quote_collapse(setdiff(names(named_dots), links)))
 
-  # Pull node indices from relation data model
+  unnamed_dots <- dots[!rlang::have_name(dots)]
+  dots <- rlang::rep_named(links, list(rlang::missing_arg()))
+  dots[names(named_dots)] <- named_dots
+
+  purrr::walk(dots[seq_along(unnamed_dots)], function(dot) {
+    if (!rlang::is_missing(dot))
+      stop("Positional and named arguments overlap!")
+  })
+  dots[seq_along(unnamed_dots)] <- unnamed_dots
+  names(dots) <- NULL
+
+  # Pull node indices from relation data model, for links not provided by user
   for (i in seq_along(x_dim)) {
-    if (!rlang::is_missing(dots[[i]]) || links[[i]] == "")
-      next()
+    if (!rlang::is_missing(dots[[i]])) {
+      if (is.logical(dots[[i]]) && isTRUE(all(dots[[i]])))
+        dots[[i]] <- rlang::missing_arg()
+    } else if (!identical(links[[i]], "")) {
+      curr_node <- drmodel[["nodes"]][[links[[i]]]]
+      if (x_dim[i] != curr_node[["length"]]) {
+        stop("At dimension ", i, ": '", links[i], "' expects length ",
+             curr_node[["length"]], ", but got ", x_dim[i])
+      }
 
-    curr_node <- drmodel[["nodes"]][[links[[i]]]]
-    if (x_dim[i] != curr_node[["length"]]) {
-      stop("At dimension ", i, ": '", links[i], "' expects length ",
-          curr_node[["length"]], ", but got ", x_dim[i])
+      if (!is.null(curr_node[["select_which"]]))
+        dots[[i]] <- curr_node[["select_which"]]
     }
-
-    if (!is.null(curr_node[["select_which"]]))
-      dots[[i]] <- curr_node[["select_which"]]
   }
+
+  # If there is nothing to do, return X as is
+  if (all(purrr::map_lgl(dots, rlang::is_missing)))
+    return(x)
 
   # Apply subsets
   x <- do.call(`[`, args = c(list(x), dots, list(drop = .drop)))
