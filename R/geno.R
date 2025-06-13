@@ -36,7 +36,7 @@ geno.varkit <- function(x, ..., .drop = FALSE) {
     if (drm_n_total(x) != drm_n_selected(x))
       stop("Remove current mask before modifying! See `unmask_all()`.")
     stop("The new value should have an equal number of columns!\n",
-         "Use `mask()/retain()` (+ `remove_masked()`) to remove columns/sites.")
+         "Use `mask()/retain()` (+ `delete_masked()`) to remove columns/sites.")
   }
 
   varkit(

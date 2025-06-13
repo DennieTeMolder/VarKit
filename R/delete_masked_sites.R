@@ -5,6 +5,6 @@ delete_masked_sites <- function(x) {
 
 ##' @export
 delete_masked_sites.varkit <- function(x) {
-  lifecycle::deprecate_warn("v0.9.0", "delete_masked_sites()", "delete_masked()")
+  lifecycle::deprecate_warn("v0.9.0", "delete_masked_sites()", I("delete_masked(sites = TRUE, samples = FALSE)"))
   delete_masked.varkit(x, samples = FALSE, sites = TRUE)
 }
