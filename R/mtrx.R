@@ -62,10 +62,11 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
   row_name <- paste0(" ", ndn[1L])
   col_name <- paste0(" ", ndn[2L])
 
+  # REVIEW computing % NA can take a noticeable amount of time on large matrices
   cat(sprintf(
     "# A matrix<%s>: %s%s x %s%s; %s%% is NA/NaN\n",
     typeof(x), .frmt_big(nrow(x)), row_name, .frmt_big(ncol(x)), col_name,
-    round(mean(is.na(x)) * 100, digits = 2)
+    round(sum(is.na(x)) / length(x) * 100, digits = 2)
   ))
 
   if (nrow(x) == 0L && ncol(x) == 0L)
