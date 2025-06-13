@@ -64,10 +64,9 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
 
   # REVIEW computing % NA can take a noticeable amount of time on large matrices
   cat(sprintf(
-    "# A matrix<%s>: %s%s x %s%s; %s%% is NA/NaN\n",
-    typeof(x), .frmt_big(nrow(x)), row_name, .frmt_big(ncol(x)), col_name,
-    round(sum(is.na(x)) / length(x) * 100, digits = 2)
-  ))
+    "# A matrix<%s>: %s%s x %s%s;",
+    typeof(x), .frmt_big(nrow(x)), row_name, .frmt_big(ncol(x)), col_name
+  ), if (.any_na(x)) "containing NA/NaN values!", "\n")
 
   if (nrow(x) == 0L && ncol(x) == 0L)
     return(invisible(x))
