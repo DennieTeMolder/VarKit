@@ -8,8 +8,15 @@ delete_masked.varkit <- function(x, samples = TRUE, sites = TRUE) {
   validate_varkit(x)
   .stopifnotsingle(samples, what = "logical")
   .stopifnotsingle(sites, what = "logical")
+
+  # Check if the mask is active, else disable
+  if (rlang::is_missing(drm_which(x, "samples")))
+    samples <- FALSE
+  if (rlang::is_missing(drm_which(x, "sites")))
+    sites <- FALSE
+
   if (!(samples || sites))
-    stop("Either 'samples' or 'sites' must be TRUE!")
+    return(x)
 
   # Create a copy of the data relation model, with a reduced number of sites/samples
   drmodel <- drm_copy(drm_get(x))
