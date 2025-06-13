@@ -93,7 +93,8 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
 # Contrary to base R we set 'drop = F' mirroring tibble:::`[.tbl_df`
 ##' @export
 `[.mtrx` <- function(x, i, j, drop = FALSE, ...) {
-  class(x) <- setdiff(class(x), "mtrx")
+  # Remove class() to prevent potential NextMethod() infinite loops
+  x <- unclass(x)
 
   # Discern between being missing and being omitted entirely to mimic default behaviour
   n_arg <- nargs() - !missing(drop)
