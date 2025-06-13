@@ -58,14 +58,9 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
   col_trunc <- isTRUE(n_col < ncol(x))
   col_idx <- if (col_trunc) seq_len(n_col) else rlang::missing_arg()
 
-  if (is.null(dimnames(x))) {
-    has_name <- c(FALSE, FALSE)
-  } else {
-    has_name <- rlang::have_name(dimnames(x))
-    dnn <- names(dimnames(x))
-  }
-  row_name <- if (has_name[1L]) paste0(" ", dnn[1L]) else " rows"
-  col_name <- if (has_name[2L]) paste0(" ", dnn[2L]) else " columns"
+  ndn <- .namesdimnames(x)
+  row_name <- paste0(" ", ndn[1L])
+  col_name <- paste0(" ", ndn[2L])
 
   cat(sprintf(
     "# A matrix<%s>: %s%s x %s%s; %s%% is NA/NaN\n",
@@ -103,6 +98,11 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
   if (is.matrix(res))
     class(res) <- c("mtrx", class(res))
   res
+}
+
+##' @export
+str.mtrx <- function (object, ...) {
+  utils::str(unclass(object), ...)
 }
 
 .max_print_col <- function(mat, row_idx = NULL, width = getOption("width")) {
@@ -160,4 +160,20 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
   # Return the index of the last column that fits within width
   which_fit <- which(cumsum(col_widths) < width)
   max(which_fit, 1L)
+}
+
+.namesdimnames <- function(x) {
+  default <- c("rows", "columns")
+  ndn <- names(dimnames(x))
+  if (length(ndn) > 2L)
+    stop("Unexpected!")
+
+  if (is.null(ndn)) {
+    default
+  } else {
+    no_name <- !rlang::have_name(dimnames(x))
+    if (any(no_name))
+      ndn[no_name] <- default[which(no_name)]
+    ndn
+  }
 }
