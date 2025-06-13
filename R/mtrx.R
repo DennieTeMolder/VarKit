@@ -94,7 +94,15 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
 ##' @export
 `[.mtrx` <- function(x, i, j, drop = FALSE, ...) {
   class(x) <- setdiff(class(x), "mtrx")
-  res <- x[i, j, drop = drop]
+
+  # Discern between being missing and being omitted entirely to mimic default behaviour
+  n_arg <- nargs() - !missing(drop)
+  if (n_arg < 3L) {
+    res <- x[i]
+  } else {
+    res <- x[i, j, drop = drop]
+  }
+
   if (is.matrix(res))
     class(res) <- c("mtrx", class(res))
   res
