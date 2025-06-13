@@ -105,8 +105,10 @@
 }
 
 .quote_collapse <- function(x, quote = "'", ...) {
-  x <- ifelse(is.na(x), "NA", paste0(quote, x, quote))
-  .collapse(x, ...)
+  out <- paste0(quote, x, quote)
+  if (anyNA(x))
+    out[is.na(x)] <- "NA"
+  .collapse(out, ...)
 }
 
 .str_split_i <- function(x, on, i) {

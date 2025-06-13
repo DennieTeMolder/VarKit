@@ -52,13 +52,13 @@ parse_meta.varkit <- function(x, type = NULL, na = ".") {
 
 .cleanup_meta_col <- function(col, na = ".") {
   stopifnot(is.character(col))
-  # Strip surrounding double quotes
-  res <- ifelse(
-    startsWith(col, '"') & endsWith(col, '"'),
-    substr(col, 2L, nchar(col) - 1L),
-    col
-  )
-  utils::type.convert(res, as.is = TRUE, na.strings = na)
+
+  # Strip enclosing double quotes
+  which_strip <- which(startsWith(col, '"') & endsWith(col, '"'))
+  if (length(which_strip) > 0L)
+    col[which_strip] <- stringr::str_sub(col[which_strip], start = 2L, end = -2L)
+
+  utils::type.convert(col, as.is = TRUE, na.strings = na)
 }
 
 ##' @export

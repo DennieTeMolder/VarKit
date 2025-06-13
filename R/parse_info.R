@@ -72,6 +72,6 @@ parse_info.varkit <- function(x, type = NULL, use_meta = TRUE) {
     l = as.logical(info),
     i = as.integer(info),
     d = as.double(info),
-    ifelse(info == "", NA_character_, info)
+    .if_else(info == "", NA_character_, info)
   )
 }

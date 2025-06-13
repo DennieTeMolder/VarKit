@@ -31,7 +31,7 @@ compute_comparisons <- function(x, y = NULL, windows = -1, use = FALSE) {
   }
 
   # Use a different comparison type when an at least one matrix is impure
-  idx$use <- ifelse(
+  idx$use <- .if_else(
     idx$i == x_mixed_idx | idx$j == y_mixed_idx,
     "pairwise.complete.obs",
     "na.or.complete"

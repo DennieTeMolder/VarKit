@@ -15,7 +15,7 @@
 
   # Rearrange lower half for better data usage by clusters
   half <- max(comps$i) / 2
-  comps <- split(comps[, c("i", "j")], ifelse(comps$j <= half, "upper", "lower"))
+  comps <- split(comps[, c("i", "j")], .if_else(comps$j <= half, "upper", "lower"))
   comps <- rbind(comps$upper[order(comps$upper$j), ], comps$lower)
 
   # Divide into CORES * EACH lists, resetting the indices within each split
