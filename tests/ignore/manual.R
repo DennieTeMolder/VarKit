@@ -155,7 +155,7 @@ drm_preselect(my_drm, sites = drm_do_subset(y, , "ref") == "C")
 
 drm_do_subset(x)
 drm_do_subset(y)
-drm_do_subset(y, , "ref", drop = TRUE)
+drm_do_subset(y, , "ref", .drop = TRUE)
 
 z <- samples(vcf)
 z <- drm_do_attach(z, my_drm, "samples")
@@ -163,17 +163,18 @@ drm_preselect(my_drm, samples = z %in% z[1:5])
 drm_do_subset(z)
 drm_do_subset(x)
 
-drm_do_match(y, sites = dplyr::select(dplyr::arrange(y, qual), chrom, pos), .override = T)
+y_site_keys <- dplyr::select(dplyr::arrange(y, qual), chrom, pos)
+drm_do_match(y, sites = c(!!!y_site_keys), .override = T)
 drm_get(y)
 
 check_cols <- names(my_drm$nodes$sites$match_on)
 all.equal(
-  drm_do_match(y, sites = list(chrom = y$chrom, pos = y$pos))[check_cols],
+  drm_do_match(y, sites = c(chrom, pos))[check_cols],
   dplyr::inner_join(my_drm$nodes$sites$match_on, y)[check_cols],
   check.attributes = FALSE
 )
 
-drm_do_match(y, sites = list(pos = y$pos), .override = T)
+drm_do_match(y, sites = c(pos), .override = T)
 drm_get(y)
 
 drm_deselect(my_drm, sites)

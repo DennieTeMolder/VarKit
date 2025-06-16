@@ -469,30 +469,32 @@ drm_do_match <- function(x, ..., .override = FALSE) {
   if (...length() == 0L)
     stop("Please provide the keys to match on as additional arguments!")
 
-  dots <- list(...)
-  if (!rlang::is_named(dots))
-    stop("All additional arguments should be named by the nodes to match!")
+  if (is.null(...names()) || !rlang::is_named(rlang::set_names(...names())))
+    stop("All additional arguments should be named! E.g. `node_name = c(key1, key2, ...)`")
 
-  missing <- setdiff(names(dots), names(drmodel[["nodes"]]))
+  missing <- setdiff(...names(), names(drmodel[["nodes"]]))
   if (length(missing) != 0L)
     stop("The following arguments do not match any node: ", .quote_collapse(missing))
 
   links <- drmodel[["links"]][[attr(x, "data_relation_uuid")]]
-  missing <- setdiff(names(dots), links)
+  missing <- setdiff(...names(), links)
   if (length(missing) != 0L)
     stop("The following arguments do not match a dimension: ", .quote_collapse(missing))
 
-  # Validate arguments and cast lists to tibbles
-  dots <- purrr::map(dots, function(dot) {
-    if (!is.list(dot)) {
-      stop("All additional arguments should be named lists!")
-    } else if (!rlang::is_named(dot)) {
-      stop("All list elements should be named!")
+  dots <- purrr::map(rlang::enquos(...), function(dot) {
+    args <- .quo_unpack_c(dot)
+    if (is.null(args))
+      stop("Additional arguments should follow: `node_name = c(key1_name = key1_value, ...)`!")
+
+    if (is.data.frame(x)) {
+      res <- dplyr::transmute(x, !!!args)
+    } else {
+      res <- tibble::tibble(!!!args)
     }
-    dot <- tibble::as_tibble(dot)
-    if (nrow(dot) != dplyr::n_distinct(dot))
+
+    if (nrow(res) != dplyr::n_distinct(res))
       stop("Provided combination of match keys are not unique!")
-    dot
+    res
   })
 
   # If a node has no stored keys or if .OVERRIDE, store the provided keys
@@ -605,4 +607,13 @@ has_join <- function(x, y, by = NULL, ...) {
 
   # Unsuccessful joins return NA
   !is.na(join_result[[ncol(join_result)]])
+}
+
+.quo_unpack_c <- function(quos) {
+  if (rlang::quo_is_call(quos, "c")) {
+    rlang::as_quosures(
+      rlang::call_args(rlang::quo_get_expr(quos)),
+      env = rlang::quo_get_env(quos)
+    )
+  }
 }
