@@ -449,17 +449,19 @@ drm_do_subset <- function(x, ..., .drop = FALSE) {
   }
 
   # If there is nothing to subset, return X as is
-  do_subs <- !purrr::map_lgl(dots, rlang::is_missing)
-  if (!any(do_subs))
+  as_is <- purrr::map_lgl(dots, rlang::is_missing)
+  if (all(as_is))
     return(x)
 
   # Apply subsets
   res <- do.call(`[`, args = c(list(x), dots, list(drop = .drop)))
 
-  # Remove DRM attributes if n dims differ or if any dim with an associated link is subsetted
-  if (.ndim(res) != .ndim(x) || any(do_subs[links != ""]))
-    res <- drm_do_detach(res)
-  res
+  # If n dims match and all dims linked to a node are used as is, keep drm
+  if (.ndim(res) == .ndim(x) && all(as_is[links != ""])) {
+    .drm_restore(res, using = x)
+  } else {
+    drm_do_detach(res)
+  }
 }
 
 ##' @export
@@ -473,7 +475,7 @@ drm_do_match <- function(x, ..., .override = FALSE) {
     stop("Please provide the keys to match on as additional arguments!")
 
   if (is.null(...names()) || !rlang::is_named(rlang::set_names(...names())))
-    stop("All additional arguments should be named! E.g. `node_name = c(key1, key2, ...)`")
+    stop("All additional arguments should be named! E.g. `drm_do_match(x, node_name = ...)`")
 
   missing <- setdiff(...names(), names(drmodel[["nodes"]]))
   if (length(missing) != 0L)
@@ -482,21 +484,23 @@ drm_do_match <- function(x, ..., .override = FALSE) {
   links <- drmodel[["links"]][[attr(x, "data_relation_uuid")]]
   missing <- setdiff(...names(), links)
   if (length(missing) != 0L)
-    stop("The following arguments do not match a dimension: ", .quote_collapse(missing))
+    stop("The following arguments do not match a 'dim_link': ", .quote_collapse(missing))
 
   dots <- purrr::map(rlang::enquos(...), function(dot) {
-    args <- .quo_unpack_c(dot)
-    if (is.null(args))
-      stop("Additional arguments should follow: `node_name = c(key1_name = key1_value, ...)`!")
+    # Unpack `node = c(key1, key2, ...)` style expressions
+    if (rlang::quo_is_call(dot, "c"))
+      dot <- .quo_replace_fn(dot, fn = tibble::tibble)
 
-    if (is.data.frame(x)) {
-      res <- dplyr::transmute(x, !!!args)
-    } else {
-      res <- tibble::tibble(!!!args)
-    }
+    res <- rlang::eval_tidy(dot, data = if (is.data.frame(x)) x)
+    if (!is.list(res))
+      stop("All additional arguments should evaluate to a list!")
+    if (!rlang::is_named(res))
+      stop("All keys should be named!")
 
+    res <- tibble::as_tibble(res)
     if (nrow(res) != dplyr::n_distinct(res))
       stop("Provided combination of match keys are not unique!")
+
     res
   })
 
@@ -542,13 +546,19 @@ drm_do_match <- function(x, ..., .override = FALSE) {
     join_result[[length(join_result)]]
   })
 
+  if (all(purrr::map_lgl(dots, rlang::is_missing)))
+    return(x)
+
   # Match arguments to 'dim_links' of X
   args <- rlang::rep_named(links, list(rlang::missing_arg()))
   args[names(dots)] <- dots
   names(args) <- NULL
 
   # Apply re-oredering
-  do.call(`[`, args = c(list(x), args, list(drop = FALSE)))
+  .drm_restore(
+    do.call(`[`, args = c(list(x), args, list(drop = FALSE))),
+    using = x
+  )
 }
 
 ##' @export
@@ -612,11 +622,16 @@ has_join <- function(x, y, by = NULL, ...) {
   !is.na(join_result[[ncol(join_result)]])
 }
 
-.quo_unpack_c <- function(quos) {
-  if (rlang::quo_is_call(quos, "c")) {
-    rlang::as_quosures(
-      rlang::call_args(rlang::quo_get_expr(quos)),
-      env = rlang::quo_get_env(quos)
-    )
-  }
+.quo_replace_fn <- function(quo, fn) {
+  args <- rlang::call_args(rlang::quo_get_expr(quo))
+  rlang::new_quosure(
+    rlang::call2(fn, !!!args),
+    env = rlang::quo_get_env(quo)
+  )
+}
+
+.drm_restore <- function(x, using) {
+  attr(x, "data_relation_model") <- attr(using, "data_relation_model", exact = TRUE)
+  attr(x, "data_relation_uuid") <- attr(using, "data_relation_uuid", exact = TRUE)
+  x
 }

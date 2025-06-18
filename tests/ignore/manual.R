@@ -151,8 +151,7 @@ drm_preselect(my_drm, samples = z %in% z[1:5])
 drm_do_subset(z)
 drm_do_subset(x)
 
-y_site_keys <- dplyr::select(dplyr::arrange(y, qual), chrom, pos)
-drm_do_match(y, sites = c(!!!y_site_keys), .override = T)
+drm_do_match(y, sites = dplyr::select(dplyr::arrange(y, qual), chrom, pos), .override = T)
 drm_get(y)
 
 check_cols <- names(my_drm$nodes$sites$match_on)
