@@ -18,6 +18,9 @@ ad2aaf <- function(vcf, ad_cap = NULL, type = "AD", alt_idx = NULL) {
   if (!is.matrix(ad) || !is.character(ad))
     stop(if (is.null(type)) "geno(vcf)" else "parse_geno(vcf, type)", " should return a character matrix!")
 
+  # Store the data relation model
+  drmodel <- if (has_drm(ad)) drm_get(vcf)
+
   # Unclass so primitive functions are used everywhere
   ad <- unclass(ad)
 
@@ -98,10 +101,19 @@ ad2aaf <- function(vcf, ad_cap = NULL, type = "AD", alt_idx = NULL) {
     bi_frac[bi_dp > 0L] <- 1
   }
 
-  list(
-    aaf = varkit_geno(matrix(aaf, nrow = n_sample, dimnames = d_names)),
-    bi_dp = varkit_geno(matrix(bi_dp, nrow = n_sample, dimnames = d_names)),
-    bi_frac = varkit_geno(matrix(bi_frac, nrow = n_sample, dimnames = d_names)),
+  res <- list(
+    aaf = varkit_geno(mtrx(aaf, nrow = n_sample, dimnames = d_names)),
+    bi_dp = varkit_geno(mtrx(bi_dp, nrow = n_sample, dimnames = d_names)),
+    bi_frac = varkit_geno(mtrx(bi_frac, nrow = n_sample, dimnames = d_names)),
     alt_idx = alt_idx
   )
+
+  if (!is.null(drmodel)) {
+    res$aaf <- drm_do_attach(res$aaf, drmodel = drmodel, dim_links = c("samples", "sites"), label = "ad2aaf()$aaf")
+    res$bi_dp <- drm_do_attach(res$bi_dp, drmodel = drmodel, dim_links = c("samples", "sites"), label = "ad2aaf()$bi_dp")
+    res$bi_frac <- drm_do_attach(res$bi_frac, drmodel = drmodel, dim_links = c("samples", "sites"), label = "ad2aaf()$bi_frac")
+    res$alt_idx <- drm_do_attach(res$alt_idx, drmodel = drmodel, dim_links = "sites", label = "ad2aaf()$alt_idx")
+  }
+
+  res
 }
