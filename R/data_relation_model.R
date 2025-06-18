@@ -82,13 +82,13 @@ print.data_relation_model <- function(x, ...) {
         label = x[["labels"]][names(x[["links"]])],
         dim_links = sprintf("[%s]", purrr::map_chr(x[["links"]], .collapse)),
         uuid = names(x[["links"]])
-      ))
+      ), ...)
     } else {
       print(tibble::tibble(
         label = character(),
         dim_links = character(),
         uuid = character()
-      ))
+      ), ...)
     }
     cat("\n")
 
@@ -448,15 +448,18 @@ drm_do_subset <- function(x, ..., .drop = FALSE) {
     }
   }
 
-  # If there is nothing to do, return X as is
-  if (all(purrr::map_lgl(dots, rlang::is_missing)))
+  # If there is nothing to subset, return X as is
+  do_subs <- !purrr::map_lgl(dots, rlang::is_missing)
+  if (!any(do_subs))
     return(x)
 
   # Apply subsets
-  x <- do.call(`[`, args = c(list(x), dots, list(drop = .drop)))
+  res <- do.call(`[`, args = c(list(x), dots, list(drop = .drop)))
 
-  # Remove DRM attributes as size no longer matches the original object
-  drm_do_detach(x)
+  # Remove DRM attributes if n dims differ or if any dim with an associated link is subsetted
+  if (.ndim(res) != .ndim(x) || any(do_subs[links != ""]))
+    res <- drm_do_detach(res)
+  res
 }
 
 ##' @export

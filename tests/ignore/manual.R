@@ -3,24 +3,6 @@ library(devtools)
 load_all()
 example <- "./inst/extdata/celegans.vcf.bgz"
 
-header <- read_vcf_header(example)
-body <- read_tbl(example, col.names = header$col_names)
-site <- body[.fixed_columns()]
-geno <- varkit_geno(body[setdiff(colnames(body), colnames(site))])
-rm(body)
-
-vcf <- varkit(meta = header$meta, site, geno)
-drm_get(vcf)
-
-drm_preselect(drm_get(vcf$site), sites = vcf$site$chrom == "I")
-
-drm_n_total(vcf$site, "sites")
-drm_n_selected(vcf$site, "sites")
-
-n_sites(vcf)
-
-site(vcf, chrom)
-
 # REVIEW make site() never drop?
 # REVIEW allow all sites to masked in a VCF
 
@@ -30,6 +12,9 @@ read_vcf_header(example)
 
 vcf <- read_vcf(example, col_select = !c(id, filter, N2))
 print(vcf)
+
+drm_get(stringr::str_sub(geno(vcf), end = 2))
+drm_get(site(vcf, chrom = "chrom"))
 
 varkit_help(vcf)
 
@@ -74,6 +59,9 @@ apply(geno(vcf), "sites", length)
 ## Linked sites ------
 vcf <- unmask_all(read_vcf(example))
 geno(vcf) <- as_integer(round(ad2aaf(vcf)$aaf) * 2L)
+test <- as_integer(round(ad2aaf(vcf)$aaf) * 2L)
+drm_get(ad2aaf(vcf)$aaf)
+drm_trim(drm_get(vcf), vcf$geno, vcf$site)
 
 links <- find_linked_sites(vcf, windows = -1, return_r2 = TRUE, cores = 1)
 lgraph <- resolve_links(links, cores = 1)
