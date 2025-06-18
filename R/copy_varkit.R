@@ -1,6 +1,6 @@
 ##' @export
 copy_varkit <- function(vcf) {
-  validate_varkit(vcf)
+  stopifnot(is_varkit(vcf))
   new_varkit(
     meta = vcf$meta,
     site = vcf$site,

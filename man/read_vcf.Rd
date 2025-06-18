@@ -11,7 +11,8 @@ read_vcf(
   n_max = -1,
   na_geno = c("./.", ".|."),
   guess_max = 100,
-  geno_ptype = NULL
+  geno_ptype = NULL,
+  use_filter = TRUE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ read_vcf(
 \item{guess_max}{Integer, number of variants to use for guessing the type/class of the genotype matrix, negative to disable.}
 
 \item{geno_ptype}{Vector/array, prototype of the genotype matrix (i.e. double()). When provided guess_max is ignored.}
+
+\item{use_filter}{TRUE/FALSE, whether to mask all sites where the FILTER column != PASS}
 }
 \value{
 A VarKit object

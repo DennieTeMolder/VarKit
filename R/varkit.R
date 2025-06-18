@@ -1,12 +1,12 @@
 ##' @export
-varkit <- function(site, geno, meta = NULL, drmodel = NULL) {
-  stopifnot(nrow(site) > 0L)
-  stopifnot(ncol(geno) == nrow(site))
+varkit <- function(site, geno, meta = NULL, drmodel = NULL, use_filter = TRUE) {
+  stopifnot(nrow(site) > 0L, nrow(site) == ncol(geno))
   if (is.null(drmodel)) {
     drmodel <- drm_create()
   } else {
     stopifnot(is_drm(drmodel))
   }
+  .stopifnotsingle(use_filter, what = "logical")
 
   vcf <- validate_varkit(new_varkit(
     meta = meta,
@@ -16,14 +16,11 @@ varkit <- function(site, geno, meta = NULL, drmodel = NULL) {
   ))
 
   # Apply initial mask based on the FILTER column
-  use_site <- FALSE
-  if (any(colnames(site) == "filter"))
-    use_site <- site$filter == "PASS" | is.na(site$filter)
-  if (!any(use_site))
-    use_site <- rep(TRUE, nrow(site))
-
-  drm_preselect(drmodel, sites = use_site)
-  vcf
+  if (use_filter && any(colnames(vcf$site) == "filter")) {
+    mask.varkit(vcf, .data$filter != "PASS", na_mask = FALSE)
+  } else {
+    vcf
+  }
 }
 
 ##' @export
@@ -38,7 +35,7 @@ new_varkit <- function(site = data.frame(), geno = varkit_geno(), meta = NULL, d
 
   structure(
     list(
-      meta = if (is.null(meta)) NULL else tibble::as_tibble(meta),
+      meta = if (!is.null(meta)) tibble::as_tibble(meta),
       site = tibble::as_tibble(site),
       geno = varkit_geno(geno)
     ),
@@ -154,7 +151,7 @@ print.varkit <- function(x, ..., n = NULL, n_samples = NULL) {
       round(current / total * 100, digits = 1), .frmt_big(current), .frmt_big(total)
     ))
   } else {
-    cli::cli_alert_info("Samples: Using all { .frmt_big(total)} samples")
+    cli::cli_alert_info("Samples: using all { .frmt_big(total)} samples")
   }
 
   total <- drm_n_total(x$geno, "sites")

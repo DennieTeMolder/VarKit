@@ -8,6 +8,7 @@
 ##' @param na_geno Character vector, exact string(s) to convert to NA. Empty strings and "." are always converted to NA
 ##' @param guess_max Integer, number of variants to use for guessing the type/class of the genotype matrix, negative to disable.
 ##' @param geno_ptype Vector/array, prototype of the genotype matrix (i.e. double()). When provided guess_max is ignored.
+##' @param use_filter TRUE/FALSE, whether to mask all sites where the FILTER column != PASS
 ##' @return A VarKit object
 ##' @export
 ##' @author Dennie te Molder
@@ -20,11 +21,12 @@ read_vcf <- function(file,
                      n_max = -1,
                      na_geno = c("./.", ".|."),
                      guess_max = 100,
-                     geno_ptype = NULL
-                     ) {
+                     geno_ptype = NULL,
+                     use_filter = TRUE) {
   .stopifnotsingle(n_max, what = is.numeric)
   if (!is.null(na_geno)) stopifnot(is.character(na_geno))
   .stopifnotsingle(guess_max, what = is.numeric)
+  .stopifnotsingle(use_filter, what = "logical")
   col_select <- rlang::enquo(col_select)
   na.strings <- unique(c("", ".", na_geno))
 
@@ -113,5 +115,5 @@ read_vcf <- function(file,
   all_na <- which(purrr::map_lgl(fxd, function(col) all(is.na(col))))
   if (any(all_na)) fxd[all_na] <- NA
 
-  varkit(site = fxd, geno = body, meta = meta(header))
+  varkit(site = fxd, geno = body, meta = meta(header), use_filter = use_filter)
 }
