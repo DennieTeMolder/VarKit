@@ -12,7 +12,7 @@ ad2aaf <- function(vcf, ad_cap = NULL, type = "AD", alt_idx = NULL) {
   if (is.null(type)) {
     ad <- geno.varkit(vcf)
   } else {
-    ad <- parse_geno.varkit(vcf, type = type, allow_missing = FALSE)
+    ad <- parse_geno.varkit(copy_varkit(vcf), type = type, allow_missing = FALSE)
   }
 
   if (!is.matrix(ad) || !is.character(ad))
