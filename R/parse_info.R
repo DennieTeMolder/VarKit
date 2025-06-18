@@ -25,11 +25,23 @@ parse_info.varkit <- function(x, type = NULL, use_meta = TRUE) {
     meta_info <- NULL
   }
 
-  info <- site.varkit(x, "info")
+  info <- site.varkit(x, info = "info")
+  drmodel <- drm_get(info)
+  info <- drm_do_detach(info[[1L]])
+
   if (all(is.na(info)))
     stop("The INFO column only contains NAs!")
+  info <- .parse_info_internal(info, type, meta_info)
 
-  .parse_info_internal(info, type, meta_info)
+  if (is.null(drmodel))
+    return(info)
+
+  drm_do_attach(
+    info,
+    drmodel = drmodel,
+    dim_links = "sites",
+    label = paste0("parse_info(", type, ")")
+  )
 }
 
 .collect_all_keys <- function(str) {

@@ -8,7 +8,10 @@ parse_info_all.varkit <- function(x, use_meta = TRUE) {
   if (use_meta && !any(meta.varkit(x)$name == "INFO"))
     stop("The `meta()` slot has no INFO entry, this is required when `use_meta = TRUE`!")
   validate_varkit(x, check_info = TRUE)
-  info <- site.varkit(x, "info")
+
+  info <- site.varkit(x, info = "info")
+  drmodel <- drm_get(info)
+  info <- drm_do_detach(info[[1L]])
 
   if (use_meta) {
     meta_info <- parse_meta.varkit(x, "INFO")
@@ -23,7 +26,17 @@ parse_info_all.varkit <- function(x, use_meta = TRUE) {
 
   keys <- sort(keys)
   names(keys) <- keys
+  info <- tibble::as_tibble(lapply(keys, function(key) {
+    .parse_info_internal(info, type = key, meta_info = meta_info)
+  }))
 
-  res <- lapply(keys, function(key) .parse_info_internal(info, type = key, meta_info = meta_info))
-  do.call(tibble::tibble, res)
+  if (is.null(drmodel))
+    return(info)
+
+  drm_do_attach(
+    info,
+    drmodel = drmodel,
+    dim_links = c("sites", NA),
+    label = "parse_info_all()"
+  )
 }
