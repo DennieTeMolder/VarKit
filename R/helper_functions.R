@@ -110,6 +110,17 @@
   x
 }
 
+.restore_array <- function(x, using) {
+  stopifnot(length(x) == length(using))
+  if (is.array(using))
+    x <- array(x, dim = dim(using), dimnames = dimnames(using))
+  if (is_mtrx(using))
+    x <- as_mtrx(x)
+  if (is_varkit_geno(using))
+    x <- varkit_geno(x)
+  x
+}
+
 .collapse <- function(x, delim = ", ") {
   paste(x, collapse = delim)
 }

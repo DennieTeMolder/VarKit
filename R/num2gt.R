@@ -2,7 +2,8 @@
 # Example: num2gt(vcf$geno, c(0.25, 0.75))
 ##' @export
 num2gt <- function(x, cutoffs, sep = "/") {
-  stopifnot(is.numeric(x), is.numeric(cutoffs))
+  stopifnot(is.numeric(x), is.vector(x) || is.matrix(x))
+  stopifnot(is.numeric(cutoffs))
   .stopifnotsingle(sep, what = "character")
 
   res <- rep("0", length(x))
@@ -12,11 +13,9 @@ num2gt <- function(x, cutoffs, sep = "/") {
     gt
   })
 
-  .join <- function(...) paste(..., sep = sep)
-  res <- do.call(.join, res)
+  res <- do.call(paste, c(res, list(sep = sep)))
+  if (.any_na(x))
+    res[is.na(x)] <- NA_character_
 
-  res[is.na(x)] <- NA_character_
-
-  attributes(res) <- attributes(x)
-  res
+  .restore_array(res, using = x)
 }
