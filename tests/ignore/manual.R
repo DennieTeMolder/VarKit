@@ -13,9 +13,6 @@ read_vcf_header(example)
 vcf <- read_vcf(example, col_select = !c(id, filter, N2))
 print(vcf)
 
-drm_get(stringr::str_sub(geno(vcf), end = 2))
-drm_get(site(vcf, chrom = "chrom"))
-
 varkit_help(vcf)
 
 meta(vcf)
