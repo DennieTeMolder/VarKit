@@ -124,17 +124,15 @@ write_vcf.varkit <- function(x,
     return(x)
   }
 
-  if (any(is_na))
-    x$site$filter[is_na] <- "PASS"
-
   # If the state of the filter column matches the current state, return X
-  pass_filter <- x$site$filter == "PASS"
-  if ((all(pass_filter) && length(pass_filter) == drm_n_total(x, "sites")) ||
-        identical(which(pass_filter), drm_which(x, "site")))
+  which_pass <- which(x$site$filter == "PASS" | is_na)
+  if (length(which_pass) == length(x$site$filter) ||
+        identical(which_pass, drm_which(x, "sites"))) {
     return(x)
+  }
 
   if (replace_filter) {
-    x$site$filter[pass_filter] <- "MASKED"
+    x$site$filter[which_pass] <- "MASKED"
     x$site$filter[drm_which(x, "sites")] <- "PASS"
   } else {
     cli::cli_alert_warning("FILTER column does not reflect currently masked sites!")
