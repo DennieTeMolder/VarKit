@@ -6,8 +6,8 @@ geno <- function(x, ..., .drop = FALSE) {
 ##' @export
 geno.varkit <- function(x, ..., .drop = FALSE) {
   if (...length() > 0L) {
-    .data <- samples.varkit(x)
-    .data <- setNames(seq_along(.data), nm = .data)
+    .data <- getElement(dimnames(x$geno), "samples")
+    .data <- setNames(seq_along(.data), nm = .data)[samples.varkit(x)]
     loc <- tidyselect::eval_select(rlang::expr(c(...)), data = .data)
 
     res <- drm_do_subset(x$geno, samples = loc, .drop = .drop)
