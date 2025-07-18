@@ -169,6 +169,31 @@ drm_trim(my_drm, y)
 drm_contains(my_drm, x)
 drm_copy(my_drm)
 
+## Linked data ------
+obj <- linked_data()
+obj <- linked_data_register(obj, meta[, ], site[sites, ], geno[samples, sites])
+
+obj$meta <- vcf$meta
+
+obj <- obj |>
+  linked_data_add("site", vcf$site, sites = c(chrom, pos)) |>
+  linked_data_add("geno", vcf$geno, samples = c(sample = rownames(.)))
+
+obj <- linked_data_filter(obj, samples = rep_len(c(T, F), n_samples(vcf)))
+
+linked_data_get(obj, "geno", , 1)
+linked_data_get(obj, "geno", samples = 1:5)
+
+obj[]
+str(obj)
+summary(obj)
+
+linked_data_reset(obj, "samples")
+
+obj2 <- obj
+obj2$geno <- NULL
+linked_data_trim(obj2)
+
 ### Tests ------
 ## Geno ------
 header <- read_vcf_header(example)
