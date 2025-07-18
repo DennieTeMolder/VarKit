@@ -283,7 +283,7 @@ drm_trim <- function(drmodel, ..., .trim_nodes = TRUE) {
 drm_preselect <- function(x, ...) {
   drmodel <- validate_drm(drm_get(x))
   if (...length() == 0L)
-    stop("Please provide the nodes to delete as additional arguments!")
+    stop("Please provide the nodes to select from as additional arguments!")
 
   dots <- list(...)
   if (!rlang::is_named(dots))

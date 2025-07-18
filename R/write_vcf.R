@@ -47,6 +47,9 @@ write_vcf.varkit <- function(x,
     .defer(close(file))
   }
 
+  # Create new object to include masked sites/samples
+  x <- new_varkit(meta = x$meta, site = x$site, geno = x$geno)
+
   # Ensure all columns & values adhere to VCF spec
   x <- standardize_cols.varkit(x)
   x <- .replace_na_geno(x, na_geno)
@@ -66,8 +69,8 @@ write_vcf.varkit <- function(x,
 
   .msg_step("Writing VCF body")
 
-  # Convert body to a data frame, create new object to include masked sites/samples
-  x <- as.data.frame.varkit(new_varkit(site = x$site, geno = x$geno), optional = TRUE)
+  # Convert body to a data frame
+  x <- as.data.frame.varkit(x, optional = TRUE)
 
   write_tbl(
     x,
