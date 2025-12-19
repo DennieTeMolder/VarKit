@@ -63,10 +63,14 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
   col_name <- paste0(" ", ndn[2L])
 
   # REVIEW computing % NA can take a noticeable amount of time on large matrices
-  cat(sprintf(
-    "# A matrix<%s>: %s%s x %s%s;",
-    typeof(x), .frmt_big(nrow(x)), row_name, .frmt_big(ncol(x)), col_name
-  ), if (.any_na(x)) "containing NA/NaN values!", "\n")
+  cat(
+    sprintf(
+      "# A matrix<%s>: %s%s x %s%s",
+      typeof(x), .frmt_big(nrow(x)), row_name, .frmt_big(ncol(x)), col_name
+    ),
+    if (.any_na(x)) "; containing NA/NaN values!",
+    "\n", sep = ""
+  )
 
   if (nrow(x) == 0L && ncol(x) == 0L)
     return(invisible(x))
@@ -81,10 +85,10 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
     .msg_info("Use `print(n = ..., n_col = ...)` to see more", row_name, " and", col_name, " respectively")
   } else if (row_trunc) {
     .msg_info(.frmt_big(nrow(x) - n), " more", row_name)
-    .msg_info("Use `print(n_col = ...)` to see more", row_name)
+    .msg_info("Use `print(n = ...)` to see more", row_name)
   } else if (col_trunc) {
     .msg_info(.frmt_big(ncol(x) - n_col), " more", col_name)
-    .msg_info("Use `print(n = ...)` to see more", col_name)
+    .msg_info("Use `print(n_col = ...)` to see more", col_name)
   }
 
   invisible(x)
