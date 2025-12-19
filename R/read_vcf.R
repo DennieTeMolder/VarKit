@@ -107,13 +107,9 @@ read_vcf <- function(file,
 
   .msg_step("Collecting results")
 
-  # Move fixed fields to a separate df and convert genotypes to matrix
-  fxd <- body[!colnames(body) %in% geno_cols]
-  body <- varkit_geno(body[geno_cols])
-
   # Convert columns that only contains NAs to logical for memory efficiency
-  all_na <- which(purrr::map_lgl(fxd, function(col) all(is.na(col))))
-  if (any(all_na)) fxd[all_na] <- NA
+  all_na <- which(purrr::map_lgl(body, function(col) all(is.na(col))))
+  if (any(all_na)) body[all_na] <- NA
 
-  varkit(site = fxd, geno = body, meta = meta(header), use_filter = use_filter)
+  as_varkit.data.frame(body, meta = header$meta, use_filter = use_filter)
 }
