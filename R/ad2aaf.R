@@ -65,6 +65,8 @@ ad2aaf <- function(vcf, ad_cap = NULL, type = "AD", alt_idx = NULL) {
         which_above <- which(maxs > ad_cap)
         if (length(which_above) != 0L) {
           multi_ad[which_above, ] <- as.integer(
+            # REVIEW: would sweep() be faster?
+            # https://stackoverflow.com/questions/3643555/multiply-rows-of-matrix-by-vector
             multi_ad[which_above, ] * ad_cap / maxs[which_above]
           )
         }
@@ -79,7 +81,7 @@ ad2aaf <- function(vcf, ad_cap = NULL, type = "AD", alt_idx = NULL) {
       multi_ad <- colSums(multi_ad)
 
       # Find the index of the allele with the highest total depth
-      alt_idx[which_multi] <- which_nth_lowest(multi_ad * -1L, margin = 1, n = 1L)
+      alt_idx[which_multi] <- which_nth_lowest(-multi_ad, margin = 1, n = 1L)
       rm(multi_ad)
     }
 

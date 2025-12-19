@@ -28,8 +28,7 @@ new_varkit_header <- function(meta = data.frame(), col_names = character()) {
 validate_varkit_header <- function(x) {
   stopifnot(is.list(x))
 
-  if (!is.null(x$meta))
-    .validate_varkit_meta(x$meta)
+  .validate_varkit_meta(x$meta)
 
   if (length(x[["col_names"]]) < 1L)
     stop("The '$col_names' slot is empty!")
@@ -44,6 +43,8 @@ validate_varkit_header <- function(x) {
 }
 
 .validate_varkit_meta <- function(meta) {
+  if (is.null(meta))
+    return(meta)
   if (!tibble::is_tibble(meta))
     stop("The 'meta()' slot must be a tibble!", call. = FALSE)
   if (!identical(colnames(meta), c("name", "value")))
