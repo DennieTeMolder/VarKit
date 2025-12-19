@@ -5,8 +5,5 @@ export_mask <- function(x) {
 
 ##' @export
 export_mask.varkit <- function(x) {
-  list(
-    samples = drm_ifelse(x, node = "samples"),
-    sites = drm_ifelse(x, node = "sites")
-  )
+  attr(x, "indices", exact = TRUE)[c("samples", "sites")]
 }

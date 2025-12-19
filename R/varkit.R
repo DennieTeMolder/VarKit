@@ -1,23 +1,17 @@
 ##' @export
-varkit <- function(site, geno, meta = NULL, drmodel = NULL, use_filter = TRUE) {
-  stopifnot(nrow(site) > 0L)
+varkit <- function(site, geno, meta = NULL, use_filter = TRUE) {
+  stopifnot(is.data.frame(site), nrow(site) > 0L)
   if (is.data.frame(geno)) {
     stopifnot(nrow(site) == nrow(geno))
   } else {
     stopifnot(nrow(site) == ncol(geno))
   }
-  if (is.null(drmodel)) {
-    drmodel <- drm_create()
-  } else {
-    stopifnot(is_drm(drmodel))
-  }
   .stopifnotsingle(use_filter, what = "logical")
 
   vcf <- validate_varkit(new_varkit(
-    meta = meta,
     site = site,
     geno = geno,
-    drmodel = drmodel
+    meta = meta
   ))
 
   # Apply initial mask based on the FILTER column
@@ -29,86 +23,77 @@ varkit <- function(site, geno, meta = NULL, drmodel = NULL, use_filter = TRUE) {
 }
 
 ##' @export
-new_varkit <- function(site = data.frame(), geno = varkit_geno(), meta = NULL, drmodel = drm_create()) {
-  stopifnot(is.null(meta) || is.data.frame(meta))
+new_varkit <- function(site = data.frame(), geno = varkit_geno(), meta = NULL) {
   stopifnot(is.data.frame(site))
   stopifnot(is.matrix(geno) || is.data.frame(geno))
-  stopifnot(is_drm(drmodel))
+  stopifnot(is.null(meta) || is.data.frame(meta))
 
-  site <- tibble::as_tibble(site)
-  site <- drm_do_attach(site, drmodel = drmodel, dim_links = c("sites", NA), label = "site()")
-  geno <- varkit_geno(geno)
-  geno <- drm_do_attach(geno, drmodel = drmodel, dim_links = c("samples", "sites"), label = "geno()")
-
-  structure(
-    list(
+  obj <- linked_data(
+    meta[, ], site[sites, ], geno[samples, sites],
+    x = list(
       meta = if (!is.null(meta)) tibble::as_tibble(meta),
-      site = site,
-      geno = geno
-    ),
-    class = "varkit",
-    data_relation_model = drmodel
+      site = tibble::as_tibble(site),
+      geno = varkit_geno(geno)
+    )
   )
+
+  class(obj) <- c("varkit", class(obj))
+  obj
 }
 
 ##' @export
 validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
-  # Site
-  if (is.null(x$site))
+  .stopifnotsingle(check_info, what = "logical")
+  .stopifnotsingle(check_format, what = "logical")
+
+  old_x <- validate_linked_data(x)
+  x <- unclass(x)
+
+  .validate_varkit_meta(x$meta)
+  .validate_varkit_site(x$site, check_info = check_info, check_format = check_format)
+  .validate_varkit_geno(x$geno)
+
+  old_x
+}
+
+.validate_varkit_site <- function(x, check_info, check_format) {
+  if (is.null(x))
     stop("The 'site()' slot is missing!")
-  if (!tibble::is_tibble(x$site))
+  if (!tibble::is_tibble(x))
     stop("The 'site()' slot should be a tibble!")
-  if (!has_drm(x$site))
-    stop("The 'site()' slot has no associated data relation model!")
-  if (!drm_contains(drm_get(x$site), x$site))
-    stop("The associated data relation model no longer contains 'site()'!")
-  if (!any(colnames(x$site) == "chrom"))
+  if (!any(colnames(x) == "chrom"))
     stop("The 'site()' slot should contain the 'chrom' column!")
-  if (!is.character(x$site$chrom))
+  if (!is.character(x$chrom))
     stop("The 'chrom' column in the 'site()' slot should be of type character!")
-  if (.any_na(x$site$chrom))
+  if (.any_na(x$chrom))
     stop("The 'chrom' column in the 'site()' slot contains NAs!")
-  if (!any(colnames(x$site) == "pos"))
+  if (!any(colnames(x) == "pos"))
     stop("The 'site()' slot should contain the 'pos' column!")
-  if (!is.numeric(x$site$pos))
+  if (!is.numeric(x$pos))
     stop("The 'pos' column in the 'site()' slot should be numeric!")
-  if (.any_na(x$site$pos))
+  if (.any_na(x$pos))
     stop("The 'pos' column in the 'site()' slot contains NAs!")
-  if (check_info && !any(colnames(x$site) == "info"))
+  if (check_info && !any(colnames(x) == "info"))
     stop("The 'site()' slot is missing the 'info' column!")
   if (check_format) {
-    if (!any(colnames(x$site) == "format"))
+    if (!any(colnames(x) == "format"))
       stop("The 'site()' slot is missing the 'format' column!")
-    if (.any_na(x$site$format))
+    if (.any_na(x$format))
       stop("The 'format' column in the 'site()' slot contains NAs!")
   }
 
-  # Meta
-  if (!is.null(x$meta)) {
-    .validate_varkit_meta(x$meta)
-  }
+  x
+}
 
-  # Geno
-  if (is.null(x$geno))
+.validate_varkit_geno <- function(x) {
+  if (is.null(x))
     stop("The 'geno()' slot is missing!")
-  if (!is_varkit_geno(x$geno))
+  if (!is_varkit_geno(x))
     stop("The 'geno()' slot should be of class 'varkit_geno'!")
-  if (!has_drm(x$geno))
-    stop("The 'geno()' slot has no associated data relation model!")
-  if (!drm_contains(drm_get(x$geno), x$geno))
-    stop("The associated data relation model no longer contains 'geno()'!")
-  if (nrow(x$geno) < 1L)
+  if (nrow(x) < 1L)
     stop("The 'geno()' slot should contain at least a single sample/row!")
-  if (is.null(rownames(x$geno)) || any(nchar(rownames(x$geno)) == 0L))
+  if (is.null(rownames(x)) || any(nchar(rownames(x)) == 0L))
     stop("The 'geno()' slot cannot have missing/zero-length rownames!")
-
-  # Data relation model
-  if (is.null(drm_get(x)))
-    stop("The 'varkit' object has no data relation model!")
-  if (!identical(drm_get(x$site), drm_get(x)))
-    stop("The 'site()' slot is associated with the wrong data relation model!")
-  if (!identical(drm_get(x$geno), drm_get(x)))
-    stop("The 'geno()' slot is associated with the wrong data relation model!")
 
   x
 }
@@ -149,8 +134,9 @@ print.varkit <- function(x, ..., n = NULL, n_samples = NULL) {
 
   .msg_h2("Data masks, `summary(vcf)`")
 
-  total <- drm_n_total(x$geno, "samples")
-  current <- drm_n_selected(x$geno, "samples")
+  current <- .indices(x)$samples
+  total <- length(current)
+  current <- sum(current)
   samples_masked <- total != current
   if (samples_masked) {
     cli::cli_alert_warning(sprintf(
@@ -161,8 +147,9 @@ print.varkit <- function(x, ..., n = NULL, n_samples = NULL) {
     cli::cli_alert_info("Samples: using all { .frmt_big(total)} samples")
   }
 
-  total <- drm_n_total(x$geno, "sites")
-  current <- drm_n_selected(x$geno, "sites")
+  current <- .indices(x)$sites
+  total <- length(current)
+  current <- sum(current)
   sites_masked <- total != current
   if (sites_masked) {
     cli::cli_alert_warning(sprintf(

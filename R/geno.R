@@ -6,15 +6,15 @@ geno <- function(x, ..., .drop = FALSE) {
 ##' @export
 geno.varkit <- function(x, ..., .drop = FALSE) {
   if (...length() > 0L) {
-    .data <- getElement(dimnames(x$geno), "samples")
+    .data <- getElement(dimnames(unclass(x)$geno), "samples")
     .data <- setNames(seq_along(.data), nm = .data)[samples.varkit(x)]
     loc <- tidyselect::eval_select(rlang::expr(c(...)), data = .data)
 
-    res <- drm_do_subset(x$geno, samples = loc, .drop = .drop)
+    res <- linked_data_get(x, i = "geno", samples = loc, .drop = .drop)
     if (!is.vector(res))
       rownames(res) <- names(loc)
   } else {
-    res <- drm_do_subset(x$geno, .drop = .drop)
+    res <- linked_data_get(x, i = "geno", .drop = .drop)
   }
 
   res
@@ -25,24 +25,25 @@ geno.varkit <- function(x, ..., .drop = FALSE) {
   if (!is_varkit(x))
     stop("`geno() <-` is only supported for 'varkit' objects!")
 
-  if (is.vector(value) && length(value) == length(x$geno)) {
+  xgeno <- unclass(x)$geno
+  if (is.vector(value) && length(value) == length(xgeno)) {
     warning("Converting vector to matrix, check if the values are in the right row & column.")
-    value <- matrix(value, nrow = nrow(x$geno), ncol = ncol(x$geno), dimnames = dimnames(x$geno))
+    value <- matrix(value, nrow = nrow(xgeno), ncol = ncol(xgeno), dimnames = dimnames(xgeno))
   } else if (!is.matrix(value)) {
     stop("The new value should be a matrix!")
   }
 
-  if (ncol(x$geno) != ncol(value)) {
-    if (drm_n_total(x) != drm_n_selected(x))
+  if (ncol(xgeno) != ncol(value)) {
+    if (!all(.indices(x)$sites))
       stop("Remove current mask before modifying! See `unmask_all()`.")
-    stop("The new value should have an equal number of columns!\n",
-         "Use `mask()/retain()` (+ `delete_masked()`) to remove columns/sites.")
+    stop("The new value should have an equal number of columns/sites!\n",
+         "Use `mask()/retain()` (+ `delete_masked()`) to remove sites.")
   }
 
-  varkit(
-    meta = x$meta,
-    site = x$site,
-    geno = varkit_geno(value),
-    drmodel = drm_get(x)
-  )
+  # Remove the old value, and attempt to free the 'samples' index so it can be modified
+  x$geno <- NULL
+  x <- linked_data_trim(x, indices = "samples")
+
+  x$geno <- value
+  x
 }

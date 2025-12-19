@@ -6,6 +6,17 @@ example <- "./inst/extdata/celegans.vcf.bgz"
 # REVIEW make site() never drop?
 # REVIEW allow all sites to masked in a VCF
 
+header <- read_vcf_header(example)
+body <- read_tbl(example, col.names = header$col_names)
+x <- as_varkit(body, meta = meta(header))
+
+mask(x, chrom == "I")
+print.linked_data(x)
+
+x <- read_vcf(example)
+
+# TODO delete_masked()
+
 ### Examples ------
 ## Varkit object ------
 read_vcf_header(example)

@@ -42,6 +42,14 @@ linked_data <- function(x = NULL, ...) {
   out
 }
 
+.indices <- function(x) {
+  attr(x, "indices", exact = TRUE)
+}
+
+`.indices<-` <- function(x, value) {
+  attr(x, "indices") <- value
+}
+
 ##' @export
 `[<-.linked_data` <- function(x, i, value, ...) {
   validate_linked_data(x)
@@ -132,7 +140,9 @@ linked_data <- function(x = NULL, ...) {
     rep(TRUE, sum(attr(x, "indices")[[name]]))
   })
   keys <- purrr::map(keep_indices, function(name) {
-    subset.data.frame(attr(x, "keys")[[name]], attr(x, "indices")[[name]])
+    key <- attr(x, "keys")[[name]]
+    if (!is.null(key))
+      key[.indices(x)[[name]], , drop = FALSE]
   })
 
   new_linked_data(result, slots = slots, indices = indices, keys = keys)
@@ -326,7 +336,6 @@ linked_data_get <- function(x, i, ..., .drop = FALSE) {
     if (length(dots) > length(idx_val)) {
       stop("The number of additional arguments (", length(dots),
            ") should match the dimensions of '", i, "' (", length(idx_val), ")!")
-    } else if (length(dots) != length(idx_val)) {
     }
 
     # DOTS can target indices by name

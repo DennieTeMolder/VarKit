@@ -7,9 +7,9 @@ n_samples <- function(x, ...) {
 n_samples.varkit <- function(x, ..., mask = TRUE) {
   .stopifnotsingle(mask, what = "logical")
   if (mask) {
-    drm_n_selected(drm_get(x$geno), "samples")
+    sum(.indices(x)$samples)
   } else {
-    drm_n_total(drm_get(x$geno), "samples")
+    length(.indices(x)$samples)
   }
 }
 

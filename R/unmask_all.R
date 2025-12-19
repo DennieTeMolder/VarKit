@@ -5,8 +5,8 @@ unmask_all <- function(x, reset_filter = FALSE) {
 
 ##' @export
 unmask_all.varkit <- function(x, reset_filter = FALSE) {
-  drm_deselect(x, "samples", "sites")
+  .stopifnotsingle(reset_filter, what = "logical")
   if (reset_filter)
     x$site$filter <- "PASS"
-  x
+  linked_data_reset(x, indices = c("samples", "sites"))
 }

@@ -8,23 +8,16 @@ with_vcf <- function(vcf, expr) {
   vars <- all.vars(expr)
 
   # Data for references to 'site' & 'geno'
-  vcf_subset <- structure(list(meta = meta.varkit(vcf)), class = "varkit")
-  vcf_subset$site <- if ("site" %in% vars) site.varkit(vcf)
-  vcf_subset$geno <- if ("geno" %in% vars) geno.varkit(vcf)
+  vcf_subset <- unclass(vcf[intersect(c("meta", "site", "geno"), vars)])
 
   # Data for references to columns of site(vcf)
-  site_cols <- intersect(vars, colnames(vcf$site))
+  site_cols <- intersect(vars, colnames(linked_data_get(x, i = "site", sites = FALSE)))
   if (length(site_cols) == 0L) {
     site_cols <- NULL
-  } else if (!is.null(vcf_subset[["site"]])) {
+  } else if (any(vars == "site")) {
     site_cols <- as.list(vcf_subset$site)
-  } else if (length(site_cols) == 1L) {
-    site_cols <- setNames(
-      list(site.varkit(vcf, tidyselect::all_of(site_cols))),
-      nm = site_cols
-    )
   } else {
-    site_cols <- as.list(site.varkit(vcf, tidyselect::all_of(site_cols)))
+    site_cols <- linked_data_get(vcf, i = "site", , site_cols)
   }
 
   # The VarKit object in the VCF argument can be referenced with '.'

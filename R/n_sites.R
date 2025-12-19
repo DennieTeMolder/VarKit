@@ -5,10 +5,11 @@ n_sites <- function(x, ...) {
 
 ##' @export
 n_sites.varkit <- function(x, ..., mask = TRUE) {
+  .stopifnotsingle(mask, what = "logical")
   if (mask) {
-    drm_n_selected(drm_get(x$site), "sites")
+    sum(.indices(x)$sites)
   } else {
-    drm_n_total(drm_get(x$site), "sites")
+    length(.indices(x)$sites)
   }
 }
 

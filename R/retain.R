@@ -19,18 +19,16 @@ retain.varkit <- function(x, site, why = NULL, na_retain = TRUE, ...) {
   if (!is.logical(site))
     stop("The value of 'site' should be of type logical!")
 
-  if (!is.null(why) && !"filter" %in% colnames(x$site)) {
-    x$site$filter <- "MASKED"
-    x$site$filter[drm_which(drm_get(x$site), "sites")] <- "PASS"
-  }
-
   if (na_retain && .any_na(site))
     site[is.na(site)] <- TRUE
 
-  drm_preselect(drm_get(x$site), sites = site)
+  result <- linked_data_filter(x, sites = site)
 
-  if (!is.null(why))
-    x$site$filter[drm_which(drm_get(x$site), "sites")] <- why
+  if (!is.null(why)) {
+    if (!any("filter" == colnames(unclass(x)$site)))
+      result$site$filter <- .if_else(.indices(x)$sites, "PASS", "MASKED")
+    result$site$filter[which(.indices(x)$sites)[!site]] <- why
+  }
 
-  x
+  result
 }

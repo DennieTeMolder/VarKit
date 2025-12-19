@@ -6,15 +6,24 @@ import_mask <- function(x, mask, add = FALSE) {
 ##' @export
 import_mask.varkit <- function(x, mask, add = FALSE) {
   validate_varkit(x)
-  stopifnot(is.list(mask), c("samples", "sites") %in% names(mask))
-  stopifnot(is.logical(mask$samples), is.logical(mask$sites))
+  stopifnot(is.list(mask), rlang::is_named(mask))
   .stopifnotsingle(add, what = "logical")
 
-  if (add) {
-    mask$samples <- mask$samples & drm_ifelse(x, node = "samples")
-    mask$sites <- mask$sites & drm_ifelse(x, node = "sites")
-  }
+  mask <- purrr::imap(mask, function(curr, idx) {
+    if (!(is.vector(curr) && is.logical(curr)))
+      stop("Expected a vector of type logical!")
 
-  # Apply mask
-  drm_preselect(x, samples = mask$samples, sites = mask$sites)
+    idx <- .indices(x)[[idx]]
+    if (length(curr) != length(idx))
+      stop("Expected length ", length(idx),
+           ", but got ", length(curr), "!")
+
+    if (add) {
+      curr & idx
+    } else {
+      curr
+    }
+  })
+
+  .indices(x)[names(mask)] <- mask
 }
