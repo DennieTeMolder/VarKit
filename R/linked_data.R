@@ -48,6 +48,7 @@ linked_data <- function(x = NULL, ...) {
 
 `.indices<-` <- function(x, value) {
   attr(x, "indices") <- value
+  x
 }
 
 ##' @export
@@ -122,6 +123,7 @@ linked_data <- function(x = NULL, ...) {
 
 ##' @export
 `[.linked_data` <- function(x, i, ...) {
+  validate_linked_data(x)
   if (missing(i)) {
     i <- names(x)
   } else if (!is.character(i)) {
@@ -142,7 +144,7 @@ linked_data <- function(x = NULL, ...) {
   keys <- purrr::map(keep_indices, function(name) {
     key <- attr(x, "keys")[[name]]
     if (!is.null(key))
-      key[.indices(x)[[name]], , drop = FALSE]
+      key[attr(x, "indices")[[name]], , drop = FALSE]
   })
 
   new_linked_data(result, slots = slots, indices = indices, keys = keys)
@@ -332,14 +334,18 @@ linked_data_get <- function(x, i, ..., .drop = FALSE) {
 
   # Allow for additional user provided indices, these take precedence
   if (...length() > 0L) {
-    dots <- rlang::dots_list(..., .preserve_empty = TRUE)
-    if (length(dots) > length(idx_val)) {
+    dots <- rlang::dots_list(..., .ignore_empty = "none", .preserve_empty = TRUE)
+
+    # DOTS can target indices by name
+    have_name <- rlang::have_name(dots)
+
+    # If unnamed arguments are present, the number of dimensions should match
+    if (!all(have_name) && length(dots) != length(idx_val)) {
       stop("The number of additional arguments (", length(dots),
            ") should match the dimensions of '", i, "' (", length(idx_val), ")!")
     }
 
-    # DOTS can target indices by name
-    have_name <- rlang::have_name(dots)
+    # Put named arguments in the correct positions
     if (any(have_name)) {
       named_dots <- dots[have_name]
       dots[have_name] <- list(NULL)
@@ -348,7 +354,6 @@ linked_data_get <- function(x, i, ..., .drop = FALSE) {
       if (length(missing) > 0L)
         stop("The following arguments do not match any indices: ", .quote_collapse(missing))
 
-      # Put named indices in the correct position
       dots_match_idx <- match(names(named_dots), use_indices)
 
       # Ensure named and unnamed arguments don't reference the same position
@@ -423,7 +428,7 @@ linked_data_reset <- function(x, indices = NULL) {
   } else {
     missing <- setdiff(indices, names(attr_ind))
     if (length(missing) > 0L)
-      stop("The following indices were not recognised: ", .quote_collapse(missing))
+      stop("The following indices were not recognized: ", .quote_collapse(missing))
   }
 
   attr(x, "indices")[indices] <- purrr::map(attr_ind[indices], function(idx) {
@@ -444,7 +449,7 @@ linked_data_trim <- function(x, indices = NULL) {
     stopifnot(is.character(indices))
     missing <- setdiff(indices, names(attr_ind))
     if (length(missing) > 0L)
-      stop("The following indices were not recognised: ", .quote_collapse(missing))
+      stop("The following indices were not recognized: ", .quote_collapse(missing))
   }
 
   # Find indices only associated with empty slots
