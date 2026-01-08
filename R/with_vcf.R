@@ -11,7 +11,7 @@ with_vcf <- function(vcf, expr) {
   vcf_subset <- unclass(vcf[intersect(c("meta", "site", "geno"), vars)])
 
   # Data for references to columns of site(vcf)
-  site_cols <- intersect(vars, colnames(linked_data_get(x, i = "site", sites = FALSE)))
+  site_cols <- intersect(vars, colnames(linked_data_get(vcf, i = "site", sites = FALSE)))
   if (length(site_cols) == 0L) {
     site_cols <- NULL
   } else if (any(vars == "site")) {
