@@ -129,7 +129,7 @@ print.varkit <- function(x, ..., n = NULL, n_samples = NULL) {
   cat("\n")
 
   .msg_h2("Transposed genotype matrix, `geno(vcf)`")
-  print(x_geno, n = n_samples, n_col = n)
+  print.mtrx(varkit_geno.default(x_geno), n = n_samples, n_col = n, tooltip = FALSE)
   cat("\n")
 
   .msg_h2("Data masks, `summary(vcf)`")

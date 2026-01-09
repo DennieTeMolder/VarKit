@@ -147,6 +147,7 @@
 }
 
 .msg_vec <- function(x, before = NULL, after = NULL, sep = ", ", last = sep, n_max = 100L) {
+  if (is.null(x)) return(NULL)
   x <- cli::cli_vec(x, style = list(`vec-sep` = sep, `vec-last` = last, `vec-trunc` = n_max))
   cli::cli_text(c(before, "{x}", after))
 }

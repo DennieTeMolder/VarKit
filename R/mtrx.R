@@ -43,7 +43,8 @@ as_mtrx <- function(x, dimnames = NULL, ...) {
 }
 
 ##' @export
-print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
+print.mtrx <- function(x, ..., n = NULL, n_col = NULL, tooltip = TRUE) {
+  .stopifnotsingle(tooltip, what = "logical")
   if (is.null(n))
     n <- getOption("print_min", 10L)
   n <- min(n, nrow(x))
@@ -62,14 +63,13 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
   row_name <- paste0(" ", ndn[1L])
   col_name <- paste0(" ", ndn[2L])
 
-  # REVIEW computing % NA can take a noticeable amount of time on large matrices
   cat(
     sprintf(
       "# A matrix<%s>: %s%s x %s%s",
       typeof(x), .frmt_big(nrow(x)), row_name, .frmt_big(ncol(x)), col_name
     ),
-    if (.any_na(x)) "; containing NA/NaN values!",
-    "\n", sep = ""
+    if (.any_na(x)) "; containing NA/NaN values!", "\n",
+    sep = ""
   )
 
   if (nrow(x) == 0L && ncol(x) == 0L)
@@ -82,13 +82,16 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
 
   if (row_trunc && col_trunc) {
     .msg_info(.frmt_big(nrow(x) - n), " more", row_name, " and ", .frmt_big(ncol(x) - n_col), " more", col_name)
-    .msg_info("Use `print(n = ..., n_col = ...)` to see more", row_name, " and", col_name, " respectively")
+    if (tooltip)
+      .msg_info("Use `print(n = ..., n_col = ...)` to see more", row_name, " and", col_name, " respectively")
   } else if (row_trunc) {
     .msg_info(.frmt_big(nrow(x) - n), " more", row_name)
-    .msg_info("Use `print(n = ...)` to see more", row_name)
+    if (tooltip)
+      .msg_info("Use `print(n = ...)` to see more", row_name)
   } else if (col_trunc) {
     .msg_info(.frmt_big(ncol(x) - n_col), " more", col_name)
-    .msg_info("Use `print(n_col = ...)` to see more", col_name)
+    if (tooltip)
+      .msg_info("Use `print(n_col = ...)` to see more", col_name)
   }
 
   invisible(x)
@@ -100,7 +103,7 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL) {
   # Remove class() to prevent potential NextMethod() infinite loops
   x <- unclass(x)
 
-  # Discern between being missing and being omitted entirely to mimic default behaviour
+  # Discern between being missing and being omitted entirely to mimic default behavior
   n_arg <- nargs() - !missing(drop)
   if (n_arg < 3L) {
     res <- x[i]
