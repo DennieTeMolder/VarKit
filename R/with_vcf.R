@@ -14,7 +14,7 @@ with_vcf <- function(vcf, expr) {
   site_cols <- intersect(vars, colnames(linked_data_get(vcf, i = "site", sites = FALSE)))
   if (length(site_cols) == 0L) {
     site_cols <- NULL
-  } else if (any(vars == "site")) {
+  } else if (any(colnames(vcf_subset) == "site")) {
     site_cols <- as.list(vcf_subset$site)
   } else {
     site_cols <- linked_data_get(vcf, i = "site", , site_cols)

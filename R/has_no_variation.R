@@ -3,13 +3,13 @@ has_no_variation <- function(x, na.rm = TRUE, margin = 1) {
   .stopifnotsingle(margin, what = is.numeric)
   stopifnot(margin %in% c(1, 2))
   if (is.vector(x))
-    return(.has_no_variation.vector(x = x, na.rm = na.rm))
+    return(.has_no_variation_vector(x = x, na.rm = na.rm))
   if (is.matrix(x))
-    return(.has_no_variation.matrix(x = x, na.rm = na.rm, margin = margin))
+    return(.has_no_variation_matrix(x = x, na.rm = na.rm, margin = margin))
   stop("'x' must be a vector or matrix!")
 }
 
-.has_no_variation.vector <- function(x, na.rm) {
+.has_no_variation_vector <- function(x, na.rm) {
   non_na <- x[match(FALSE, is.na(x))]
   if (is.na(non_na))
     return(TRUE)
@@ -18,7 +18,7 @@ has_no_variation <- function(x, na.rm = TRUE, margin = 1) {
   all(x == non_na, na.rm = TRUE)
 }
 
-.has_no_variation.matrix <- function(x, na.rm, margin) {
+.has_no_variation_matrix <- function(x, na.rm, margin) {
   # Obtain the first non-na value for each row/column if it exists
   non_na <- get_first_non_na(x, margin = margin)
 

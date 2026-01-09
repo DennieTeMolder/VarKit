@@ -32,7 +32,6 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
 
   # Parse type from genotype fields
   gt <- unclass(geno.varkit(x))
-  drmodel <- drm_get(gt)
 
   if (all(frmt == frmt[[1L]])) {
     res <- matrix(
@@ -65,18 +64,7 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
 
   # Convert NA values manually using regex and cast types
   res[stringr::str_detect(res , pattern ="^[.,|/]*$")] <- NA_character_
-  res <- varkit_geno(utils::type.convert(res, as.is = TRUE, na.strings = ""))
-
-  # Attach the data relation model if any
-  if (is.null(drmodel))
-    return(res)
-
-  drm_do_attach(
-    res,
-    drmodel = drmodel,
-    dim_links = c("samples", "sites"),
-    label = paste0("parse_geno(", type, ")")
-  )
+  varkit_geno(utils::type.convert(res, as.is = TRUE, na.strings = ""))
 }
 
 .get_format_types <- function(x) {

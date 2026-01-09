@@ -17,7 +17,7 @@ site.varkit <- function(x, ..., .add_index = FALSE) {
   }
 
   if (.add_index)
-    res$idx <- seq_len(nrow(res))
+    res$idx <- which(attr(x, "indices")$sites)
 
   res
 }
@@ -36,5 +36,5 @@ site.varkit <- function(x, ..., .add_index = FALSE) {
   }
 
   x$site <- value
-  x
+  validate_varkit(x)
 }

@@ -10,10 +10,9 @@ varkit_geno.data.frame <- function(x) {
 
 ##' @export
 varkit_geno.default <- function(x = NULL) {
-  add_class <- c("varkit_geno", "mtrx")
   structure(
     as_mtrx(x, dimnames = c("samples", "sites")),
-    class = c(add_class, if (!is.null(x)) setdiff(class(x), add_class))
+    class = c("varkit_geno", "mtrx", "matrix", "array")
   )
 }
 
@@ -26,7 +25,7 @@ is_varkit_geno <- function(x) {
 `[.varkit_geno` <- function(...) {
   res <- NextMethod("[")
   if (is.matrix(res))
-    class(res) <- c("varkit_geno", class(res)[class(res) != "varkit_geno"])
+    class(res) <- c("varkit_geno", setdiff(class(res), "varkit_geno"))
   res
 }
 

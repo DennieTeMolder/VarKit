@@ -5,6 +5,17 @@ delete_masked_sites <- function(x) {
 
 ##' @export
 delete_masked_sites.varkit <- function(x) {
-  lifecycle::deprecate_warn("v0.9.0", "delete_masked_sites()", I("delete_masked(sites = TRUE, samples = FALSE)"))
-  delete_masked.varkit(x, samples = FALSE, sites = TRUE)
+  validate_varkit(x)
+
+  # Reset all other indices so they do not get applied
+  indices <- .indices(x)
+  reset_ind <- setdiff(names(indices), "sites")
+  x <- linked_data_reset(x, indices = reset_ind)
+
+  # Apply the mask
+  x <- x[]
+
+  # Restore the unused indices
+  .indices(x) <- indices[reset_ind]
+  x
 }

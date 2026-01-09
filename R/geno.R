@@ -6,11 +6,10 @@ geno <- function(x, ..., .drop = FALSE) {
 ##' @export
 geno.varkit <- function(x, ..., .drop = FALSE) {
   if (...length() > 0L) {
-    .data <- getElement(dimnames(unclass(x)$geno), "samples")
-    .data <- setNames(seq_along(.data), nm = .data)[samples.varkit(x)]
+    .data <- setNames(which(.indices(x)$samples), nm = samples.varkit(x))
     loc <- tidyselect::eval_select(rlang::expr(c(...)), data = .data)
 
-    res <- linked_data_get(x, i = "geno", samples = loc, .drop = .drop)
+    res <- linked_data_get(x, i = "geno", samples = loc, , .drop = .drop)
     if (!is.vector(res))
       rownames(res) <- names(loc)
   } else {
@@ -28,7 +27,7 @@ geno.varkit <- function(x, ..., .drop = FALSE) {
   xgeno <- unclass(x)$geno
   if (is.vector(value) && length(value) == length(xgeno)) {
     warning("Converting vector to matrix, check if the values are in the right row & column.")
-    value <- matrix(value, nrow = nrow(xgeno), ncol = ncol(xgeno), dimnames = dimnames(xgeno))
+    value <- mtrx(value, nrow = nrow(xgeno), ncol = ncol(xgeno), dimnames = dimnames(xgeno))
   } else if (!is.matrix(value)) {
     stop("The new value should be a matrix!")
   }
@@ -44,6 +43,6 @@ geno.varkit <- function(x, ..., .drop = FALSE) {
   x$geno <- NULL
   x <- linked_data_trim(x, indices = "samples")
 
-  x$geno <- value
-  x
+  x$geno <- varkit_geno.default(value)
+  validate_varkit(x)
 }

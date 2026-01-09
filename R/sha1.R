@@ -1,7 +1,7 @@
 ##' @exportS3Method digest::sha1
 sha1.varkit <- function(x, ...) {
   digest::sha1(list(
-    drm_ifelse(x, node = "sites"),
+    .indices(x)[c("samples", "sites")],
     samples.varkit(x)
   ))
 }

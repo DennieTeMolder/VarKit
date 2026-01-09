@@ -5,5 +5,5 @@ export_mask <- function(x) {
 
 ##' @export
 export_mask.varkit <- function(x) {
-  attr(x, "indices", exact = TRUE)[c("samples", "sites")]
+  linked_data_indices_get(x)
 }

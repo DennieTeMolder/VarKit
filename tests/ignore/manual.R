@@ -15,7 +15,9 @@ print.linked_data(x)
 
 x <- read_vcf(example)
 
-# TODO delete_masked()
+# TODO write_vcf
+# TODO split/concat
+# TODO scan for $ use
 
 ### Examples ------
 ## Varkit object ------
@@ -58,7 +60,7 @@ temp_file <- tempfile(fileext = ".vcf.gz")
 write_vcf(vcf, temp_file, replace_filter = TRUE)
 read_vcf(temp_file)
 
-summary(delete_masked(vcf))
+summary(delete_masked_sites(vcf))
 
 ## Varkit_geno object ------
 apply(geno(vcf), "samples", length)
