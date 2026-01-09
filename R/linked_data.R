@@ -461,6 +461,38 @@ linked_data_trim <- function(x, indices = NULL) {
   x
 }
 
+linked_data_indices_get <- function(x) {
+  validate_linked_data(x)
+  attr(x, "indices")
+}
+
+linked_data_indices_set <- function(x, indices, add = FALSE) {
+  validate_linked_data(x)
+  stopifnot(is.list(indices), rlang::is_named(indices))
+  .stopifnotsingle(add, what = "logical")
+
+  indices <- purrr::imap(indices, function(curr, idx) {
+    if (!(is.vector(curr) && is.logical(curr)))
+      stop("Expected a vector of type logical!")
+
+    idx <- .indices(x)[[idx]]
+    if (is.null(idx))
+      return(curr)
+
+    if (length(curr) != length(idx))
+      stop("Expected length ", length(idx), ", but got ", length(curr), "!")
+
+    if (add) {
+      curr & idx
+    } else {
+      curr
+    }
+  })
+
+  .indices(x)[names(indices)] <- indices
+  x
+}
+
 .quo_replace_fn <- function(quo, fn) {
   args <- rlang::call_args(rlang::quo_get_expr(quo))
   rlang::new_quosure(
