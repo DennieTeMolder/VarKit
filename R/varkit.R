@@ -15,8 +15,8 @@ varkit <- function(site, geno, meta = NULL, use_filter = TRUE) {
   ))
 
   # Apply initial mask based on the FILTER column
-  if (use_filter && any(colnames(vcf$site) == "filter")) {
-    mask.varkit(vcf, .data$filter != "PASS", na_mask = FALSE)
+  if (use_filter && any(colnames(site) == "filter")) {
+    retain.varkit(vcf, .data$filter == "PASS", na_retain = TRUE)
   } else {
     vcf
   }
@@ -29,7 +29,7 @@ new_varkit <- function(site = data.frame(), geno = varkit_geno(), meta = NULL) {
   stopifnot(is.null(meta) || is.data.frame(meta))
 
   obj <- linked_data(
-    meta[, ], site[sites, ], geno[samples, sites],
+    meta[, ], site["sites", ], geno["samples", "sites"],
     x = list(
       meta = if (!is.null(meta)) tibble::as_tibble(meta),
       site = tibble::as_tibble(site),
@@ -42,18 +42,24 @@ new_varkit <- function(site = data.frame(), geno = varkit_geno(), meta = NULL) {
 }
 
 ##' @export
+is_varkit <- function(x) {
+  inherits(x, "varkit")
+}
+
+##' @export
 validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
   .stopifnotsingle(check_info, what = "logical")
   .stopifnotsingle(check_format, what = "logical")
+  stopifnot(is_varkit(x))
 
   old_x <- validate_linked_data(x)
-  x <- unclass(x)
+  x <- linked_data_unclass(x)
 
   .validate_varkit_meta(x$meta)
   .validate_varkit_site(x$site, check_info = check_info, check_format = check_format)
   .validate_varkit_geno(x$geno)
 
-  old_x
+  invisible(old_x)
 }
 
 .validate_varkit_site <- function(x, check_info, check_format) {
@@ -96,11 +102,6 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
     stop("The 'geno()' slot cannot have missing/zero-length rownames!")
 
   x
-}
-
-##' @export
-is_varkit <- function(x) {
-  inherits(x, "varkit")
 }
 
 ##' @export

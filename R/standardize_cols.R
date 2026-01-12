@@ -5,19 +5,20 @@ standardize_cols <- function(x, message = TRUE) {
 
 ##' @export
 standardize_cols.varkit <- function(x, message = TRUE) {
-  missing <- .find_missing_cols(colnames(x$site), message = message)
+  all_site <- linked_data_unclass(x)$site
+  missing <- .find_missing_cols(colnames(all_site), message = message)
 
   if (length(missing) > 0) {
-    x$site[, missing] <- rep(NA, nrow(x$site))
+    all_site[, missing] <- rep(NA, nrow(all_site))
   }
 
-  x$site <- dplyr::relocate(x$site, tidyselect::all_of(.fixed_columns()))
+  x$site <- dplyr::relocate(all_site, tidyselect::all_of(.fixed_columns()))
   x
 }
 
 ##' @export
 standardize_cols.varkit_header <- function(x, message = TRUE) {
-  .find_missing_cols(x$col_names, message = message)
+  if (message) .find_missing_cols(x$col_names, message = message)
   x$col_names <- c(.fixed_columns(), samples.varkit_header(x))
   x
 }

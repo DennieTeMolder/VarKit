@@ -5,6 +5,7 @@ example <- "./inst/extdata/celegans.vcf.bgz"
 
 # REVIEW make site() never drop?
 # REVIEW allow all sites to masked in a VCF
+# REVIEW check use of anyNA (slow on mtrx)
 
 header <- read_vcf_header(example)
 body <- read_tbl(example, col.names = header$col_names)
@@ -15,7 +16,10 @@ print.linked_data(x)
 
 x <- read_vcf(example)
 
-# TODO write_vcf
+linked_data_unclass(x)
+
+linked_data(NULL, site["sites", ]) |> attributes()
+
 # TODO split/concat
 # TODO scan for $ use
 
@@ -69,9 +73,6 @@ apply(geno(vcf), "sites", length)
 ## Linked sites ------
 vcf <- unmask_all(read_vcf(example))
 geno(vcf) <- as_integer(round(ad2aaf(vcf)$aaf) * 2L)
-test <- as_integer(round(ad2aaf(vcf)$aaf) * 2L)
-drm_get(ad2aaf(vcf)$aaf)
-drm_trim(drm_get(vcf), vcf$geno, vcf$site)
 
 links <- find_linked_sites(vcf, windows = -1, return_r2 = TRUE, cores = 1)
 lgraph <- resolve_links(links, cores = 1)
@@ -191,6 +192,14 @@ obj$meta <- vcf$meta
 obj <- obj |>
   linked_data_add("site", vcf$site, sites = c(chrom, pos)) |>
   linked_data_add("geno", vcf$geno, samples = c(sample = rownames(.)))
+
+# This should remain sorted
+linked_data_add(
+  obj,
+  slot = "site",
+  data = dplyr::slice_sample(vcf$site, prop = 1),
+  sites = c(chrom, pos)
+)$site
 
 obj <- linked_data_filter(obj, samples = rep_len(c(T, F), n_samples(vcf)))
 

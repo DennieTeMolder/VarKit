@@ -24,7 +24,7 @@ geno.varkit <- function(x, ..., .drop = FALSE) {
   if (!is_varkit(x))
     stop("`geno() <-` is only supported for 'varkit' objects!")
 
-  xgeno <- unclass(x)$geno
+  xgeno <- linked_data_unclass(x)$geno
   if (is.vector(value) && length(value) == length(xgeno)) {
     warning("Converting vector to matrix, check if the values are in the right row & column.")
     value <- mtrx(value, nrow = nrow(xgeno), ncol = ncol(xgeno), dimnames = dimnames(xgeno))

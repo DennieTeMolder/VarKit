@@ -42,17 +42,28 @@ linked_data <- function(x = NULL, ...) {
   out
 }
 
-.indices <- function(x) {
-  attr(x, "indices", exact = TRUE)
+linked_data_unclass <- function(x) {
+  x <- unclass(x)
+  attributes(x)[c("slots", "indices", "keys")] <- NULL
+  x
 }
 
-`.indices<-` <- function(x, value) {
-  attr(x, "indices") <- value
+# REVIEW unused?
+linked_data_restore <- function(x, attr_from) {
+  stopifnot(is.list(x))
+  validate_linked_data(attr_from)
+
+  copy_attr <- c("slots", "indices", "keys")
+  attributes(x)[copy_attr] <- attributes(attr_from)[copy_attr]
+
+  add_class <- c("linked_data", "list")
+  class(x) <- c(setdiff(class(x), add_class), add_class)
+
   x
 }
 
 ##' @export
-`[<-.linked_data` <- function(x, i, value, ...) {
+`[<-.linked_data` <- function(x, i, ..., value) {
   validate_linked_data(x)
   result <- NextMethod("[")
 
@@ -73,11 +84,13 @@ linked_data <- function(x = NULL, ...) {
     stop("Number of items to replace should match replacement length!")
   }
 
+  # Check if assigning to a defined slot
   slots <- attr(x, "slots")
   no_slot <- setdiff(i, names(slots))
   if (length(no_slot) > 0L)
     stop("Register slots before assigning: ", .quote_collapse(no_slot), "!")
 
+  # Check if the new dimensions match with existing indices, creating them if missing
   indices <- attr(x, "indices")
   for (ii in seq_along(i)) {
     current <- i[ii]
@@ -141,13 +154,21 @@ linked_data <- function(x = NULL, ...) {
   indices <- purrr::map(keep_indices, function(name) {
     rep(TRUE, sum(attr(x, "indices")[[name]]))
   })
-  keys <- purrr::map(keep_indices, function(name) {
+
+  keep_keys <- intersect(names(attr(x, "keys")), keep_indices)
+  keys <- purrr::map(keep_keys, function(name) {
     key <- attr(x, "keys")[[name]]
     if (!is.null(key))
       key[attr(x, "indices")[[name]], , drop = FALSE]
   })
 
-  new_linked_data(result, slots = slots, indices = indices, keys = keys)
+  result <- new_linked_data(result, slots = slots, indices = indices, keys = keys)
+
+  # Restore remaining attributes
+  copy_attr <- c("class", setdiff(names(attributes(x)), names(attributes(result))))
+  attributes(result)[copy_attr] <- attributes(x)[copy_attr]
+
+  result
 }
 
 ##' @export
@@ -210,7 +231,7 @@ print.linked_data <- function(x, ...) {
 str.linked_data <- function(object, ..., give.attr = FALSE, no.list = FALSE) {
   if (!isTRUE(no.list))
     cat("Linked data object <list of ", length(object), ">:\n", sep = "")
-  str(unclass(object), give.attr = give.attr, no.list = TRUE, ...)
+  utils::str(unclass(object), give.attr = give.attr, no.list = TRUE, ...)
 }
 
 ##' @export
@@ -282,7 +303,11 @@ linked_data_add <- function(x, slot, data, ..., .override = FALSE) {
   dots <- .dots_compute_keys(dots, data = data, use_indices = use_indices)
 
   # Add missing keys
-  add_keys <- if (.override) names(dots) else setdiff(names(dots), names(keys))
+  if (.override) {
+    add_keys <- names(dots)
+  } else {
+    add_keys <- names(dots)[purrr::map_lgl(keys[names(dots)], is.null)]
+  }
   attr(x, "keys")[add_keys] <- dots[add_keys]
 
   # Match the keys that have not been added/overwritten
@@ -309,7 +334,7 @@ linked_data_add <- function(x, slot, data, ..., .override = FALSE) {
 linked_data_get <- function(x, i, ..., .drop = FALSE) {
   validate_linked_data(x)
 
-  x <- unclass(x)
+  x <- linked_data_unclass(x)
   xi <- x[[i]]
   if (is.null(xi))
     return(xi)
@@ -432,8 +457,13 @@ linked_data_reset <- function(x, indices = NULL) {
   }
 
   attr(x, "indices")[indices] <- purrr::map(attr_ind[indices], function(idx) {
-    rep(TRUE, length(idx))
+    if (isTRUE(all(idx))) {
+      idx
+    } else {
+      rep(TRUE, length(idx))
+    }
   })
+
   x
 }
 
@@ -490,6 +520,15 @@ linked_data_indices_set <- function(x, indices, add = FALSE) {
   })
 
   .indices(x)[names(indices)] <- indices
+  x
+}
+
+.indices <- function(x) {
+  attr(x, "indices", exact = TRUE)
+}
+
+`.indices<-` <- function(x, value) {
+  attr(x, "indices") <- value
   x
 }
 

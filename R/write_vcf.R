@@ -47,19 +47,8 @@ write_vcf.varkit <- function(x,
     .defer(close(file))
   }
 
-  # Create new object to include masked sites/samples
-  x <- new_varkit(meta = x$meta, site = x$site, geno = x$geno)
-
-  # Ensure all columns & values adhere to VCF spec
+  # Ensure required columns are present and in the right order
   x <- standardize_cols.varkit(x)
-  x <- .replace_na_geno(x, na_geno)
-
-  # Apply DIGITS argument
-  x$geno <- .round(x$geno, digits = digits)
-  x$site <- .round(x$site, digits = digits)
-
-  # Check if filter column reflects current state, replace if indicated
-  x <- .check_filter(x, replace_filter = replace_filter)
 
   if (!append) {
     .msg_step("Writing VCF header")
@@ -67,10 +56,23 @@ write_vcf.varkit <- function(x,
     cli::cli_progress_done()
   }
 
-  .msg_step("Writing VCF body")
+  # Unclass to prevent data masking
+  x <- linked_data_unclass(x)
+
+  # Check if filter column reflects current state, replace if indicated
+  x <- .check_filter(x, replace_filter = replace_filter, use_site = .indices(x)$sites)
+
+  # Apply DIGITS argument
+  x$site <- .round(x$site, digits = digits)
+  x$geno <- .round(x$geno, digits = digits)
+
+  # Infer the correct NA format for the geno fields and replace
+  x <- .replace_na_geno(x, na_geno = na_geno)
 
   # Convert body to a data frame
-  x <- as.data.frame.varkit(x, optional = TRUE)
+  x <- cbind(x$site, t(x$geno))
+
+  .msg_step("Writing VCF body")
 
   write_tbl(
     x,
@@ -85,16 +87,15 @@ write_vcf.varkit <- function(x,
 }
 
 .replace_na_geno <- function(x, na_geno) {
-  if (!.any_na(x$geno))
+  which_na <- which(is.na(x$geno), arr.ind = TRUE, useNames = FALSE)
+  if (length(which_na) == 0L)
     return(x)
-
-  is_na <- which(is.na(x$geno), arr.ind = TRUE, useNames = FALSE)
 
   if (is.null(na_geno)) {
     .msg_step("Determining VCF compliant NA format for geno()")
 
     # Find all columns with NAs to save on computation time
-    na_col <- unique(is_na[, 2L])
+    na_col <- unique(which_na[, 2L])
     na_geno <- get_first_non_na(x$geno[, na_col], margin = 2)
 
     # Convert to VCF spec
@@ -103,7 +104,7 @@ write_vcf.varkit <- function(x,
       na_geno[is.na(na_geno)] <- "."
 
     # Expand to a vector that matches the number of columns
-    na_geno <- `[<-`(NA_character_, is_na[, 2L], na_geno[match(is_na[, 2L], na_col)])
+    na_geno <- `[<-`(NA_character_, which_na[, 2L], na_geno[match(which_na[, 2L], na_col)])
   }
 
   # NOTE this step can appear slow for non-character matrices as they need to be
@@ -111,32 +112,31 @@ write_vcf.varkit <- function(x,
   .msg_step("Replacing NA geno() values")
   if (has_no_variation(na_geno, na.rm = TRUE)) {
     # Simple case with a single replacement value
-    x$geno[is_na] <- na_geno[[1L]]
+    x$geno[which_na] <- na_geno[[1L]]
   } else {
     # Complex case with multiple replacement values (based on column index of NA value)
-    x$geno[is_na] <- na_geno[is_na[, 2L]]
+    x$geno[which_na] <- na_geno[which_na[, 2L]]
   }
 
   x
 }
 
-.check_filter <- function(x, replace_filter) {
-  is_na <- is.na(x$site$filter)
+.check_filter <- function(x, replace_filter, use_site) {
+  curr_fltr <- getElement(x$site, "filter")
+  is_na <- is.na(curr_fltr)
   if (all(is_na)) {
-    x$site$filter <- drm_ifelse(x, "PASS", "MASKED", node = "sites")
+    x$site$filter <- .if_else(use_site, "PASS", "MASKED")
     return(x)
   }
 
   # If the state of the filter column matches the current state, return X
-  which_pass <- which(x$site$filter == "PASS" | is_na)
-  if (length(which_pass) == length(x$site$filter) ||
-        identical(which_pass, drm_which(x, "sites"))) {
+  is_pass <- curr_fltr == "PASS" | is_na
+  if (identical(is_pass, use_site))
     return(x)
-  }
 
   if (replace_filter) {
-    x$site$filter[which_pass] <- "MASKED"
-    x$site$filter[drm_which(x, "sites")] <- "PASS"
+    x$site$filter[is_pass] <- "MASKED"
+    x$site$filter[use_site] <- "PASS"
   } else {
     cli::cli_alert_warning("FILTER column does not reflect currently masked sites!")
     cli::cli_alert_warning("Use `replace_filter = TRUE` if this is desired.")

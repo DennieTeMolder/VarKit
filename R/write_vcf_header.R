@@ -7,8 +7,7 @@ write_vcf_header <- function(x, file, timestamp = TRUE, compression = NULL) {
 write_vcf_header.varkit_header <- function(x, file, timestamp = TRUE, compression = NULL) {
   .stopifnotsingle(timestamp, what = "logical")
 
-  description <- if (.is_connection(file)) summary.connection(file)$description else file
-  header <- meta.varkit_header(x)
+  header <- x$meta
 
   if (timestamp) {
     stamp <- data.frame(
@@ -27,7 +26,7 @@ write_vcf_header.varkit_header <- function(x, file, timestamp = TRUE, compressio
     stamp
   )
 
-  # Standardise the column names of the fixed fields and convert to upper
+  # Standardize the column names of the fixed fields and convert to upper
   x <- standardize_cols.varkit_header(x)
   which_to_upper <- seq_along(.fixed_columns())
   x$col_names[which_to_upper] <- toupper(x$col_names[which_to_upper])
@@ -42,10 +41,11 @@ write_vcf_header.varkit_header <- function(x, file, timestamp = TRUE, compressio
 
 ##' @export
 write_vcf_header.varkit <- function(x, file, timestamp = TRUE, compression = NULL) {
+  x <- linked_data_unclass(x)
   write_vcf_header.varkit_header(
     new_varkit_header(
-      meta = meta.varkit(x),
-      col_names = c(colnames(x$site), samples.varkit(x))
+      meta = x$meta,
+      col_names = c(colnames(x$site), rownames(x$geno))
     ),
     file = file,
     timestamp = timestamp,
