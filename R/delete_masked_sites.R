@@ -16,6 +16,6 @@ delete_masked_sites.varkit <- function(x) {
   x <- x[]
 
   # Restore the unused indices
-  .indices(x) <- indices[reset_ind]
+  .indices(x)[reset_ind] <- indices[reset_ind]
   x
 }
