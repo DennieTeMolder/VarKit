@@ -334,7 +334,7 @@ linked_data_add <- function(x, slot, data, ..., .override = FALSE) {
 linked_data_get <- function(x, i, ..., .drop = FALSE) {
   validate_linked_data(x)
 
-  x <- linked_data_unclass(x)
+  x <- unclass(x)
   xi <- x[[i]]
   if (is.null(xi))
     return(xi)
