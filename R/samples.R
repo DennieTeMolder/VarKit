@@ -4,11 +4,6 @@ samples <- function(x) {
 }
 
 ##' @export
-samples.varkit_geno <- function(x) {
-  rownames(x)
-}
-
-##' @export
 samples.varkit <- function(x) {
   rownames(linked_data_get(x, i = "geno", sites = FALSE))
 }
@@ -20,19 +15,17 @@ samples.varkit_header <- function(x) {
 
 ##' @export
 `samples<-` <- function(x, value) {
+  if (!is_varkit(x))
+    stop("`samples()<-` only works on 'varkit' objects!")
+  validate_varkit(x)
+
+  if (!all(.indices(x)$samples))
+    stop("Reset/unmask the 'samples' filter before modifying!")
+  if (length(value) != length(.indices(x)$samples))
+    stop("The new value should be of equal length to the old!")
   if (anyDuplicated(value) != 0L)
     stop("The new value contains duplicates!")
 
-  if (is_varkit(x)) {
-    validate_varkit(x)
-    if (!all(.indices(x)$samples))
-      stop("Reset/unmask the 'samples' filter before modifying!")
-    rownames(x$geno) <- value
-  } else if (is_varkit_geno(x)) {
-    rownames(x) <- value
-  } else {
-    stop("`samples()<-` only supports 'varkit' & 'varkit_geno' objects!")
-  }
-
+  rownames(x$geno) <- value
   x
 }

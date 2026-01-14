@@ -94,8 +94,8 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
 .validate_varkit_geno <- function(x) {
   if (is.null(x))
     stop("The 'geno()' slot is missing!")
-  if (!is_varkit_geno(x))
-    stop("The 'geno()' slot should be of class 'varkit_geno'!")
+  if (!is_mtrx(x))
+    stop("The 'geno()' slot should be of class 'mtrx'!")
   if (nrow(x) < 1L)
     stop("The 'geno()' slot should contain at least a single sample/row!")
   if (is.null(rownames(x)) || any(nchar(rownames(x)) == 0L))
@@ -130,7 +130,7 @@ print.varkit <- function(x, ..., n = NULL, n_samples = NULL) {
   cat("\n")
 
   .msg_h2("Transposed genotype matrix, `geno(vcf)`")
-  print.mtrx(varkit_geno.default(x_geno), n = n_samples, n_col = n, tooltip = FALSE)
+  print.mtrx(as_mtrx(x_geno), n = n_samples, n_col = n, tooltip = FALSE)
   cat("\n")
 
   .msg_h2("Data masks, `summary(vcf)`")

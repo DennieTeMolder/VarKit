@@ -1,6 +1,6 @@
 ##' @export
 mtrx <- function(data, nrow, ncol, byrow = FALSE, dimnames = NULL) {
-  if (is.character(dimnames) && any(length(dimnames) == 1:2))
+  if (is.character(dimnames) && length(dimnames) <= 2L)
     dimnames <- setNames(vector("list", 2L), dimnames)
 
   # Passing rlang::missing_arg() raises an error
@@ -34,7 +34,7 @@ as_mtrx <- function(x, dimnames = NULL, ...) {
   }
 
   if (!is.null(dimnames)) {
-    if (is.character(dimnames) && any(length(dimnames) == 1:2))
+    if (is.character(dimnames) && length(dimnames) <= 2L)
       dimnames <- setNames(list(rownames(x), colnames(x)), dimnames)
     dimnames(x) <- dimnames
   }

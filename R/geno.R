@@ -25,6 +25,7 @@ geno.varkit <- function(x, ..., .drop = FALSE) {
     stop("`geno() <-` is only supported for 'varkit' objects!")
 
   xgeno <- linked_data_unclass(x)$geno
+
   if (is.vector(value) && length(value) == length(xgeno)) {
     warning("Converting vector to matrix, check if the values are in the right row & column.")
     value <- mtrx(value, nrow = nrow(xgeno), ncol = ncol(xgeno), dimnames = dimnames(xgeno))
@@ -43,6 +44,6 @@ geno.varkit <- function(x, ..., .drop = FALSE) {
   x$geno <- NULL
   x <- linked_data_trim(x, indices = "samples")
 
-  x$geno <- varkit_geno.default(value)
+  x$geno <- varkit_geno(value)
   validate_varkit(x)
 }

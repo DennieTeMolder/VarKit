@@ -17,8 +17,3 @@ n_sites.varkit <- function(x, ..., mask = TRUE) {
 n_sites.varkit_index <- function(x, ...) {
   sum(x[["n_lines"]])
 }
-
-##' @export
-n_sites.varkit_geno <- function(x, ...) {
-  ncol(x)
-}

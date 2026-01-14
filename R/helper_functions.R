@@ -116,8 +116,6 @@
     x <- array(x, dim = dim(using), dimnames = dimnames(using))
   if (is_mtrx(using))
     x <- as_mtrx(x)
-  if (is_varkit_geno(using))
-    x <- varkit_geno(x)
   x
 }
 

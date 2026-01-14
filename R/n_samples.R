@@ -17,8 +17,3 @@ n_samples.varkit <- function(x, ..., mask = TRUE) {
 n_samples.varkit_header <- function(x, ...) {
   length(samples.varkit_header(x))
 }
-
-##' @export
-n_samples.varkit_geno <- function(x, ...) {
-  nrow(x)
-}
