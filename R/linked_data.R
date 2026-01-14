@@ -186,12 +186,18 @@ linked_data_restore <- function(x, attr_from) {
 
 ##' @export
 print.linked_data <- function(x, ...) {
-  slots <- attr(x, "slots", exact = TRUE)
-  indices <- attr(x, "indices", exact = TRUE)
-  keys <- attr(x, "keys", exact = TRUE)
-
   .msg_h1("Linked data object")
   .msg_h2("Slots")
+  .print_slots(x, ...)
+  .msg_h2("Indices")
+  .print_indices(x)
+}
+
+.print_slots <- function(x, ..., .exclude = NULL) {
+  slots <- attr(x, "slots", exact = TRUE)
+  if (!is.null(.exclude))
+    slots <- slots[!names(slots) %in% .exclude]
+
   if (length(slots) > 0L) {
     tbl <- tibble::tibble(
       slot = paste0("$", names(slots)),
@@ -201,7 +207,13 @@ print.linked_data <- function(x, ...) {
     cat(format(tbl, ...)[-c(1L, 3L)], "", sep = "\n")
   }
 
-  .msg_h2("Indices")
+  invisible(x)
+}
+
+.print_indices <- function(x) {
+  indices <- attr(x, "indices", exact = TRUE)
+  keys <- attr(x, "keys", exact = TRUE)
+
   if (length(indices) > 0L) {
     purrr::iwalk(indices, function(idx, name) {
       if (all(idx)) {

@@ -126,7 +126,7 @@ print.varkit <- function(x, ..., n = NULL, n_samples = NULL) {
   cat("\n")
 
   .msg_h2("Site information, `site(vcf)`")
-  print(site.varkit(x), ..., n = n)
+  print(tibble::as_tibble(site.varkit(x)), ..., n = n)
   cat("\n")
 
   .msg_h2("Transposed genotype matrix, `geno(vcf)`")
