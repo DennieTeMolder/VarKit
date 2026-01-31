@@ -116,56 +116,27 @@ print.varkit <- function(x, ..., n = NULL, n_samples = NULL) {
 
   .msg_h1("VarKit Variant Object")
   if (!is.null(x$meta)) {
-    .msg_h2("Header metadata, `meta(vcf)`")
+    .msg_h2("$meta, Metadata header")
     print(meta.varkit(x), ...)
     cat("\n")
   }
 
-  .msg_h2("Sample names, `samples(vcf)`")
-  .msg_vec(samples.varkit(x))
-  cat("\n")
-
-  .msg_h2("Site information, `site(vcf)`")
+  .msg_h2("$site, Site information")
   print(tibble::as_tibble(site.varkit(x)), ..., n = n)
   cat("\n")
 
-  .msg_h2("Transposed genotype matrix, `geno(vcf)`")
+  .msg_h2("$geno, Transposed genotype matrix")
   print.mtrx(as_mtrx(x_geno), n = n_samples, n_col = n, tooltip = FALSE)
   cat("\n")
 
-  .msg_h2("Data masks, `summary(vcf)`")
-
-  current <- .indices(x)$samples
-  total <- length(current)
-  current <- sum(current)
-  samples_masked <- total != current
-  if (samples_masked) {
-    cli::cli_alert_warning(sprintf(
-      "Samples: using %s%% of total (%s/%s)",
-      round(current / total * 100, digits = 1), .frmt_big(current), .frmt_big(total)
-    ))
-  } else {
-    cli::cli_alert_info("Samples: using all { .frmt_big(total)} samples")
+  exclude_slots <- c("meta", "site", "geno")
+  if (!all(names(x) %in% exclude_slots)) {
+    .msg_h2("Additional slots")
+    .print_slots(x, .exclude = exclude_slots)
   }
 
-  current <- .indices(x)$sites
-  total <- length(current)
-  current <- sum(current)
-  sites_masked <- total != current
-  if (sites_masked) {
-    cli::cli_alert_warning(sprintf(
-      "Sites: using %s%% of total (%s/%s)",
-      round(current / total * 100, digits = 1), .frmt_big(current), .frmt_big(total)
-    ))
-  } else {
-    cli::cli_alert_info("Sites: using all { .frmt_big(total)} sites")
-  }
-
-  if (sites_masked || samples_masked) {
-    cli::cli_alert_warning("A mask is active!")
-  } else {
-    cli::cli_alert_success("No mask is active.")
-  }
+  .msg_h2("Soft-mask status, `summary(...)`")
+  .print_indices(x)
 }
 
 ##' @export

@@ -210,15 +210,17 @@ print.linked_data <- function(x, ...) {
   invisible(x)
 }
 
-.print_indices <- function(x) {
+.print_indices <- function(x, show_keys = TRUE) {
   indices <- attr(x, "indices", exact = TRUE)
   keys <- attr(x, "keys", exact = TRUE)
 
   if (length(indices) > 0L) {
     purrr::iwalk(indices, function(idx, name) {
       if (all(idx)) {
+        bullet <- "record"
         msg <- paste("use all", .frmt_big(length(idx)), "elements")
       } else {
+        bullet <- "info"
         n_use <- sum(idx)
         msg <- sprintf(
           "use %s%% of elements (%s/%s)",
@@ -228,10 +230,10 @@ print.linked_data <- function(x, ...) {
       }
 
       key <- keys[[name]]
-      if (!is.null(key))
+      if (isTRUE(show_keys) && !is.null(key))
         key <- sprintf("{%s}", .collapse(names(key), delim = ","))
 
-      cli::cat_bullet(paste0(name, key, ": ", msg))
+      cli::cat_bullet(paste0(name, key, ": ", msg), bullet = bullet)
     })
     cat("\n")
   }

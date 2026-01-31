@@ -3,6 +3,7 @@ library(devtools)
 load_all()
 example <- "./inst/extdata/celegans.vcf.bgz"
 
+# REVIEW add $ method to varkit for parity with geno() etc
 # REVIEW make site() never drop?
 # REVIEW allow all sites to masked in a VCF
 # REVIEW check use of anyNA (slow on mtrx)
