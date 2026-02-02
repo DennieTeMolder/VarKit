@@ -5,29 +5,31 @@ parse_info <- function(x, type = NULL, use_meta = TRUE) {
 
 ##' @export
 parse_info.varkit <- function(x, type = NULL, use_meta = TRUE) {
-  if (use_meta && !any(meta.varkit(x)$name == "INFO"))
-    stop("The `meta()` slot has no INFO entry, this is required when `use_meta = TRUE`!")
-  if (is.null(type)) {
-    warning("Please provide the 'type' argument, returning possible options.")
-    if (use_meta)
-      return(dplyr::transmute(parse_meta.varkit(x, "INFO"), type = .data$ID, description = .data$Description))
-    return(.collect_all_keys(site.varkit(x, "info")))
-  } else {
+  validate_varkit(x, check_info = TRUE)
+  if (!is.null(type))
     .stopifnotsingle(type, what = "character")
-    validate_varkit(x, check_info = TRUE)
-  }
+  .stopifnotsingle(use_meta, what = "logical")
 
   if (use_meta) {
+    if (!"INFO" %in% meta.varkit(x)$name)
+      stop("The `$meta$name` column has no INFO entries, this is required when `use_meta = TRUE`!")
     meta_info <- parse_meta.varkit(x, "INFO")
-    if (!type %in% meta_info$ID)
-      stop("The type '", type, "' could not be found in parse_meta(x, 'INFO')$ID!")
-  } else {
+  } else  {
     meta_info <- NULL
   }
 
-  info <- site.varkit(x, info = "info")
+  if (is.null(type)) {
+    warning("Please provide the 'type' argument, returning possible options.")
+    if (is.null(meta_info))
+      return(.collect_all_keys(site.varkit(x, "info")))
+    return(dplyr::transmute(meta_info, type = .data$ID, description = .data$Description))
+  } else if (!type %in% meta_info$ID) {
+    stop("The type '", type, "' could not be found in parse_meta(x, 'INFO')$ID!")
+  }
+
+  info <- site.varkit(x, "info")
   if (all(is.na(info)))
-    stop("The INFO column only contains NAs!")
+    stop("The $site$info column only contains NAs!")
 
   .parse_info_internal(info, type, meta_info)
 }

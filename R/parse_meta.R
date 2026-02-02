@@ -5,16 +5,26 @@ parse_meta <- function(x, type = NULL, na = ".") {
 
 ##' @export
 parse_meta.varkit <- function(x, type = NULL, na = ".") {
-  .validate_varkit_meta(meta(x))
+  validate_varkit(x)
+  .parse_meta_internal(meta.varkit(x), type = type, na = na)
+}
+
+##' @export
+parse_meta.varkit_header <- function(x, type = NULL, na = ".") {
+  validate_varkit_header(x)
+  .parse_meta_internal(meta.varkit_header(x), type = type, na = na)
+}
+
+.parse_meta_internal <- function(meta, type, na) {
   stopifnot(is.character(na))
   if (!is.null(type)) {
     .stopifnotsingle(type, what = "character")
   } else {
     warning("Please provide the 'type' argument, returning possible options.")
-    return(.get_meta_types(x))
+    return(.get_meta_types(meta))
   }
 
-  values <- with(meta(x), value[name == type])
+  values <- with(meta, value[name == type])
 
   if (length(values) == 0)
     stop("The type '", type, "' could not be found in meta(x)$name!")
@@ -33,8 +43,8 @@ parse_meta.varkit <- function(x, type = NULL, na = ".") {
   do.call(tibble::tibble, values)
 }
 
-.get_meta_types <- function(vcf) {
-  df <- as.data.frame(table(meta(vcf)$name), stringsAsFactors = FALSE)
+.get_meta_types <- function(meta) {
+  df <- as.data.frame(table(meta$name), stringsAsFactors = FALSE)
   colnames(df) <- c("type", "n")
   tibble::as_tibble(df[order(df$type), ])
 }
@@ -61,5 +71,3 @@ parse_meta.varkit <- function(x, type = NULL, na = ".") {
   utils::type.convert(col, as.is = TRUE, na.strings = na)
 }
 
-##' @export
-parse_meta.varkit_header <- parse_meta.varkit

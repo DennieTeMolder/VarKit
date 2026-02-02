@@ -5,7 +5,7 @@ meta <- function(x) {
 
 ##' @export
 meta.varkit <- function(x) {
-  x$meta
+  linked_data_get(x, i = "meta")
 }
 
 ##' @export

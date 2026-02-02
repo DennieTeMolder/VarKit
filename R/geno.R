@@ -23,7 +23,5 @@ geno.varkit <- function(x, ..., .drop = FALSE) {
 `geno<-` <- function(x, value) {
   if (!is_varkit(x))
     stop("`geno() <-` is only supported for 'varkit' objects!")
-
   `$<-.varkit`(x, "geno", value)
-  x
 }

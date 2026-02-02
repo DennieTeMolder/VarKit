@@ -5,11 +5,11 @@ parse_info_all <- function(x, use_meta = TRUE) {
 
 ##' @export
 parse_info_all.varkit <- function(x, use_meta = TRUE) {
-  if (use_meta && !any(meta.varkit(x)$name == "INFO"))
-    stop("The `meta()` slot has no INFO entry, this is required when `use_meta = TRUE`!")
   validate_varkit(x, check_info = TRUE)
+  if (use_meta && !"INFO" %in% meta.varkit(x)$name)
+      stop("The `$meta$name` column has no INFO entries, this is required when `use_meta = TRUE`!")
 
-  info <- site.varkit(x, info = "info")
+  info <- site.varkit(x, "info")
 
   if (use_meta) {
     meta_info <- parse_meta.varkit(x, "INFO")

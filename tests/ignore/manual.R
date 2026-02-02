@@ -47,7 +47,7 @@ parse_geno(vcf, type = "GT")
 parse_geno(vcf, type = "DP")
 
 parse_info(vcf)
-str(parse_info(vcf, type = "DP"))
+parse_info(vcf, type = "DP")
 parse_info_all(vcf)
 
 vcf <- mask(vcf, chrom == "I")
@@ -61,6 +61,7 @@ summary(vcf)
 vcf <- import_mask(vcf, my_mask)
 summary(vcf)
 
+# FIXME
 temp_file <- tempfile(fileext = ".vcf.gz")
 write_vcf(vcf, temp_file, replace_filter = TRUE)
 read_vcf(temp_file)

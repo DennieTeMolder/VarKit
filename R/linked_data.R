@@ -218,7 +218,7 @@ print.linked_data <- function(x, ...) {
   if (length(indices) > 0L) {
     purrr::iwalk(indices, function(idx, name) {
       if (all(idx)) {
-        bullet <- "record"
+        bullet <- "bullet"
         msg <- paste("use all", .frmt_big(length(idx)), "elements")
       } else {
         bullet <- "info"
@@ -271,7 +271,9 @@ linked_data_register <- function(x, ...) {
     stop("Please provide the slots to add as additional arguments!")
 
   dots <- purrr::list_flatten(purrr::map(rlang::enexprs(...), function(exp) {
-    if (rlang::is_symbol(exp)) {
+    if (is.character(exp)) {
+      # Do nothing
+    } else if (rlang::is_symbol(exp)) {
       exp <- as.character(exp)
     } else if (rlang::is_call(exp, name = "[")) {
       exp <- as.character(rlang::call_args(exp))
@@ -347,6 +349,9 @@ linked_data_add <- function(x, slot, data, ..., .override = FALSE) {
 }
 
 linked_data_get <- function(x, i, ..., .drop = FALSE) {
+  # TODO remove
+  print(rlang::trace_back())
+
   validate_linked_data(x)
 
   x <- unclass(x)

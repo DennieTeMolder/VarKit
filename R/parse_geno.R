@@ -16,36 +16,39 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
   }
 
   # Check if parsing is required
-  if (all(site.varkit(x, "format") == type))
+  frmt <- site.varkit(x, "format")
+  if (all(frmt == type))
     return(geno.varkit(x))
 
-  # Check te FORMAT field for index of type
-  frmt <- .index_format(x, type)
-  if (all(frmt == 0L))
-    stop("The type'", type, "' is not in any FORMAT fields!")
-  if (!allow_missing && any(frmt == 0L))
-    stop("The type '", type, "' is not found in all FORMAT fields! If this is expected use `allow_missing = TRUE`.")
-
   # Only character matrices can/need to be parsed
-  if (!is.character(x$geno))
+  if (!is.character(linked_data_unclass(x)$geno))
     stop("The matrix in the `geno()` slot should be of type character!")
+
+  # Check if any/all FORMAT fields contain TYPE
+  frmt_idx <- .index_format(frmt, type)
+  if (all(frmt_idx == 0L))
+    stop("The type '", type, "' is not in any $site$format fields!")
+  if (!allow_missing && any(frmt_idx == 0L))
+    stop("The type '", type, "' is not found in all $site$format fields! If this is expected use `allow_missing = TRUE`.")
 
   # Parse type from genotype fields
   gt <- unclass(geno.varkit(x))
 
-  if (all(frmt == frmt[[1L]])) {
+  if (all(frmt_idx == frmt_idx[[1L]])) {
+    # Simple case if all variants have the same FORMAT
     res <- matrix(
-      .str_split_i(gt, on = ":", i = frmt[[1L]]),
+      .str_split_i(gt, on = ":", i = frmt_idx[[1L]]),
       nrow = nrow(gt), dimnames = dimnames(gt)
     )
     rm(gt)
   } else {
-    idxs <- unname(frmt[site.varkit(x, "format")])
-
+    # Complex case where variants differ in FORMAT
+    idxs <- unname(frmt_idx[frmt])
     old_names <- colnames(gt)
     colnames(gt) <- seq_len(ncol(gt))
-    gt <- splitm(gt, f = idxs, margin = 2)
 
+    # Split the genotype by FORMAT and loop
+    gt <- splitm(gt, f = idxs, margin = 2)
     res <- lapply(names(gt), function(curr) {
       dims <- dim(gt[[curr]])
       if (curr == "0") {
@@ -57,6 +60,7 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
     })
     rm(gt)
 
+    # Combine and restore the original order using the colnames
     res <- do.call(cbind, res)
     res <- res[, order(as.integer(colnames(res))), drop = FALSE]
     colnames(res) <- old_names
@@ -88,8 +92,8 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
   results
 }
 
-.index_format <- function(x, type) {
-  uniq <- as.character(unique(site.varkit(x, "format")))
+.index_format <- function(frmt, type) {
+  uniq <- as.character(unique(frmt))
   splits <- stringr::str_split(uniq, stringr::fixed(":"))
   names(splits) <- uniq
   vapply(splits, function(y) match(type, y, 0L), integer(1))

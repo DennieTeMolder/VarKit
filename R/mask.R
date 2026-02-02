@@ -7,6 +7,7 @@ mask <- function(x, site, why = NULL, na_mask = TRUE, ...) {
 mask.varkit <- function(x, site, why = NULL, na_mask = TRUE, ...) {
   if (!is.null(why))
     .stopifnotsingle(why, what = "character")
+  .stopifnotsingle(na_mask, what = "logical")
 
   # dplyr::filter() like argument evaluation (supports: ., site, geno, meta, names(site))
   site <- with_vcf(x, expr = {{ site }})
@@ -18,6 +19,16 @@ mask.varkit <- function(x, site, why = NULL, na_mask = TRUE, ...) {
   if (!is.logical(site))
     stop("The value of 'site' should be of type logical!")
 
-  retain_site <- !site
-  retain.varkit(x, site = retain_site, why = why, na_retain = !na_mask)
+  if (!na_mask && anyNA(site))
+    site[is.na(site)] <- TRUE
+
+  result <- linked_data_filter(x, sites = !site)
+
+  if (!is.null(why)) {
+    if (!any("filter" == colnames(linked_data_unclass(x)$site)))
+      result$site$filter <- .if_else(.indices(x)$sites, "PASS", "MASKED")
+    result$site$filter[which(.indices(x)$sites)[!site]] <- why
+  }
+
+  result
 }

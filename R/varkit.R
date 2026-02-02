@@ -98,8 +98,6 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
     stop("The '$geno' slot is missing!")
   if (!is_mtrx(x))
     stop("The '$geno' slot should be of class 'mtrx'!")
-  if (nrow(x) < 1L)
-    stop("The '$geno' slot should contain at least a single sample/row!")
   if (is.null(rownames(x)) || any(nchar(rownames(x)) == 0L))
     stop("The '$geno' slot cannot have missing/zero-length rownames!")
 
@@ -179,37 +177,61 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
 
 ##' @export
 print.varkit <- function(x, ..., n = NULL, n_samples = NULL) {
+  # Disable tooltips as they use different arguments
+  rlang::local_options(
+    pillar.advice = FALSE,
+    mtrx.advice = FALSE
+  )
+
+  # Fetch slots to print
+  which_print <- c("meta", "site", "geno")
+  x_print <- linked_data_unclass(x[which_print])
+
+  # Number of samples to print
   if (is.null(n_samples))
     n_samples <- 10L
-  n_samples <- min(n_samples, n_samples.varkit(x))
+  n_samples <- min(n_samples, nrow(x_print$geno))
+  sample_trunc <- n_samples < nrow(x_print$geno)
 
-  x_geno <- geno.varkit(x)
+  # Number of sites to print
   if (is.null(n))
-    n <- min(10L, .max_print_col(x_geno, row_idx = seq_len(n_samples)))
+    n <- min(10L, .max_print_col(x_print$geno, row_idx = seq_len(n_samples)))
+  site_trunc <- n < ncol(x_print$geno)
 
   .msg_h1("VarKit Variant Object")
-  if (!is.null(x$meta)) {
+
+  if (!is.null(x_print$meta)) {
     .msg_h2("$meta, Metadata header")
-    print(meta.varkit(x), ...)
+    print(x_print$meta, ...)
     cat("\n")
   }
 
   .msg_h2("$site, Site information")
-  print(tibble::as_tibble(site.varkit(x)), ..., n = n)
+  print(x_print$site, ..., n = n)
+  if (site_trunc) .msg_info("Use `print(n = ...)` to see more sites")
   cat("\n")
 
   .msg_h2("$geno, Transposed genotype matrix")
-  print.mtrx(as_mtrx(x_geno), n = n_samples, n_col = n, tooltip = FALSE)
+  print(x_print$geno, n = n_samples, n_col = n)
+  if (site_trunc && sample_trunc) {
+    .msg_info("Use `print(n = ..., n_samples = ...)` to see more sites and samples respectively")
+  } else if (site_trunc) {
+    .msg_info("Use `print(n = ...)` to see more sites")
+  } else if (sample_trunc) {
+    .msg_info("Use `print(n_samples = ...)` to see more samples")
+  }
   cat("\n")
 
-  exclude_slots <- c("meta", "site", "geno")
-  if (!all(names(x) %in% exclude_slots)) {
+  # Summarize slots not printed, if any
+  if (!all(names(x) %in% which_print)) {
     .msg_h2("Additional slots")
-    .print_slots(x, .exclude = exclude_slots)
+    .print_slots(x, .exclude = which_print)
   }
 
   .msg_h2("Soft-mask status, `summary(...)`")
   .print_indices(x)
+
+  invisible(x)
 }
 
 ##' @export

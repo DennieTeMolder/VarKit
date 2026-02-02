@@ -19,13 +19,13 @@ retain.varkit <- function(x, site, why = NULL, na_retain = TRUE, ...) {
   if (!is.logical(site))
     stop("The value of 'site' should be of type logical!")
 
-  if (na_retain && .any_na(site))
+  if (na_retain && anyNA(site))
     site[is.na(site)] <- TRUE
 
   result <- linked_data_filter(x, sites = site)
 
   if (!is.null(why)) {
-    if (!any("filter" == colnames(unclass(x)$site)))
+    if (!any("filter" == colnames(linked_data_unclass(x)$site)))
       result$site$filter <- .if_else(.indices(x)$sites, "PASS", "MASKED")
     result$site$filter[which(.indices(x)$sites)[!site]] <- why
   }

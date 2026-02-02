@@ -29,7 +29,5 @@ site.varkit <- function(x, ..., .add_index = FALSE) {
 `site<-` <- function(x, value) {
   if (!is_varkit(x))
     stop("`site()<-` is only supported on 'varkit' objects!")
-
   `$<-.varkit`(x, "site", value)
-  x
 }
