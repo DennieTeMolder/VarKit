@@ -43,8 +43,8 @@ as_mtrx <- function(x, dimnames = NULL, ...) {
 }
 
 ##' @export
-print.mtrx <- function(x, ..., n = NULL, n_col = NULL, tooltip = TRUE) {
-  .stopifnotsingle(tooltip, what = "logical")
+print.mtrx <- function(x, ..., n = NULL, n_col = NULL, advice = getOption("mtrx.advice")) {
+  advice <- !isFALSE(advice)
   if (is.null(n))
     n <- getOption("print_min", 10L)
   n <- min(n, nrow(x))
@@ -82,15 +82,15 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL, tooltip = TRUE) {
 
   if (row_trunc && col_trunc) {
     .msg_info(.frmt_big(nrow(x) - n), " more", row_name, " and ", .frmt_big(ncol(x) - n_col), " more", col_name)
-    if (tooltip)
+    if (advice)
       .msg_info("Use `print(n = ..., n_col = ...)` to see more", row_name, " and", col_name, " respectively")
   } else if (row_trunc) {
     .msg_info(.frmt_big(nrow(x) - n), " more", row_name)
-    if (tooltip)
+    if (advice)
       .msg_info("Use `print(n = ...)` to see more", row_name)
   } else if (col_trunc) {
     .msg_info(.frmt_big(ncol(x) - n_col), " more", col_name)
-    if (tooltip)
+    if (advice)
       .msg_info("Use `print(n_col = ...)` to see more", col_name)
   }
 
