@@ -65,15 +65,15 @@ linked_data_restore <- function(x, attr_from) {
 ##' @export
 `[<-.linked_data` <- function(x, i, ..., value) {
   validate_linked_data(x)
-  result <- NextMethod("[")
+  result <- NextMethod("[<-")
 
   if (is.null(value))
     return(result)
 
   if (!is.character(i)) {
-    if (length(result) != length(x))
-      stop("New values must be assigned by name!")
     i <- names(x)[i]
+    if (is.null(i) || isTRUE(all(nchar(i) > 0L)))
+      stop("New values must be assigned by name!")
   }
 
   # Only recycle VALUE if it is of length 1
@@ -123,15 +123,13 @@ linked_data_restore <- function(x, attr_from) {
 ##' @export
 `[[<-.linked_data` <- function(x, i, value) {
   stopifnot(length(i) == 1L)
-  x[i] <- if (!is.null(value)) list(value)
-  x
+  `[<-.linked_data`(x, i, value = if (!is.null(value)) list(value))
 }
 
 ##' @export
 `$<-.linked_data` <- function(x, name, value) {
   stopifnot(is.character(name), length(name) == 1L)
-  x[name] <- if (!is.null(value)) list(value)
-  x
+  `[<-.linked_data`(x, name, value = if (!is.null(value)) list(value))
 }
 
 ##' @export
