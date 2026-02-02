@@ -108,10 +108,8 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
 
 ##' @export
 `[<-.varkit` <- function(x, i, ..., value) {
-  if (is.null(value)) {
-    result <- NextMethod("[<-")
-    return(validate_varkit(result))
-  }
+  if (is.null(value))
+    return(validate_varkit(`[<-.linked_data`(x, i, ..., value = value)))
 
   if (!is.character(i)) {
     i <- names(x)[i]
@@ -160,12 +158,11 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
     # REVIEW warn about mask being active if length mismatches?
 
     # Remove the old value, and attempt to free the 'samples' index so it can be modified
-    x$geno <- NULL
+    x <- `[<-.linked_data`(x, "geno", ..., value = NULL)
     x <- linked_data_trim(x, indices = "samples")
   }
 
-  result <- NextMethod("[<-")
-  validate_varkit(result)
+  validate_varkit(`[<-.linked_data`(x, i, ..., value = value))
 }
 
 ##' @export

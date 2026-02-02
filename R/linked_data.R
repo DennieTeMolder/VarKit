@@ -65,10 +65,12 @@ linked_data_restore <- function(x, attr_from) {
 ##' @export
 `[<-.linked_data` <- function(x, i, ..., value) {
   validate_linked_data(x)
-  result <- NextMethod("[<-")
 
-  if (is.null(value))
-    return(result)
+  # Skip slot/dimension checks when setting elements to NULL
+  if (is.null(value)) {
+    x <- NextMethod("[<-")
+    return(x)
+  }
 
   if (!is.character(i)) {
     i <- names(x)[i]
@@ -116,8 +118,9 @@ linked_data_restore <- function(x, attr_from) {
     }
   }
 
-  attr(result, "indices") <- indices
-  result
+  x <- NextMethod("[<-")
+  attr(x, "indices") <- indices
+  x
 }
 
 ##' @export
@@ -145,7 +148,7 @@ linked_data_restore <- function(x, attr_from) {
   names(result) <- i
 
   # Also subset the attributes to keep the new object valid
-  slots <- attr(x, "slots")[names(result)]
+  slots <- attr(x, "slots")[i]
   keep_indices <- setdiff(purrr::list_c(slots), "")
   names(keep_indices) <- keep_indices
 
