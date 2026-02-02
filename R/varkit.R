@@ -64,28 +64,30 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
 
 .validate_varkit_site <- function(x, check_info, check_format) {
   if (is.null(x))
-    stop("The 'site()' slot is missing!")
+    stop("The '$site' slot is missing!")
   if (!tibble::is_tibble(x))
-    stop("The 'site()' slot should be a tibble!")
+    stop("The '$site' slot should be a tibble!")
   if (!any(colnames(x) == "chrom"))
-    stop("The 'site()' slot should contain the 'chrom' column!")
+    stop("The '$site$chrom' column is missing!")
   if (!is.character(x$chrom))
-    stop("The 'chrom' column in the 'site()' slot should be of type character!")
+    stop("The '$site$chrom' column should be of type character!")
   if (.any_na(x$chrom))
-    stop("The 'chrom' column in the 'site()' slot contains NAs!")
+    stop("The '$site$chrom' column contains NAs!")
   if (!any(colnames(x) == "pos"))
-    stop("The 'site()' slot should contain the 'pos' column!")
+    stop("The '$site$pos' column is missing!")
   if (!is.numeric(x$pos))
-    stop("The 'pos' column in the 'site()' slot should be numeric!")
+    stop("The '$site$pos' column should be numeric!")
   if (.any_na(x$pos))
-    stop("The 'pos' column in the 'site()' slot contains NAs!")
+    stop("The '$site$pos' column contains NAs!")
+
   if (check_info && !any(colnames(x) == "info"))
-    stop("The 'site()' slot is missing the 'info' column!")
+    stop("The '$site$info' column is missing!")
+
   if (check_format) {
     if (!any(colnames(x) == "format"))
-      stop("The 'site()' slot is missing the 'format' column!")
+      stop("The '$site$format' column is missing!")
     if (.any_na(x$format))
-      stop("The 'format' column in the 'site()' slot contains NAs!")
+      stop("The '$site$format' column contains NAs!")
   }
 
   x
@@ -93,15 +95,89 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
 
 .validate_varkit_geno <- function(x) {
   if (is.null(x))
-    stop("The 'geno()' slot is missing!")
+    stop("The '$geno' slot is missing!")
   if (!is_mtrx(x))
-    stop("The 'geno()' slot should be of class 'mtrx'!")
+    stop("The '$geno' slot should be of class 'mtrx'!")
   if (nrow(x) < 1L)
-    stop("The 'geno()' slot should contain at least a single sample/row!")
+    stop("The '$geno' slot should contain at least a single sample/row!")
   if (is.null(rownames(x)) || any(nchar(rownames(x)) == 0L))
-    stop("The 'geno()' slot cannot have missing/zero-length rownames!")
+    stop("The '$geno' slot cannot have missing/zero-length rownames!")
 
   x
+}
+
+##' @export
+`[<-.varkit` <- function(x, i, ..., value) {
+  if (is.null(value)) {
+    result <- NextMethod("[<-")
+    return(validate_varkit(result))
+  }
+
+  if (!is.character(i)) {
+    i <- names(x)[i]
+    if (is.null(i) || isTRUE(all(nchar(i) > 0L)))
+      stop("New values must be assigned by name!")
+  }
+
+  # Only recycle VALUE if it is of length 1
+  value <- as.list(value)
+  if (length(value) == 1L && length(i) > 1L) {
+    value <- rep(value, length(i))
+  } else if (length(i) != length(value)) {
+    stop("Number of items to replace should match replacement length!")
+  }
+
+  # Validate an modify reserved slots
+  i_meta <- match("meta", i, nomatch = 0L)
+  if (i_meta > 0L) {
+    if (!is.data.frame(value[[i_meta]]))
+      stop("The '$meta' slot must be a data frame!")
+    value[[i_meta]] <- tibble::as_tibble(value[[i_meta]])
+  }
+
+  i_site <- match("site", i, nomatch = 0L)
+  if (i_site > 0L) {
+    if (!is.data.frame(value[[i_site]]))
+      stop("The '$site' slot must be a data frame!")
+    value[[i_site]] <- tibble::as_tibble(value[[i_site]])
+    # REVIEW warn about mask being active if length mismatches?
+  }
+
+  i_geno <- match("geno", i, nomatch = 0L)
+  if (i_geno > 0L) {
+    # Cast equal sized vectors to matrix because some operation drop the matrix class
+    if (is.vector(value[[i_geno]])) {
+      xgeno <- linked_data_unclass(x)$geno
+      if (length(value) == length(xgeno)) {
+        warning("Converting '$meta' to matrix, check if the values are in the right row & column.")
+        value <- mtrx(value, nrow = nrow(xgeno), ncol = ncol(xgeno), dimnames = dimnames(xgeno))
+      }
+    } else if (!is.array(value[[i_geno]])) {
+      stop("The '$geno' slot must be a matrix!")
+    }
+
+    value[[i_geno]] <- varkit_geno(value[[i_geno]])
+    # REVIEW warn about mask being active if length mismatches?
+
+    # Remove the old value, and attempt to free the 'samples' index so it can be modified
+    x$geno <- NULL
+    x <- linked_data_trim(x, indices = "samples")
+  }
+
+  result <- NextMethod("[<-")
+  validate_varkit(result)
+}
+
+##' @export
+`[[<-.varkit` <- function(x, i, value) {
+  stopifnot(length(i) == 1L)
+  `[<-.varkit`(x, i, value = if (!is.null(value)) list(value))
+}
+
+##' @export
+`$<-.varkit` <- function(x, name, value) {
+  stopifnot(is.character(name), length(name) == 1L)
+  `[<-.varkit`(x, name, value = if (!is.null(value)) list(value))
 }
 
 ##' @export

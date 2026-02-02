@@ -42,16 +42,19 @@ validate_varkit_header <- function(x) {
   x
 }
 
-.validate_varkit_meta <- function(meta) {
-  if (is.null(meta))
-    return(meta)
-  if (!tibble::is_tibble(meta))
-    stop("The 'meta()' slot must be a tibble!", call. = FALSE)
-  if (!identical(colnames(meta), c("name", "value")))
-    stop("The 'meta()' slot can only have a 'name' & 'value' column!", call. = FALSE)
-  if (.any_na(meta$name))
-    stop("The 'name' column of the 'meta()' slot contains NAs!", call. = FALSE)
-  meta
+.validate_varkit_meta <- function(x) {
+  if (is.null(x))
+    return(x)
+
+  if (!tibble::is_tibble(x))
+    stop("The '$meta' slot must be a tibble!")
+  if (!any(colnames(x) == "name"))
+    stop("The '$meta$name' column is missing!")
+  if (.any_na(x$name))
+    stop("The '$meta$name' column contains NAs!")
+  if (!any(colnames(x) == "value"))
+    stop("The '$meta$value' column is missing!")
+  x
 }
 
 ##' @export
