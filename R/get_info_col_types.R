@@ -6,6 +6,9 @@ get_info_col_types <- function(x, meta_type = "INFO", ...) {
 ##' @export
 get_info_col_types.varkit <- function(x, meta_type = "INFO", ...) {
   meta_info <- parse_meta(x, type = meta_type)
+  if (is.null(meta_info))
+    stop("The $meta$name columns has no INFO entries!")
+  # REVIEW improve error message
   if (!all(c("ID", "Number", "Type") %in% colnames(meta_info)))
     stop("Parsing error: `parse_meta(vcf, meta_type)` does not have columns ID, Number, and Type!")
 

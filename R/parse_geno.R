@@ -83,8 +83,8 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
   types <- sort(unique(unlist(uniq)))
   results <- tibble::tibble(type = types, index = which_fixed_pos[types])
 
-  if ("FORMAT" %in% meta(x)$name) {
-    metadata <- parse_meta(x, "FORMAT")
+  metadata <- parse_meta(x, "FORMAT")
+  if (!is.null(metadata)) {
     metadata <- tibble::tibble(type = metadata$ID, description = metadata$Description)
     return(dplyr::right_join(metadata, results, by = "type"))
   }

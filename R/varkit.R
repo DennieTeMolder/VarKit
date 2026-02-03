@@ -1,39 +1,55 @@
 ##' @export
 varkit <- function(site, geno, meta = NULL, use_filter = TRUE) {
-  stopifnot(is.data.frame(site), nrow(site) > 0L)
-  if (is.data.frame(geno)) {
-    stopifnot(nrow(site) == nrow(geno))
-  } else {
-    stopifnot(nrow(site) == ncol(geno))
-  }
+  stopifnot(is.data.frame(site))
+  stopifnot(is.matrix(geno))
+  if (nrow(site) != ncol(geno))
+    stop("The rows of 'site' (", nrow(site), ") should match 'geno' (", ncol(geno), ")!")
+  if (isTRUE(all(nchar(rownames(geno)) > 0L)))
   .stopifnotsingle(use_filter, what = "logical")
 
-  vcf <- validate_varkit(new_varkit(
+  # Initial mask based on the FILTER column
+  site_indices <- if (use_filter) {
+    site$filter == "PASS" | is.na(site$filter)
+  }
+
+  validate_varkit(new_varkit(
     site = site,
     geno = geno,
-    meta = meta
+    meta = meta,
+    site_indices = site_indices
   ))
-
-  # Apply initial mask based on the FILTER column
-  if (use_filter && any(colnames(site) == "filter")) {
-    retain.varkit(vcf, .data$filter == "PASS", na_retain = TRUE)
-  } else {
-    vcf
-  }
 }
 
 ##' @export
-new_varkit <- function(site = data.frame(), geno = varkit_geno(), meta = NULL) {
+new_varkit <- function(site = data.frame(chrom = character(), pos = integer()),
+                       geno = varkit_geno(),
+                       meta = data.frame(name = character(), value = character()),
+                       site_indices = logical()
+                       ) {
   stopifnot(is.data.frame(site))
-  stopifnot(is.matrix(geno) || is.data.frame(geno))
+  stopifnot(is.matrix(geno))
   stopifnot(is.null(meta) || is.data.frame(meta))
+  stopifnot(is.null(site_indices) || is.logical(site_indices))
+  if (is.null(meta))
+    meta <- data.frame(name = character(), value = character())
+  if (is.null(site_indices))
+    site_indices <- rep(TRUE, ncol(geno))
+  stopifnot(nrow(site) == ncol(geno), nrow(site) == length(site_indices))
 
-  obj <- linked_data(
-    meta[, ], site["sites", ], geno["samples", "sites"],
+  obj <- new_linked_data(
     x = list(
-      meta = if (!is.null(meta)) tibble::as_tibble(meta),
+      meta = tibble::as_tibble(meta),
       site = tibble::as_tibble(site),
       geno = varkit_geno(geno)
+    ),
+    slots = list(
+      meta = c("", ""),
+      site = c("sites", ""),
+      geno = c("samples", "sites")
+    ),
+    indices = list(
+      samples = rep(TRUE, nrow(geno)),
+      sites = site_indices
     )
   )
 
@@ -98,7 +114,7 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
     stop("The '$geno' slot is missing!")
   if (!is_mtrx(x))
     stop("The '$geno' slot should be of class 'mtrx'!")
-  if (is.null(rownames(x)) || any(nchar(rownames(x)) == 0L))
+  if (!isTRUE(all(nchar(rownames(x)) > 0L)))
     stop("The '$geno' slot cannot have missing/zero-length rownames!")
 
   x
@@ -177,7 +193,7 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
 
 ##' @export
 print.varkit <- function(x, ..., n = NULL, n_samples = NULL) {
-  # Disable tooltips as they use different arguments
+  # Disable tooltips as they refer to the wrong arguments
   rlang::local_options(
     pillar.advice = FALSE,
     mtrx.advice = FALSE
@@ -200,11 +216,9 @@ print.varkit <- function(x, ..., n = NULL, n_samples = NULL) {
 
   .msg_h1("VarKit Variant Object")
 
-  if (!is.null(x_print$meta)) {
-    .msg_h2("$meta, Metadata header")
-    print(x_print$meta, ...)
-    cat("\n")
-  }
+  .msg_h2("$meta, Metadata header")
+  print(x_print$meta, ...)
+  cat("\n")
 
   .msg_h2("$site, Site information")
   print(x_print$site, ..., n = n)

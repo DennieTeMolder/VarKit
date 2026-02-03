@@ -11,18 +11,18 @@ parse_info.varkit <- function(x, type = NULL, use_meta = TRUE) {
   .stopifnotsingle(use_meta, what = "logical")
 
   if (use_meta) {
-    if (!"INFO" %in% meta.varkit(x)$name)
-      stop("The `$meta$name` column has no INFO entries, this is required when `use_meta = TRUE`!")
     meta_info <- parse_meta.varkit(x, "INFO")
+    if (is.null(meta_info))
+      stop("The `$meta$name` column has no INFO entries, this is required when `use_meta = TRUE`!")
   } else  {
     meta_info <- NULL
   }
 
   if (is.null(type)) {
     warning("Please provide the 'type' argument, returning possible options.")
-    if (is.null(meta_info))
-      return(.collect_all_keys(site.varkit(x, "info")))
-    return(dplyr::transmute(meta_info, type = .data$ID, description = .data$Description))
+    if (use_meta)
+      return(dplyr::transmute(meta_info, type = .data$ID, description = .data$Description))
+    return(.collect_all_keys(site.varkit(x, "info")))
   } else if (!type %in% meta_info$ID) {
     stop("The type '", type, "' could not be found in parse_meta(x, 'INFO')$ID!")
   }

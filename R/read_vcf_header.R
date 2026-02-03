@@ -2,7 +2,7 @@
 read_vcf_header <- function(file, max_lines = 1e6) {
   header <- .read_vcf_header_internal(file, max_lines = max_lines)
   new_varkit_header(
-    meta = .parse_meta(header$meta),
+    meta = .parse_header_meta(header$meta),
     col_names = .parse_header_line(header$header_line)
   )
 }
@@ -39,7 +39,7 @@ read_vcf_header <- function(file, max_lines = 1e6) {
   )
 }
 
-.parse_meta <- function(meta) {
+.parse_header_meta <- function(meta) {
   if (!isTRUE(startsWith(meta[1L], "##fileformat=VCF")))
     warning("No valid VCF 'fileformat' description detected on the first line!", call. = FALSE)
   if (length(meta) == 0L)

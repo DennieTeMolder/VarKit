@@ -5,5 +5,5 @@ import_mask <- function(x, mask, add = FALSE) {
 
 ##' @export
 import_mask.varkit <- function(x, mask, add = FALSE) {
-  linked_data_indices_set(x, indices = linked_data_unclass(mask), add = add)
+  linked_data_indices_set(x, indices = mask, add = add)
 }

@@ -192,11 +192,11 @@ obj <- linked_data_register(obj, meta[, ], site[sites, ], geno[samples, sites])
 obj$meta <- vcf$meta
 
 obj <- obj |>
-  linked_data_add("site", vcf$site, sites = c(chrom, pos)) |>
-  linked_data_add("geno", vcf$geno, samples = c(sample = rownames(.)))
+  linked_data_set("site", vcf$site, sites = c(chrom, pos)) |>
+  linked_data_set("geno", vcf$geno, samples = c(sample = rownames(.)))
 
 # This should remain sorted
-linked_data_add(
+linked_data_set(
   obj,
   slot = "site",
   data = dplyr::slice_sample(vcf$site, prop = 1),

@@ -9,7 +9,9 @@ meta.varkit <- function(x) {
 }
 
 ##' @export
-meta.varkit_header <- meta.varkit
+meta.varkit_header <- function(x) {
+  x$meta
+}
 
 ##' @export
 `meta<-` <- function(x, value) {

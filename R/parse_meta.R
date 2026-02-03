@@ -27,7 +27,7 @@ parse_meta.varkit_header <- function(x, type = NULL, na = ".") {
   values <- with(meta, value[name == type])
 
   if (length(values) == 0)
-    stop("The type '", type, "' could not be found in meta(x)$name!")
+    return(NULL)
 
   # Values should be surrounded by <...> according to the VCF spec, else abort
   if (!all(startsWith(values, "<") & endsWith(values, ">"), na.rm = TRUE))

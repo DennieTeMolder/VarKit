@@ -123,6 +123,10 @@ linked_data_restore <- function(x, attr_from) {
   x
 }
 
+linked_data_set_nomatch <- function(x, name, val) {
+  # TODO use unclass instead of NextMethod
+}
+
 ##' @export
 `[[<-.linked_data` <- function(x, i, value) {
   stopifnot(length(i) == 1L)
@@ -263,6 +267,7 @@ summary.linked_data <- function(object, ...) {
   )
 }
 
+##' @export
 linked_data_register <- function(x, ...) {
   validate_linked_data(x)
   rlang::check_dots_unnamed()
@@ -283,6 +288,7 @@ linked_data_register <- function(x, ...) {
     setNames(list(if (length(exp) > 1L) exp[-1L]), nm = exp[1L])
   }))
 
+  # REVIEW re-validate slots instead?
   occupied <- intersect(names(dots), names(x))
   if (length(occupied) > 0L)
     stop("Provided slot are already occupied: ", .quote_collapse(occupied), "!")
@@ -291,7 +297,8 @@ linked_data_register <- function(x, ...) {
   x
 }
 
-linked_data_add <- function(x, slot, data, ..., .override = FALSE) {
+##' @export
+linked_data_set <- function(x, slot, data, ..., .override = FALSE) {
   validate_linked_data(x)
   .stopifnotsingle(slot, what = "character")
   .stopifnotsingle(.override, what = "logical")
@@ -313,6 +320,7 @@ linked_data_add <- function(x, slot, data, ..., .override = FALSE) {
   if (!is.null(use_indices) && .ndim(data) != length(use_indices))
     stop("Expected data to have ", length(use_indices), " dimensions, but got ", .ndim(data), "!")
 
+  # Dots represent keys used for sorting, named list elements can be referred to directly
   dots <- rlang::enquos(...)
   if (!rlang::is_named(dots))
     stop("All additional arguments should be named!")
@@ -348,6 +356,7 @@ linked_data_add <- function(x, slot, data, ..., .override = FALSE) {
   x
 }
 
+##' @export
 linked_data_get <- function(x, i, ..., .drop = FALSE) {
   # TODO remove
   print(rlang::trace_back())
@@ -425,6 +434,7 @@ linked_data_get <- function(x, i, ..., .drop = FALSE) {
   do.call("[", args = c(list(xi), unname(idx_val), list(drop = .drop)))
 }
 
+##' @export
 linked_data_filter <- function(x, ...) {
   validate_linked_data(x)
   if (...length() == 0L)
@@ -463,6 +473,7 @@ linked_data_filter <- function(x, ...) {
   x
 }
 
+##' @export
 linked_data_reset <- function(x, indices = NULL) {
   validate_linked_data(x)
   attr_ind <- attr(x, "indices")
@@ -487,6 +498,7 @@ linked_data_reset <- function(x, indices = NULL) {
   x
 }
 
+##' @export
 linked_data_trim <- function(x, indices = NULL) {
   validate_linked_data(x)
   slots <- attr(x, "slots")
@@ -511,17 +523,13 @@ linked_data_trim <- function(x, indices = NULL) {
   x
 }
 
-linked_data_indices_get <- function(x) {
-  validate_linked_data(x)
-  attr(x, "indices")
-}
-
+##' @export
 linked_data_indices_set <- function(x, indices, add = FALSE) {
   validate_linked_data(x)
   stopifnot(is.list(indices), rlang::is_named(indices))
   .stopifnotsingle(add, what = "logical")
 
-  indices <- purrr::imap(indices, function(curr, idx) {
+  indices <- purrr::imap(unclass(indices), function(curr, idx) {
     if (!(is.vector(curr) && is.logical(curr)))
       stop("Expected a vector of type logical!")
 
@@ -543,13 +551,19 @@ linked_data_indices_set <- function(x, indices, add = FALSE) {
   x
 }
 
-.indices <- function(x) {
-  attr(x, "indices", exact = TRUE)
+##' @export
+linked_data_indices_get <- function(x) {
+  validate_linked_data(x)
+  attr(x, "indices")
 }
 
 `.indices<-` <- function(x, value) {
   attr(x, "indices") <- value
   x
+}
+
+.indices <- function(x) {
+  attr(x, "indices", exact = TRUE)
 }
 
 .quo_replace_fn <- function(quo, fn) {
