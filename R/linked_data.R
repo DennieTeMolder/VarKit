@@ -569,6 +569,25 @@ linked_data_indices_get <- function(x) {
   attr(x, "indices")
 }
 
+##' @export
+with_linked_data <- function(x, expr) {
+  stopifnot(is_linked_data(x))
+  if (missing(expr))
+    stop("The 'expr' argument is empty!")
+  expr <- rlang::enquo(expr)
+
+  eval_env <- rlang::env()
+
+  # Lazily bind elements of X so subsetting is only applied if needed
+  bind_vars <- setNames(nm = names(x))
+  bind_exprs <- lapply(bind_vars, function(var) {
+    rlang::expr(linked_data_get(x, i = !!var))
+  })
+  rlang::env_bind_lazy(eval_env, !!!bind_exprs)
+
+  rlang::eval_tidy(expr, data = rlang::new_data_mask(eval_env))
+}
+
 `.indices<-` <- function(x, value) {
   attr(x, "indices") <- value
   x
@@ -591,7 +610,7 @@ linked_data_indices_get <- function(x) {
   names(dims) <- use_indices
 
   purrr::imap(dots_quos, function(dot, name) {
-    if (!any(use_indices == name))
+    if (!name %in% use_indices)
       stop("Argument '", name, "' does not match any indices!", call. = FALSE)
 
     # Unpack `node = c(key1, key2, ...)` style expressions
