@@ -1,4 +1,3 @@
-##' @export
 new_drm <- function(links = NULL, labels = NULL, nodes = NULL) {
   if (is.null(links)) links <- list()
   if (is.null(labels)) labels <- character()
@@ -10,12 +9,10 @@ new_drm <- function(links = NULL, labels = NULL, nodes = NULL) {
   structure(env, class = c("data_relation_model", "environment"))
 }
 
-##' @export
 is_drm <- function(x) {
   inherits(x, "data_relation_model")
 }
 
-##' @export
 validate_drm <- function(x) {
   # Requirements for empty models
   stopifnot(is_drm(x))
@@ -65,13 +62,11 @@ validate_drm <- function(x) {
   invisible(x)
 }
 
-##' @export
 drm_create <- function(links = NULL, labels = NULL, nodes = NULL) {
   validate_drm(new_drm(links = links, labels = labels, nodes = nodes))
 }
 
-##' @export
-print.data_relation_model <- function(x, ...) {
+print_data_relation_model <- function(x, ...) {
   .msg_h1("Data relation model <", rlang::env_label(x), ">")
   if (length(x[["nodes"]]) == 0L) {
     message("Empty model...")
@@ -118,8 +113,7 @@ print.data_relation_model <- function(x, ...) {
   invisible(x)
 }
 
-##' @export
-summary.data_relation_model <- function(object, ...) {
+summary_data_relation_model <- function(object, ...) {
   tibble::tibble(
     drm_label = rlang::env_label(object),
     n_links = length(object[["links"]]),
@@ -127,14 +121,12 @@ summary.data_relation_model <- function(object, ...) {
   )
 }
 
-##' @export
 drm_copy <- function(drmodel) {
   stopifnot(is_drm(drmodel))
   # Only copy nodes, other elements should be added using: x <- drm_add(drm, x)
   new_drm(nodes = drmodel[["nodes"]])
 }
 
-##' @export
 drm_do_attach <- function(x, drmodel, dim_links, label = NULL) {
   if (is_drm(x))
     stop("'x' cannot be a data relation model itself!")
@@ -183,7 +175,6 @@ drm_do_attach <- function(x, drmodel, dim_links, label = NULL) {
   x
 }
 
-##' @export
 drm_do_detach <- function(x) {
   # Recurse over lists/dataframes
   if (is.list(x)) {
@@ -197,19 +188,16 @@ drm_do_detach <- function(x) {
   x
 }
 
-##' @export
 drm_get <- function(x) {
   if (is_drm(x))
     return(x)
   attr(x, "data_relation_model", exact = TRUE)
 }
 
-##' @export
 has_drm <- function(x) {
   !is.null(drm_get(x))
 }
 
-##' @export
 drm_contains <- function(x, ...) {
   rlang::check_dots_unnamed()
 
@@ -225,7 +213,6 @@ drm_contains <- function(x, ...) {
   })
 }
 
-##' @export
 drm_delete <- function(drmodel, ...) {
   validate_drm(drmodel)
   if (...length() == 0L)
@@ -249,7 +236,6 @@ drm_delete <- function(drmodel, ...) {
   drmodel
 }
 
-##' @export
 drm_trim <- function(drmodel, ..., .trim_nodes = TRUE) {
   validate_drm(drmodel)
   .stopifnotsingle(.trim_nodes, what = "logical")
@@ -279,7 +265,6 @@ drm_trim <- function(drmodel, ..., .trim_nodes = TRUE) {
   drmodel
 }
 
-##' @export
 drm_preselect <- function(x, ...) {
   drmodel <- validate_drm(drm_get(x))
   if (...length() == 0L)
@@ -327,7 +312,6 @@ drm_preselect <- function(x, ...) {
   x
 }
 
-##' @export
 drm_forget <- function(x, ..., .forget_select = TRUE, .forget_match = TRUE) {
   drmodel <- validate_drm(drm_get(x))
   rlang::check_dots_unnamed()
@@ -355,12 +339,10 @@ drm_forget <- function(x, ..., .forget_select = TRUE, .forget_match = TRUE) {
   x
 }
 
-##' @export
 drm_deselect <- function(x, ...) {
   drm_forget(x, ..., .forget_select = TRUE, .forget_match = FALSE)
 }
 
-##' @export
 drm_which <- function(x, node) {
   x_drm <- drm_get(x)
   if (!any(names(x_drm[["nodes"]]) == node))
@@ -374,7 +356,6 @@ drm_which <- function(x, node) {
   }
 }
 
-##' @export
 drm_n_total <- function(x, node) {
   x_drm <- drm_get(x)
   if (!any(names(x_drm[["nodes"]]) == node))
@@ -383,7 +364,6 @@ drm_n_total <- function(x, node) {
   x_drm[["nodes"]][[node]][["length"]]
 }
 
-##' @export
 drm_n_selected <- function(x, node) {
   select_which <- drm_which(x, node = node)
   if (rlang::is_missing(select_which)) {
@@ -393,7 +373,6 @@ drm_n_selected <- function(x, node) {
   }
 }
 
-##' @export
 drm_do_subset <- function(x, ..., .drop = FALSE) {
   if (is_drm(x))
     stop("Please provide the object to subset, not the data relation model itself!")
@@ -464,7 +443,6 @@ drm_do_subset <- function(x, ..., .drop = FALSE) {
   }
 }
 
-##' @export
 drm_do_match <- function(x, ..., .override = FALSE) {
   if (is_drm(x))
     stop("Please provide the object to match, not the data relation model itself!")
@@ -561,7 +539,6 @@ drm_do_match <- function(x, ..., .override = FALSE) {
   )
 }
 
-##' @export
 drm_ifelse <- function(x, node, yes = TRUE, no = FALSE) {
   len <- drm_n_total(x, node)
   x <- drm_which(x, node)
@@ -585,41 +562,6 @@ drm_ifelse <- function(x, node, yes = TRUE, no = FALSE) {
 
   res[x] <- yes[x]
   res
-}
-
-##' @export
-has_join <- function(x, y, by = NULL, ...) {
-  stopifnot(is.data.frame(x), is.data.frame(y))
-
-  if (is.null(by)) {
-    by_x <- by_y <- intersect(names(x), names(y))
-  } else if (inherits(by, "dplyr_join_by")) {
-    by_x <- by$x
-    by_y <- by$y
-  } else if (is.character(by)) {
-    by_x <- if (rlang::is_named(by)) names(by) else by
-    by_y <- unname(by)
-  } else {
-    stop("The 'by' argument should be a character vector or `dplyr::join_by()`!")
-  }
-
-  # Subset X and Y to save on memory
-  x <- x[by_x]
-  y <- y[by_y]
-
-  # Add a dummy column for checking if the join was successful
-  y[[ncol(y) + 1L]] <- TRUE
-  join_result <- dplyr::left_join(
-    x = x,
-    y = y,
-    by = by,
-    multiple = "any",
-    suffix = c(".x", ""),
-    ...
-  )
-
-  # Unsuccessful joins return NA
-  !is.na(join_result[[ncol(join_result)]])
 }
 
 .quo_replace_fn <- function(quo, fn) {
