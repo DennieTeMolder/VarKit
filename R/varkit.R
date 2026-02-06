@@ -8,7 +8,7 @@ varkit <- function(site, geno, meta = NULL, use_filter = TRUE) {
   .stopifnotsingle(use_filter, what = "logical")
 
   # Initial mask based on the FILTER column
-  site_indices <- if (use_filter) {
+  site_indices <- if (use_filter && "filter" %in% names(site)) {
     site$filter == "PASS" | is.na(site$filter)
   }
 
@@ -75,7 +75,7 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
   .validate_varkit_site(x$site, check_info = check_info, check_format = check_format)
   .validate_varkit_geno(x$geno)
 
-  invisible(old_x)
+  old_x
 }
 
 .validate_varkit_site <- function(x, check_info, check_format) {
@@ -122,9 +122,9 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
 
 ##' @export
 `[<-.varkit` <- function(x, i, ..., value) {
-  if (is.null(value))
-    return(validate_varkit(`[<-.linked_data`(x, i, ..., value = value)))
+  validate_linked_data(x)
 
+  # Attempt to convert I to character using names(X)
   if (!is.character(i)) {
     i <- names(x)[i]
     if (is.null(i) || isTRUE(all(nchar(i) > 0L)))
@@ -164,7 +164,7 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
         warning("Converting '$meta' to matrix, check if the values are in the right row & column.")
         value <- mtrx(value, nrow = nrow(xgeno), ncol = ncol(xgeno), dimnames = dimnames(xgeno))
       }
-    } else if (!is.array(value[[i_geno]])) {
+    } else if (!is.matrix(value[[i_geno]])) {
       stop("The '$geno' slot must be a matrix!")
     }
 
@@ -172,23 +172,23 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
     # REVIEW warn about mask being active if length mismatches?
 
     # Remove the old value, and attempt to free the 'samples' index so it can be modified
-    x <- `[<-.linked_data`(x, "geno", ..., value = NULL)
+    x <- linked_data_set_nomatch(x, i = "geno", value = list(NULL), validate = FALSE)
     x <- linked_data_trim(x, indices = "samples")
   }
 
-  validate_varkit(`[<-.linked_data`(x, i, ..., value = value))
+  validate_varkit(linked_data_set_nomatch(x, i = i, value = value, validate = FALSE))
 }
 
 ##' @export
 `[[<-.varkit` <- function(x, i, value) {
   stopifnot(length(i) == 1L)
-  `[<-.varkit`(x, i, value = if (!is.null(value)) list(value))
+  `[<-.varkit`(x, i, value = list(value))
 }
 
 ##' @export
 `$<-.varkit` <- function(x, name, value) {
   stopifnot(is.character(name), length(name) == 1L)
-  `[<-.varkit`(x, name, value = if (!is.null(value)) list(value))
+  `[<-.varkit`(x, name, value = list(value))
 }
 
 ##' @export

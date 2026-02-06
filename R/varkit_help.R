@@ -1,5 +1,8 @@
 ##' @export
-varkit_help <- function(x, varkit_only = TRUE) {
+varkit_help <- function(x, varkit_only = TRUE, hidden = FALSE) {
+  .stopifnotsingle(varkit_only, what = "logical")
+  .stopifnotsingle(hidden, what = "logical")
+
   classes <- class(x)
   if (varkit_only) {
     is_varkit_class <- stringr::str_starts(classes, "varkit(_|$)")
@@ -16,6 +19,10 @@ varkit_help <- function(x, varkit_only = TRUE) {
     )
   })
   methods <- sort(unique(do.call(c, methods)))
+
+  # If HIDDEN is FALSE only show functions starting with a letter
+  if (!hidden)
+    methods <- stringr::str_subset(methods, "^[a-zA-Z]")
 
   if (length(methods) == 0L)
     stop("There are no methods associated with 'x'.")

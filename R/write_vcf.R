@@ -47,6 +47,10 @@ write_vcf.varkit <- function(x,
     .defer(close(file))
   }
 
+  # Unclass to prevent data masking
+  indices <- .indices(x)
+  x <- linked_data_unclass(x)
+
   # Ensure required columns are present and in the right order
   x <- standardize_cols.varkit(x)
 
@@ -56,11 +60,8 @@ write_vcf.varkit <- function(x,
     cli::cli_progress_done()
   }
 
-  # Unclass to prevent data masking
-  x <- linked_data_unclass(x)
-
   # Check if filter column reflects current state, replace if indicated
-  x <- .check_filter(x, replace_filter = replace_filter, use_site = .indices(x)$sites)
+  x <- .check_filter(x, replace_filter = replace_filter, use_site = indices$sites)
 
   # Apply DIGITS argument
   x$site <- .round(x$site, digits = digits)

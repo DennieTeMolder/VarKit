@@ -10,28 +10,34 @@ parse_info.varkit <- function(x, type = NULL, use_meta = TRUE) {
     .stopifnotsingle(type, what = "character")
   .stopifnotsingle(use_meta, what = "logical")
 
-  if (use_meta) {
-    meta_info <- parse_meta.varkit(x, "INFO")
-    if (is.null(meta_info))
-      stop("The `$meta$name` column has no INFO entries, this is required when `use_meta = TRUE`!")
-  } else  {
-    meta_info <- NULL
-  }
-
   if (is.null(type)) {
     warning("Please provide the 'type' argument, returning possible options.")
-    if (use_meta)
-      return(dplyr::transmute(meta_info, type = .data$ID, description = .data$Description))
-    return(.collect_all_keys(site.varkit(x, "info")))
-  } else if (!type %in% meta_info$ID) {
-    stop("The type '", type, "' could not be found in parse_meta(x, 'INFO')$ID!")
+
+    if (!use_meta)
+      return(.collect_all_keys(site.varkit(x, "info")))
+
+    meta_info <- parse_meta.varkit(x, type = "INFO")
+    if (is.null(meta_info))
+      stop("The `$meta$name` column has no INFO entries, this is required when `use_meta = TRUE`!")
+
+    return(dplyr::transmute(meta_info, type = .data$ID, description = .data$Description))
+  }
+
+  if (use_meta) {
+    col_types <- get_col_types.varkit(x, meta_type = "INFO")
+    if (is.null(col_types))
+      stop("The `$meta$name` column has no INFO entries, this is required when `use_meta = TRUE`!")
+    if (!type %in% names(col_types))
+      stop("The type '", type, "' could not be found in parse_meta(x, 'INFO')$ID!")
+  } else  {
+    col_types <- NULL
   }
 
   info <- site.varkit(x, "info")
   if (all(is.na(info)))
     stop("The $site$info column only contains NAs!")
 
-  .parse_info_internal(info, type, meta_info)
+  .parse_info_internal(info, type = type, col_types = col_types)
 }
 
 .collect_all_keys <- function(str) {
@@ -39,10 +45,10 @@ parse_info.varkit <- function(x, type = NULL, use_meta = TRUE) {
   keys <- unique(keys) # This seems to speed up the procedure
   keys <- stringr::str_split(keys, ";")
   keys <- unlist(keys)
-  unique(keys)
+  sort(unique(keys))
 }
 
-.parse_info_internal <- function(info, type, meta_info = NULL) {
+.parse_info_internal <- function(info, type, col_types = NULL) {
   locs <- stringr::str_locate(info, sprintf("(?:^|;)%s(?:;|$|=[^;]*)", type))
   if (all(is.na(locs[, 1L])))
     return(rep(NA, length(info)))
@@ -59,21 +65,20 @@ parse_info.varkit <- function(x, type = NULL, use_meta = TRUE) {
     info <- !is.na(delim)
   }
 
-  if (!is.null(meta_info))
-    return(.convert_using_meta(info, meta_info, type))
-  utils::type.convert(info, na.strings = c("", "."), as.is = TRUE, tryLogical = TRUE)
+  .convert_info(info, convert_to = col_types[type])
 }
 
-.convert_using_meta <- function(info, meta_info, type) {
-  convert_to <- .get_info_col_types(meta_info)[type]
+.convert_info <- function(info, convert_to = NULL, na = c("", ".")) {
+  if (is.null(convert_to))
+    return(utils::type.convert(info, na.strings = na, as.is = TRUE, tryLogical = TRUE))
 
   # Convert NAs for parity w/ type.convert()
-  info[info == "."] <- NA_character_
+  info[info %in% na] <- NA_character_
 
   switch(convert_to,
     l = as.logical(info),
     i = as.integer(info),
     d = as.double(info),
-    .if_else(info == "", NA_character_, info)
+    info
   )
 }

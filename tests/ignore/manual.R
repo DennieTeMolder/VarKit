@@ -1,9 +1,7 @@
 # Setup
-library(devtools)
-load_all()
+devtools::load_all()
 example <- "./inst/extdata/celegans.vcf.bgz"
 
-# REVIEW add $ method to varkit for parity with geno() etc
 # REVIEW make site() never drop?
 # REVIEW allow all sites to masked in a VCF
 # REVIEW check use of anyNA (slow on mtrx)
@@ -12,14 +10,7 @@ header <- read_vcf_header(example)
 body <- read_tbl(example, col.names = header$col_names)
 x <- as_varkit(body, meta = meta(header))
 
-mask(x, chrom == "I")
-print.linked_data(x)
-
 x <- read_vcf(example)
-
-linked_data_unclass(x)
-
-linked_data(NULL, site["sites", ]) |> attributes()
 
 # TODO split/concat
 # TODO scan for $ use
@@ -48,7 +39,8 @@ parse_geno(vcf, type = "DP")
 
 parse_info(vcf)
 parse_info(vcf, type = "DP")
-parse_info_all(vcf)
+parse_info_all(vcf, use_meta = T)
+parse_info_all(vcf, use_meta = F)
 
 vcf <- mask(vcf, chrom == "I")
 summary(vcf)
@@ -61,7 +53,6 @@ summary(vcf)
 vcf <- import_mask(vcf, my_mask)
 summary(vcf)
 
-# FIXME
 temp_file <- tempfile(fileext = ".vcf.gz")
 write_vcf(vcf, temp_file, replace_filter = TRUE)
 read_vcf(temp_file)

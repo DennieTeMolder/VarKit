@@ -56,10 +56,6 @@ read_vcf_header <- function(file, max_lines = 1e6) {
   )
 
   # Standardise the names of fixed columns
-  fixed_names <- .fixed_columns()
-  fixed_idx <- match(fixed_names, tolower(col_names))
-  fixed_idx <- fixed_idx[!is.na(fixed_idx)]
-  col_names[fixed_idx] <- fixed_names[seq_along(fixed_names) %in% fixed_idx]
-  col_names
+  lower <- tolower(col_names)
+  .if_else(lower %in% .fixed_columns(), lower, col_names)
 }
-
