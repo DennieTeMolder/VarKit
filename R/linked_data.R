@@ -26,7 +26,7 @@ validate_linked_data <- function(x) {
   stopifnot(is.list(attr(x, "indices")), rlang::is_named2(attr(x, "indices")))
   stopifnot(is.list(attr(x, "keys")), rlang::is_named2(attr(x, "keys")))
 
-  invisible(x)
+  x
 }
 
 linked_data <- function(x = NULL, ...) {
@@ -65,78 +65,32 @@ linked_data_restore <- function(x, attr_from) {
 ##' @export
 `[<-.linked_data` <- function(x, i, ..., value) {
   validate_linked_data(x)
-
-  # Skip slot/dimension checks when setting elements to NULL
   if (is.null(value)) {
-    x <- NextMethod("[<-")
-    return(x)
-  }
-
-  if (!is.character(i)) {
-    i <- names(x)[i]
-    if (is.null(i) || isTRUE(all(nchar(i) > 0L)))
-      stop("New values must be assigned by name!")
+    value <- list(NULL)
+  } else {
+    value <- as.list(value)
   }
 
   # Only recycle VALUE if it is of length 1
-  value <- as.list(value)
   if (length(value) == 1L && length(i) > 1L) {
     value <- rep(value, length(i))
   } else if (length(i) != length(value)) {
     stop("Number of items to replace should match replacement length!")
   }
 
-  # Check if assigning to a defined slot
-  slots <- attr(x, "slots")
-  no_slot <- setdiff(i, names(slots))
-  if (length(no_slot) > 0L)
-    stop("Register slots before assigning: ", .quote_collapse(no_slot), "!")
-
-  # Check if the new dimensions match with existing indices, creating them if missing
-  indices <- attr(x, "indices")
-  for (ii in seq_along(i)) {
-    current <- i[ii]
-    use_indices <- slots[[current]]
-    if (is.null(use_indices) || is.null(value[[ii]]))
-      next()
-
-    dims <- .dim(value[[ii]])
-    if (length(dims) != length(use_indices))
-      stop("Expected ", length(use_indices), " dimensions, but got ", length(dims), "!")
-
-    names(dims) <- use_indices
-    dims <- dims[use_indices != ""]
-
-    for (idx in names(dims)) {
-      if (is.null(indices[[idx]])) {
-        indices[[idx]] <- rep(TRUE, dims[[idx]])
-      } else if (dims[idx] != length(indices[[idx]])) {
-        stop("At dim ", which(use_indices == idx), " of `$", current,
-             "`: expected length ", .frmt_big(length(indices[[idx]])),
-             ", but got ", .frmt_big(dims[idx]), "!")
-      }
-    }
-  }
-
-  x <- NextMethod("[<-")
-  attr(x, "indices") <- indices
-  x
-}
-
-linked_data_set_nomatch <- function(x, name, val) {
-  # TODO use unclass instead of NextMethod
+  linked_data_set_nomatch(x, i = i, value = value, validate = FALSE)
 }
 
 ##' @export
 `[[<-.linked_data` <- function(x, i, value) {
   stopifnot(length(i) == 1L)
-  `[<-.linked_data`(x, i, value = if (!is.null(value)) list(value))
+  linked_data_set_nomatch(x, i = i, value = list(value))
 }
 
 ##' @export
 `$<-.linked_data` <- function(x, name, value) {
   stopifnot(is.character(name), length(name) == 1L)
-  `[<-.linked_data`(x, name, value = if (!is.null(value)) list(value))
+  linked_data_set_nomatch(x, i = name, value = list(value))
 }
 
 ##' @export
@@ -148,17 +102,17 @@ linked_data_set_nomatch <- function(x, name, val) {
     i <- names(x)[i]
   }
 
-  result <- purrr::map(i, function(ii) linked_data_get(x, ii))
+  result <- purrr::map(i, function(ii) linked_data_get(x, ii, .validate = FALSE))
   names(result) <- i
 
   # Also subset the attributes to keep the new object valid
   slots <- attr(x, "slots")[i]
-  keep_indices <- setdiff(purrr::list_c(slots), "")
-  names(keep_indices) <- keep_indices
 
+  keep_indices <- setdiff(purrr::list_c(slots), "")
   indices <- purrr::map(keep_indices, function(name) {
     rep(TRUE, sum(attr(x, "indices")[[name]]))
   })
+  names(indices) <- keep_indices
 
   keep_keys <- intersect(names(attr(x, "keys")), keep_indices)
   keys <- purrr::map(keep_keys, function(name) {
@@ -166,6 +120,7 @@ linked_data_set_nomatch <- function(x, name, val) {
     if (!is.null(key))
       key[attr(x, "indices")[[name]], , drop = FALSE]
   })
+  names(keys) <- keep_keys
 
   result <- new_linked_data(result, slots = slots, indices = indices, keys = keys)
 
@@ -298,6 +253,63 @@ linked_data_register <- function(x, ...) {
 }
 
 ##' @export
+linked_data_set_nomatch <- function(x, i, value, validate = TRUE) {
+  if (!isFALSE(validate))
+    validate_linked_data(x)
+  stopifnot(is.list(value))
+  stopifnot(length(i) == length(value))
+
+  # Attempt to convert I to character using names(X)
+  if (!is.character(i)) {
+    i <- names(x)[i]
+    if (is.null(i) || isTRUE(all(nchar(i) > 0L)))
+      stop("New values must be assigned by name!")
+  }
+
+  # Check if assigning to a defined slot
+  slots <- attr(x, "slots")
+  no_slot <- setdiff(i, names(slots))
+  if (length(no_slot) > 0L)
+    stop("Register slots before assigning: ", .quote_collapse(no_slot), "!")
+
+  # Check if the new dimensions match with existing indices, creating them if missing
+  indices <- attr(x, "indices")
+  for (ii in seq_along(i)) {
+    current <- i[ii]
+    use_indices <- slots[[current]]
+    if (is.null(use_indices) || is.null(value[[ii]]))
+      next()
+
+    dims <- .dim(value[[ii]])
+    if (length(dims) != length(use_indices))
+      stop("Expected ", length(use_indices), " dimensions, but got ", length(dims), "!")
+
+    names(dims) <- use_indices
+    dims <- dims[use_indices != ""]
+
+    for (idx in names(dims)) {
+      if (is.null(indices[[idx]])) {
+        indices[[idx]] <- rep(TRUE, dims[[idx]])
+      } else if (dims[idx] != length(indices[[idx]])) {
+        stop("At dim ", which(use_indices == idx), " of `$", current,
+             "`: expected length ", .frmt_big(length(indices[[idx]])),
+             ", but got ", .frmt_big(dims[idx]), "!")
+      }
+    }
+  }
+
+  # Unclass to use primitive and restore after
+  class_x <- class(x)
+  x <- unclass(x)
+  x[i] <- value
+  class(x) <- class_x
+
+  # Update indices and return
+  attr(x, "indices") <- indices
+  x
+}
+
+##' @export
 linked_data_set <- function(x, slot, data, ..., .override = FALSE) {
   validate_linked_data(x)
   .stopifnotsingle(slot, what = "character")
@@ -310,10 +322,8 @@ linked_data_set <- function(x, slot, data, ..., .override = FALSE) {
     stop("No slot registered for: '", slot, "'!")
 
   # Return early if there is nothing to match
-  if (...length() == 0L) {
-    x[[slot]] <- data
-    return(x)
-  }
+  if (...length() == 0L)
+    return(linked_data_set_nomatch(x, i = slot, value = list(data), validate = FALSE))
 
   # Ensure data has the expected number of dimensions for the slot
   use_indices <- slots[[slot]]
@@ -339,34 +349,32 @@ linked_data_set <- function(x, slot, data, ..., .override = FALSE) {
   match_keys <- setdiff(names(dots), add_keys)
   dots <- purrr::map2(dots[match_keys], keys[match_keys], .dot_match_key)
 
-  # If no reordering is needed we can short circuit
-  if (all(purrr::map_lgl(dots, isTRUE))) {
-    x[[slot]] <- data
-    return(x)
+  # Reorder if needed
+  if (!all(purrr::map_lgl(dots, isTRUE))) {
+    # Match arguments to indices
+    args <- rlang::rep_named(use_indices, list(TRUE))
+    args[names(dots)] <- dots
+    names(args) <- NULL
+
+    # Apply re-oredering
+    data <- do.call("[", args = c(list(data), args, list(drop = FALSE)))
   }
 
-  # Match arguments to indices
-  args <- rlang::rep_named(use_indices, list(TRUE))
-  args[names(dots)] <- dots
-  names(args) <- NULL
-
-  # Apply re-oredering and store value
-  x[[slot]] <- do.call("[", args = c(list(data), args, list(drop = FALSE)))
-
-  x
+ linked_data_set_nomatch(x, i = slot, value = list(data), validate = FALSE)
 }
 
 ##' @export
-linked_data_get <- function(x, i, ..., .drop = FALSE) {
+linked_data_get <- function(x, i, ..., .drop = FALSE, .validate = TRUE) {
   # TODO remove
   print(rlang::trace_back())
 
-  validate_linked_data(x)
+  if (!isFALSE(.validate))
+    validate_linked_data(x)
 
   x <- unclass(x)
   xi <- x[[i]]
   if (is.null(xi))
-    return(xi)
+    return(NULL)
 
   # Slots are accessed by name, so we might need to convert
   if (isTRUE(is.numeric(i)))
@@ -502,6 +510,7 @@ linked_data_reset <- function(x, indices = NULL) {
 linked_data_trim <- function(x, indices = NULL) {
   validate_linked_data(x)
   slots <- attr(x, "slots")
+  keys <- attr(x, "keys")
   attr_ind <- attr(x, "indices")
 
   # Trim all indices if NULL
@@ -514,11 +523,14 @@ linked_data_trim <- function(x, indices = NULL) {
       stop("The following indices were not recognized: ", .quote_collapse(missing))
   }
 
-  # Find indices only associated with empty slots
-  used_slots <- names(x)[!purrr::map_lgl(x, is.null)]
+  # Remove indices only associated with empty slots
+  used_slots <- names(x)[!purrr::map_lgl(unclass(x), is.null)]
   remove_indices <- setdiff(indices, purrr::list_c(slots[used_slots]))
   if (length(remove_indices) > 0L)
     attr(x, "indices") <- attr_ind[setdiff(names(attr_ind), remove_indices)]
+
+  # Remove keys not associated with any indices
+  attr(x, "keys") <- keys[intersect(names(keys), names(attr(x, "indices")))]
 
   x
 }
