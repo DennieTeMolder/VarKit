@@ -18,13 +18,11 @@ concat_vcf <- function(...) {
   if (length(dots) == 1L)
     return(dots[[1L]])
 
-  drm_preselect(
-    varkit(
-      meta = meta.varkit(dots[[1L]]),
-      site = do.call(rbind, lapply(dots, function(x) x$site)),
-      geno = varkit_geno(do.call(cbind, lapply(dots, function(x) x$geno)))
-    ),
-    samples = drm_ifelse(dots[[1L]], node = "samples"),
-    sites = do.call(c, lapply(dots, drm_ifelse, node = "sites"))
+  new_varkit(
+    meta = unclass(dots[[1L]])$meta,
+    site = do.call(rbind, lapply(dots, function(x) unclass(x)$site)),
+    geno = do.call(cbind, lapply(dots, function(x) unclass(x)$geno)),
+    sample_indices = .indices(dots[[1L]])$samples,
+    site_indices = do.call(c, lapply(dots, function(x) .indices(x)$sites))
   )
 }

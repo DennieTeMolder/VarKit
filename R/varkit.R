@@ -24,17 +24,29 @@ varkit <- function(site, geno, meta = NULL, use_filter = TRUE) {
 new_varkit <- function(site = data.frame(chrom = character(), pos = integer()),
                        geno = varkit_geno(),
                        meta = data.frame(name = character(), value = character()),
+                       sample_indices = logical(),
                        site_indices = logical()
                        ) {
   stopifnot(is.data.frame(site))
   stopifnot(is.matrix(geno))
-  stopifnot(is.null(meta) || is.data.frame(meta))
-  stopifnot(is.null(site_indices) || is.logical(site_indices))
-  if (is.null(meta))
+  if (missing(meta) || is.null(meta)) {
     meta <- data.frame(name = character(), value = character())
-  if (is.null(site_indices))
+  } else {
+    stopifnot(is.data.frame(meta))
+  }
+  if (missing(site_indices) || is.null(site_indices)) {
     site_indices <- rep(TRUE, ncol(geno))
-  stopifnot(nrow(site) == ncol(geno), nrow(site) == length(site_indices))
+  } else {
+    stopifnot(is.logical(site_indices))
+  }
+  if (missing(sample_indices) || is.null(sample_indices)) {
+    sample_indices <- rep(TRUE, nrow(geno))
+  } else {
+    stopifnot(is.logical(sample_indices))
+  }
+  stopifnot(nrow(site) == ncol(geno))
+  stopifnot(nrow(site) == length(site_indices))
+  stopifnot(nrow(geno) == length(sample_indices))
 
   obj <- new_linked_data(
     x = list(
@@ -48,7 +60,7 @@ new_varkit <- function(site = data.frame(chrom = character(), pos = integer()),
       geno = c("samples", "sites")
     ),
     indices = list(
-      samples = rep(TRUE, nrow(geno)),
+      samples = sample_indices,
       sites = site_indices
     )
   )
@@ -277,6 +289,7 @@ as_tibble.varkit <- function(x, ..., optional = TRUE) {
 split.varkit <- function(x, f, drop = FALSE, ...) {
   if (missing(drop))
     drop <- TRUE
+  x <- linked_data_unclass(x)
 
   # Add indexes so we can retrace the splits
   x$site$idx <- seq_len(nrow(x$site))
@@ -293,7 +306,7 @@ split.varkit <- function(x, f, drop = FALSE, ...) {
 
   # Recreate the varkit object for each split
   lapply(setNames(nm = names(split_geno)), function(name) {
-    drm_preselect(
+    linked_data_filter(
       new_varkit(meta = x$meta, site = split_site[[name]], geno = split_geno[[name]]),
       samples = split_mask$samples,
       sites = split_mask$sites[[name]])

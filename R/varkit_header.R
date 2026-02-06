@@ -10,10 +10,12 @@ varkit_header <- function(meta = data.frame(), col_names = character()) {
 new_varkit_header <- function(meta = data.frame(name = character(), value = character()),
                               col_names = character()
                               ) {
-  stopifnot(is.null(meta) || is.data.frame(meta))
   stopifnot(is.character(col_names))
-  if (is.null(meta))
+  if (is.null(meta)) {
     meta <- data.frame(name = character(), value = character())
+  } else {
+    stopifnot(is.data.frame(meta))
+  }
 
   structure(
     list(meta = tibble::as_tibble(meta), col_names = col_names),
