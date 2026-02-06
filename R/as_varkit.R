@@ -12,10 +12,10 @@ as_varkit.data.frame <- function(x, ..., meta = NULL, use_filter = TRUE) {
     return(NULL)
 
   site <- x[tolower(colnames(x)) %in% .fixed_columns()]
-  colnames(site) <- tolower(colnames(site))
-
   geno <- x[!colnames(x) %in% colnames(site)]
   rm(x)
+
+  colnames(site) <- tolower(colnames(site))
   geno <- t(geno)
 
   varkit(site = site, geno = geno, meta = meta, use_filter = use_filter)
