@@ -19,13 +19,20 @@ samples.varkit_header <- function(x) {
     stop("`samples()<-` only works on 'varkit' objects!")
   validate_varkit(x)
 
-  if (!all(.indices(x)$samples))
-    stop("Reset/unmask the 'samples' filter before modifying!")
-  if (length(value) != length(.indices(x)$samples))
+  curr_ind <- .indices(x)$samples
+  if (length(value) != length(curr_ind)) {
+    if (!all(curr_ind))
+      stop("Reset/unmask the 'samples' filter before modifying!")
     stop("The new value should be of equal length to the old!")
+  }
   if (anyDuplicated(value) != 0L)
     stop("The new value contains duplicates!")
 
+  restore_class <- class(x)
+  x <- unclass(x)
+
   rownames(x$geno) <- value
+
+  class(x) <- restore_class
   x
 }
