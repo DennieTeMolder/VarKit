@@ -377,15 +377,17 @@ linked_data_get <- function(x, i, ..., .drop = FALSE, .validate = TRUE) {
     return(NULL)
 
   # Slots are accessed by name, so we might need to convert
-  if (isTRUE(is.numeric(i)))
+  if (is.numeric(i))
     i <- names(x)[[i]]
 
-  # Pull the indices associated to slot i if any
-  indices <- attr(x, "indices")
+  # Pull the index values associated to slot I if known
   use_indices <- attr(x, "slots")[[i]]
   if (is.null(use_indices)) {
-    idx_val <- rep(list(TRUE), .ndim(x))
+    use_indices <- character(.ndim(xi))
+    idx_val <- rep(list(TRUE), length(use_indices))
   } else {
+    indices <- attr(x, "indices")
+
     missing <- setdiff(use_indices, c(names(indices), ""))
     if (length(missing) > 0L)
       stop("Missing indices for: ", .quote_collapse(missing), "!")
@@ -395,44 +397,16 @@ linked_data_get <- function(x, i, ..., .drop = FALSE, .validate = TRUE) {
   }
 
   # Allow for additional user provided indices, these take precedence
+  # Additional arguments can be named, positional, or a mix of both
   if (...length() > 0L) {
     dots <- rlang::dots_list(..., .ignore_empty = "none", .preserve_empty = TRUE)
 
-    # DOTS can target indices by name
-    have_name <- rlang::have_name(dots)
+    # Match names of DOTS to USE_INDICES to order based on the target dimension
+    dots <- .dots_match_indices(dots, use_indices = use_indices)
 
-    # If unnamed arguments are present, the number of dimensions should match
-    if (!all(have_name) && length(dots) != length(idx_val)) {
-      stop("The number of additional arguments (", length(dots),
-           ") should match the dimensions of '", i, "' (", length(idx_val), ")!")
-    }
-
-    # Put named arguments in the correct positions
-    if (any(have_name)) {
-      named_dots <- dots[have_name]
-      dots[have_name] <- list(NULL)
-
-      missing <- setdiff(names(named_dots), use_indices)
-      if (length(missing) > 0L)
-        stop("The following arguments do not match any indices: ", .quote_collapse(missing))
-
-      dots_match_idx <- match(names(named_dots), use_indices)
-
-      # Ensure named and unnamed arguments don't reference the same position
-      overlap <- sort(intersect(dots_match_idx, which(!have_name)))
-      if (length(overlap) > 0L) {
-        stop("Positional and named arguments collide: ",
-             paste0(overlap, " & '", use_indices[overlap], "'", collapse = ", "), "!")
-      }
-
-      # Match size first so named dots can be given the correct position
-      dots <- c(dots, rep(list(NULL), length(idx_val) - length(dots)))
-      dots[dots_match_idx] <- named_dots
-    }
-
-    # Only replace index values if not null/missing
-    which_use <- which(!purrr::map_lgl(dots, function(dot) is.null(dot) || rlang::is_missing(dot)))
-    idx_val[which_use] <- dots[which_use]
+    # Only replace index values if not null
+    has_value <- !purrr::map_lgl(dots, function(dot) is.null(dot))
+    idx_val[has_value] <- dots[has_value]
   }
 
   # Short circuit if there is nothing to select
@@ -440,6 +414,52 @@ linked_data_get <- function(x, i, ..., .drop = FALSE, .validate = TRUE) {
     return(xi)
 
   do.call("[", args = c(list(xi), unname(idx_val), list(drop = .drop)))
+}
+
+##' @export
+linked_data_dim <- function(x, i, use_indices = TRUE, validate = TRUE) {
+  if (!isFALSE(validate))
+    validate_linked_data(x)
+  .stopifnotsingle(use_indices, what = "logical")
+  x <- unclass(x)
+
+  # Slots are accessed by name, so we might need to convert
+  if (is.numeric(i))
+    i <- names(x)[[i]]
+
+  res <- setNames(.dim(x[[i]]), nm = attr(x, "slots")[[i]])
+  if (!(use_indices && any(rlang::have_name(res))))
+    return(res)
+
+  # Subset dims using indices if element is named
+  purrr::imap_int(res, function(len, idx) {
+    if (is.na(idx) || idx == "")
+      return(len)
+    sum(attr(x, "indices")[[idx]])
+  })
+}
+
+##' @export
+linked_data_dimnames <- function(x, i, use_indices = TRUE, validate = TRUE) {
+  if (!isFALSE(validate))
+    validate_linked_data(x)
+  .stopifnotsingle(use_indices, what = "logical")
+  x <- unclass(x)
+
+  # Slots are accessed by name, so we might need to convert
+  if (is.numeric(i))
+    i <- names(x)[[i]]
+
+  res <- setNames(.dimnames(x[[i]]), nm = attr(x, "slots")[[i]])
+  if (!(use_indices && any(rlang::have_name(res))))
+    return(res)
+
+  # Subset dimnames using indices if element is named
+  purrr::imap(res, function(dname, idx) {
+    if (is.null(dname) || is.na(idx) || idx == "")
+      return(dname)
+    dname[attr(x, "indices")[[idx]]]
+  })
 }
 
 ##' @export
@@ -671,4 +691,45 @@ with_linked_data <- function(x, expr) {
 
   # Retrieve indices to obtain the reordering
   join_result[[length(join_result)]]
+}
+
+.dots_match_indices <- function(dots, use_indices) {
+  # Convert missing arguments to NULL
+  dots <- purrr::map(dots, function(dot) if (!rlang::is_missing(dot)) dot)
+
+  # DOTS can target indices by name
+  have_name <- rlang::have_name(dots)
+
+  # If unnamed arguments are present, the number of dimensions should match
+  if (!all(have_name) && length(dots) != length(use_indices)) {
+    stop("The number of additional arguments (", length(dots),
+         ") should match the dimensions of '", i, "' (", length(use_indices), ")!")
+  }
+
+  # Unnamed arguments don't need any matching so we return early
+  if (!any(have_name))
+    return(dots)
+
+  # Put named arguments in the correct positions
+  named_dots <- dots[have_name]
+  dots[have_name] <- list(NULL)
+
+  missing <- setdiff(names(named_dots), use_indices)
+  if (length(missing) > 0L)
+    stop("The following arguments do not match any indices: ", .quote_collapse(missing))
+
+  dots_match_idx <- match(names(named_dots), use_indices)
+
+  # Ensure named and unnamed arguments don't reference the same position
+  overlap <- sort(intersect(dots_match_idx, which(!have_name)))
+  if (length(overlap) > 0L) {
+    stop("Positional and named arguments collide: ",
+         paste0(overlap, " & '", use_indices[overlap], "'", collapse = ", "), "!")
+  }
+
+  # Match size first so named dots can be given the correct position
+  dots <- c(dots, rep(list(NULL), length(use_indices) - length(dots)))
+  dots[dots_match_idx] <- named_dots
+
+  dots
 }

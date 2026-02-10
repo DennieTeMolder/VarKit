@@ -15,6 +15,14 @@
   length(.dim(x))
 }
 
+.dimnames <- function(x) {
+  res <- dimnames(x)
+  if (is.null(res) && !is.null(names(x)))
+    res <- list(names(x))
+  if (!is.null(res))
+    res
+}
+
 # anyNA can be super slow on large non-primitive objects, like mtrx
 .any_na <- function(x, ...) {
   # There are more methods defined, but we skip those
