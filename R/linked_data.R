@@ -260,6 +260,70 @@ linked_data_register <- function(x, ...) {
   x
 }
 
+# REVIEW prefix arguments with a dot to prevent collisions with indices?
+##' @export
+match_linked_data <- function(x, linked_data_obj, slot, ..., .return_unused = FALSE) {
+  validate_linked_data(linked_data_obj)
+  .stopifnotsingle(slot, what = "character")
+  .stopifnotsingle(.return_unused, what = "logical")
+
+  # Dots represent keys used for sorting, named list elements can be referred to directly
+  dots <- rlang::enquos(...)
+  if (!rlang::is_named2(dots))
+    stop("All additional arguments should be named!")
+
+  slots <- attr(linked_data_obj, "slots")
+  keys <- attr(linked_data_obj, "keys")
+
+  if (!slot %in% names(slots))
+    stop("No slot registered for: '", slot, "'!")
+  curr_slot <- slots[[slot]]
+
+  nomatch <- setdiff(names(dots), curr_slot)
+  if (length(nomatch) > 0L)
+    stop("The following arguments don't match any indices: ", .quote_collapse(nomatch), call. = FALSE)
+
+  # Warn about indices with known keys that were not provided by the user
+  omitted <- setdiff(intersect(curr_slot, names(keys)), names(dots))
+  if (length(omitted) > 0L)
+    warning("Some indices with were keys not provided as arguments: ", .quote_collapse(omitted))
+
+  if (length(dots) == 0L)
+    return(x)
+
+  if (is.null(curr_slot))
+    stop("No indices registered for slot: '", slot, "'!")
+
+  # Ensure data has the expected number of dimensions for the slot
+  if (.ndim(x) != length(curr_slot))
+    stop("Expected data to have ", length(curr_slot), " dimensions, but got ", .ndim(x), "!")
+
+  dots <- .dots_compute_keys(dots, x = x, slot = curr_slot)
+
+  # Match on intersecting indices
+  match_indices <- names(dots)[!purrr::map_lgl(keys[names(dots)], is.null)]
+
+  if (.return_unused)
+    unused <- dots[setdiff(names(dots), match_indices)]
+
+  dots <- purrr::map2(dots[match_indices], keys[match_indices], .dot_match_key)
+
+  # Reorder if needed
+  if (!all(purrr::map_lgl(dots, isTRUE))) {
+    # Match arguments to indices to construct slicing arguments
+    args <- rlang::rep_named(curr_slot, list(TRUE))
+    args[names(dots)] <- dots
+    names(args) <- NULL
+
+    # Apply re-ordering & return
+    x <- do.call("[", args = c(list(x), args, list(drop = FALSE)))
+  }
+
+  if (.return_unused)
+    attr(x, "unused_keys") <- unused
+  x
+}
+
 ##' @export
 linked_data_set_nomatch <- function(x, i, value, validate = TRUE) {
   if (!isFALSE(validate))
@@ -319,56 +383,22 @@ linked_data_set_nomatch <- function(x, i, value, validate = TRUE) {
 
 ##' @export
 linked_data_set <- function(x, slot, data, ..., .override = FALSE) {
-  validate_linked_data(x)
-  .stopifnotsingle(slot, what = "character")
   .stopifnotsingle(.override, what = "logical")
 
-  slots <- attr(x, "slots")
   keys <- attr(x, "keys")
+  if (.override)
+    attr(x, "keys") <- list()
 
-  if (!any(names(slots) == slot))
-    stop("No slot registered for: '", slot, "'!")
+  data <- match_linked_data(data, linked_data_obj = x, slot = slot, ..., .return_unused = TRUE)
 
-  # Return early if there is nothing to match
-  if (...length() == 0L)
-    return(linked_data_set_nomatch(x, i = slot, value = list(data), validate = FALSE))
+  unused <- attr(data, "unused_keys")
+  attr(data, "unused_keys") <- NULL
 
-  # Ensure data has the expected number of dimensions for the slot
-  use_indices <- slots[[slot]]
-  if (!is.null(use_indices) && .ndim(data) != length(use_indices))
-    stop("Expected data to have ", length(use_indices), " dimensions, but got ", .ndim(data), "!")
+  if (length(unused) > 0L)
+    keys[names(unused)] <- unused
+  attr(x, "keys") <- keys
 
-  # Dots represent keys used for sorting, named list elements can be referred to directly
-  dots <- rlang::enquos(...)
-  if (!rlang::is_named(dots))
-    stop("All additional arguments should be named!")
-
-  dots <- .dots_compute_keys(dots, data = data, use_indices = use_indices)
-
-  # Add missing keys
-  if (.override) {
-    add_keys <- names(dots)
-  } else {
-    add_keys <- names(dots)[purrr::map_lgl(keys[names(dots)], is.null)]
-  }
-  attr(x, "keys")[add_keys] <- dots[add_keys]
-
-  # Match the keys that have not been added/overwritten
-  match_keys <- setdiff(names(dots), add_keys)
-  dots <- purrr::map2(dots[match_keys], keys[match_keys], .dot_match_key)
-
-  # Reorder if needed
-  if (!all(purrr::map_lgl(dots, isTRUE))) {
-    # Match arguments to indices
-    args <- rlang::rep_named(use_indices, list(TRUE))
-    args[names(dots)] <- dots
-    names(args) <- NULL
-
-    # Apply re-oredering
-    data <- do.call("[", args = c(list(data), args, list(drop = FALSE)))
-  }
-
- linked_data_set_nomatch(x, i = slot, value = list(data), validate = FALSE)
+  linked_data_set_nomatch(x, i = slot, value = list(data), validate = FALSE)
 }
 
 ##' @export
@@ -630,19 +660,16 @@ with_linked_data <- function(x, expr) {
   )
 }
 
-.dots_compute_keys <- function(dots_quos, data, use_indices) {
-  dims <- .dim(data)
-  names(dims) <- use_indices
+.dots_compute_keys <- function(dots_quos, x, slot) {
+  dims <- .dim(x)
+  names(dims) <- slot
 
   purrr::imap(dots_quos, function(dot, name) {
-    if (!name %in% use_indices)
-      stop("Argument '", name, "' does not match any indices!", call. = FALSE)
-
     # Unpack `node = c(key1, key2, ...)` style expressions
     if (rlang::quo_is_call(dot, "c"))
       dot <- .quo_replace_fn(dot, fn = tibble::tibble)
 
-    res <- rlang::eval_tidy(dot, data = c(list(. = data), if (is.list(data)) data))
+    res <- rlang::eval_tidy(dot, data = c(list(. = x), if (is.list(x)) x))
     if (!is.list(res))
       stop("All additional arguments should evaluate to a list/dataframe!", call. = FALSE)
     if (!rlang::is_named(res))
@@ -663,9 +690,7 @@ with_linked_data <- function(x, expr) {
 .dot_match_key <- function(dot, curr_key) {
   missing <- setdiff(names(curr_key), names(dot))
   if (length(missing) != 0L)
-    stop("The following keys are expected but missing: ", .quote_collapse(missing), call. = FALSE)
-  if (nrow(dot) != nrow(curr_key))
-    stop("Expected keys to have length ", .frmt_big(nrow(curr_key)), ", but got ", .frmt_big(nrow(dot)), "!", call. = FALSE)
+    stop("The following match keys are missing: ", .quote_collapse(missing), call. = FALSE)
 
   # Drop unused columns
   dot <- dot[names(curr_key)]
@@ -674,23 +699,20 @@ with_linked_data <- function(x, expr) {
   if (isTRUE(all.equal(curr_key, dot, check.class = FALSE, check.attributes = FALSE)))
     return(TRUE)
 
-  # This approach is 10x faster, but produces invalid results when there is >1 key
+  # match() is 10x faster, but produces invalid results when there is >1 key
   if (ncol(curr_key) == 1L) {
     res <- match(dot[[1L]], curr_key[[1L]])
-    if (anyNA(res))
-      stop("Failed to match all key values!", call. = FALSE)
-    return(order(res))
+    return(order(res, na.last = NA))
   }
 
   # Add indices as last column
   dot[[length(dot) + 1L]] <- seq_len(nrow(dot))
 
   # Use join to match the order
-  join_result <- dplyr::left_join(
+  join_result <- dplyr::inner_join(
     x = curr_key,
     y = dot,
     by = names(curr_key),
-    unmatched = "error",
     relationship = "one-to-one"
   )
 
@@ -708,7 +730,7 @@ with_linked_data <- function(x, expr) {
   # If unnamed arguments are present, the number of dimensions should match
   if (!all(have_name) && length(dots) != length(use_indices)) {
     stop("The number of additional arguments (", length(dots),
-         ") should match the dimensions of '", i, "' (", length(use_indices), ")!")
+         ") should match the dimensions of `i` (", length(use_indices), ")!")
   }
 
   # Unnamed arguments don't need any matching so we return early
