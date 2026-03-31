@@ -164,7 +164,6 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
     if (!is.data.frame(value[[i_site]]))
       stop("The '$site' slot must be a data frame!")
     value[[i_site]] <- tibble::as_tibble(value[[i_site]])
-    # REVIEW warn about mask being active if length mismatches?
   }
 
   i_geno <- match("geno", i, nomatch = 0L)
@@ -181,7 +180,6 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
     }
 
     value[[i_geno]] <- varkit_geno(value[[i_geno]])
-    # REVIEW warn about mask being active if length mismatches?
 
     # Remove the old value, and attempt to free the 'samples' index so it can be modified
     x <- linked_data_set_nomatch(x, i = "geno", value = list(NULL), validate = FALSE)
@@ -262,14 +260,9 @@ print.varkit <- function(x, ..., n = NULL, n_samples = NULL) {
 
 ##' @export
 summary.varkit <- function(object, ...) {
-  tibble::tibble(
-    samples_visible = n_samples.varkit(object, mask = TRUE),
-    samples_total = n_samples.varkit(object, mask = FALSE),
-    sites_visible = n_sites.varkit(object, mask = TRUE),
-    sites_total = n_sites.varkit(object, mask = FALSE),
-    samples_frac = .data$samples_visible / .data$samples_total,
-    sites_frac = .data$sites_visible / .data$sites_total
-  )
+  validate_varkit(object)
+  class(object) <- c("linked_data", "list")
+  summary(object)
 }
 
 ##' @export

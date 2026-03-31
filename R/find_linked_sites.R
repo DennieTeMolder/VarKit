@@ -29,19 +29,21 @@ find_linked_sites.varkit <- function(x,
   .stopifnotsingle(return_r2, what = "logical")
   .stopifnotsingle(cores, what = is.numeric)
   .stopifnotsingle(min_ncol, what = is.numeric)
-  if (!(is.matrix(x$geno) && is.numeric(x$geno)))
+
+  gt <- unclass(geno.varkit(x))
+  if (!(is.matrix(gt) && is.numeric(gt)))
     stop("geno(x) should be a numeric matrix!")
 
   # Label the columns with their index so they can be mapped back later
-  colnames(x$geno) <- seq_len(ncol(x$geno))
+  colnames(gt) <- seq_len(ncol(gt))
 
-  mat_list <- splitm(geno(x),
-    f = if (by_chrom) site(x, "chrom") else NULL, # Split by CHROM
-    margin = 2,                                   # Split over the columns
-    distances = site(x, "pos"),                   # Further split based on bp distance
-    size = size_bp,                               # Max bases covered by a split
-    by_na_pattern = TRUE,                         # Further split by NA pattern across samples
-    min_size = min_ncol                           # Merge NA splits with fewer then MIN_NCOL
+  mat_list <- splitm(gt,
+    f = if (by_chrom) site.varkit(x, "chrom") else NULL, # Split by CHROM
+    margin = 2,                                          # Split over the columns
+    distances = site.varkit(x, "pos"),                   # Further split based on bp distance
+    size = size_bp,                                      # Max bases covered by a split
+    by_na_pattern = TRUE,                                # Further split by NA pattern across samples
+    min_size = min_ncol                                  # Merge NA splits with fewer then MIN_NCOL
   )
 
   if (by_chrom) {

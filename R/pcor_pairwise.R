@@ -73,7 +73,7 @@ pcor_pairwise <- function(x, y = NULL, min_ncol = 20) {
       cor_mat[as.matrix(expand.grid(xx_ind, yy_ind)[, 2:1])] <- res
   }
 
-  cor_mat
+  as_mtrx(cor_mat)
 }
 
 .pcor_pairwise_internal <- function(x, y = NULL, use = "everything") {
