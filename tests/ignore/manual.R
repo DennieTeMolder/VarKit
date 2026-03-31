@@ -12,8 +12,6 @@ x <- as_varkit(body, meta = meta(header))
 
 x <- read_vcf(example)
 
-# TODO split/concat
-# TODO scan for $ use
 
 ### Examples ------
 ## Varkit object ------
@@ -59,7 +57,7 @@ read_vcf(temp_file)
 
 summary(delete_masked_sites(vcf))
 
-## Varkit_geno object ------
+## Apply ------
 apply(geno(vcf), "samples", length)
 apply(geno(vcf), "sites", length)
 
@@ -72,11 +70,11 @@ lgraph <- resolve_links(links, cores = 1)
 summary(lgraph, vcf = vcf)
 
 summary(mask(vcf, is_linked(lgraph, vcf = .)))
-summary(is_linked(lgraph, unmask_all(vcf)))
+summary(is_linked(lgraph, vcf))
 
 temp_file <- tempfile(fileext = ".xml")
-write_graph(lgraph, temp_file)
-read_graph(temp_file)
+write_linkage_graph(lgraph, temp_file)
+read_linkage_graph(temp_file)
 
 groups <- igraph::groups(lgraph)
 length(groups)
@@ -84,7 +82,7 @@ length(unlist(groups))
 
 ## Index ------
 # TODO test N_MAX
-index <- index_vcf(example, col_select = -info)
+index <- index_vcf(example, col_select = -info, n_max = 10)
 print(index)
 
 seek(index, "II")
@@ -160,20 +158,3 @@ linked_data_reset(obj, "samples")
 obj2 <- obj
 obj2$geno <- NULL
 linked_data_trim(obj2)
-
-### Tests ------
-## Geno ------
-header <- read_vcf_header(example)
-data <- readr::read_tsv(example,
-  col_names = header$col_names,
-  col_types = readr::cols(),
-  comment = "#",
-  na = "."
-)
-data[, .fixed_columns()] <- NULL
-
-geno <- varkit_geno(data)
-
-# Check if geno is a transposed version of data
-all(sapply(seq_along(data), \(i) all(geno[i,] == data[,i])))
-all(colnames(data) == rownames(geno))

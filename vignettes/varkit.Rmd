@@ -58,9 +58,11 @@ print(header)
 The most important information here is the column names, which are printed last
 (located under `header$col_names`). If the VCF file is recognised correctly it
 should list all of the fixed fields and samples present in your VCF. The column
-names listed in the header can be provided to the `read_vcf()` function in order
-to exclude them. This is useful if you want to exclude specific samples, or if
-you know you are not going to use certain fixed fields and want to save memory.
+names listed in the header can be provided to the the `col_select` argument of
+`read_vcf()` in order to exclude them (the syntax is identical to
+`readr::read_table`). This is useful if you want to exclude specific samples, or
+if you know you are not going to use certain fixed fields and want to save
+memory.
 
 For example here we exclude the "INFO" and "FILTER" fixed fields and the sample "N2":
 
@@ -88,10 +90,9 @@ geno(vcf)
 
 ## Getting help
 
-Functions like `read_vcf()`, `read_vcf_header()`, and `geno()` return objects
-with special classes, giving them access to an array of build-in functions. To
-check which functions are available for any given object use the `vakit_help()`
-function:
+Functions like `read_vcf()` and `read_vcf_header()` return objects with special
+classes, giving them access to an array of build-in functions. To check which
+functions are available for any given object use the `vakit_help()` function:
 
 ```{r help}
 varkit_help(vcf)
@@ -128,22 +129,20 @@ parse_meta(vcf, "contig")
 
 ## Masking
 
-A common operation when working with VCF is removing specific sites, based on
-various criteria. In VarKit this is achieved through the `mask()` function, which
-either requires you to input a logical vector (TRUE if the site should be
-masked) or a data frame with columns "chorm" and "pos" containing the sites to
-be masked. For this example we will use a logical vector to mask/hide all sites on
-chromosome I:
+A common operation when working with VCF is excluding specific sites based on
+various criteria. In VarKit this is achieved through the `mask()` function,
+which requires you to input a logical vector (TRUE if the site should be
+masked). For this example we will mask/hide all sites on chromosome I:
 
 ```{r mask}
 # This is a logical vector
-mask_site <- site(vcf)$chrom == "I"
+mask_site <- site(vcf, "chrom") == "I"
 
 # Be sure to reassign the returned object to `vcf` otherwise the mask will not take effect
-vcf <- mask(vcf, site = mask_site)
+vcf <- mask(vcf, mask_site)
 
 # Use the summary function to check the number of visible sites
-summary(vcf)
+summary(vcf)$indices
 ```
 
 Now if we fetch data from the VCF object the masked sites will no longer be
@@ -156,14 +155,17 @@ site(vcf)
 ```
 
 It is important to note that masking can be performed multiple times in
-sequence, which will cause sites in **either** mask to be excluded:
+sequence, which will cause sites in **either** mask to be excluded. To
+demonstrate this we will only mask sites matching to an external data frame on
+the 'chrom', 'pos', and 'alt' columns using the `has_join()` function.
 
 ```{r mask_seq}
 # Let's use a data frame this time around
 sites_to_mask <- dplyr::filter(site(vcf), qual < 3000)
 nrow(sites_to_mask)
-vcf <- mask(vcf, site = has_join(site(., chrom, pos, alt), sites_to_mask))
-summary(vcf)
+
+vcf <- mask(vcf, has_join(site, sites_to_mask, by = c("chrom", "pos", "alt")))
+summary(vcf)$indices
 ```
 
 You can see that this filter masked an additional 3 sites.
@@ -171,13 +173,14 @@ You can see that this filter masked an additional 3 sites.
 ### Masking sites without variation
 
 A common task after subsetting or converting VCF files is removing/masking sites
-that no longer contain variation. VarKit provides a convenient function to achieve
-this:
+that no longer contain variation. Here we limit the function to only looking
+within the GT field (similar to using `parse_geno()`), but the second argument
+is optional:
 
 ```{r mask_variation}
 # Only look at the GT field, obtained by parse_geno(vcf, type = "GT")
 vcf <- mask_sites_without_variation(vcf, parse_geno_type = "GT")
-summary(vcf)
+summary(vcf)$indices
 ```
 
 If you compare with the previous `summary()` you can see that 1 additional site was
@@ -197,14 +200,14 @@ the `summary()` function:
 ```{r mask_export}
 my_mask <- export_mask(vcf)
 vcf <- unmask_all(vcf)
-summary(vcf)
+summary(vcf)$indices
 ```
 
 Then if we later decide that we need the mask again, we can import it:
 
 ```{r mask_import}
 vcf <- import_mask(vcf, my_mask)
-summary(vcf)
+summary(vcf)$indices
 ```
 
 In this way you could use different masks for different parts of your
@@ -212,13 +215,13 @@ analysis/script.
 
 ### Removing sites
 
-In some cases, e.g. when you need to free memory or when you need maximum
-lookup speed, it is possible to entirely remove sites (meaning they cannot be
-retrieved by unmasking):
+In some cases, e.g. when you need to free memory or when you need maximum lookup
+speed, it is possible to entirely remove sites from memory (meaning they cannot
+be retrieved by unmasking):
 
 ```{r mask_remove}
-reduced_vcf <- delete_masked(vcf)
-summary(reduced_vcf)
+reduced_vcf <- delete_masked_sites(vcf)
+summary(reduced_vcf)$indices
 ```
 
 ## Writing VCF files
@@ -308,35 +311,5 @@ most amount of information with the least amount of variants.
 
 ```{r mask_linked}
 vcf <- mask(vcf, site = is_linked(lgraph, vcf = .))
-summary(vcf)
+summary(vcf)$indices
 ```
-
-## Notes for advanced users
-### Modifying the varkit object directly
-
-It is safe to directly modify the varkit object using the `$` operator as long
-as `nrow(vcf$site) == ncol(vcf$geno) == length(vcf$use_sites)`, the
-`vcf$site$chrom` & `vcf$site$pos` columns are retained, and `vcf$geno` keeps the
-'varkit_geno'. However it is generally advised to use the setter functions to
-modify varkit objects (e.g. `geno(vcf) <- my_new_value`).
-
-A condensed version of the example given before:
-
-```{r advanced_geno, eval = FALSE}
-geno(vcf) <- parse_geno(unmaks_all(vcf), type = "GT")
-```
-
-This is how you would modify the object directly:
-
-```{r apply}
-# Here `x` contains all genotypes for a single site (length == # samples)
-vcf$geno <- varkit_geno(apply(vcf$geno, "sites", function(x) x + 1))
-
-# Here `x` contains all genotypes for a sample (length == # sites)
-vcf$geno <- varkit_geno(t(apply(vcf$geno, "samples", function(x) x - 1)))
-```
-
-Be warned that, when modifying the object direcetly, **you** are responsible for
-ensuring that the previously mentioned constraints are satisfied! You can always
-check if the object has remained valid using `validate_varkit(vcf)`. Also note
-that we use `vcf$geno` to quickly obtain all sites (both masked and unmasked).
