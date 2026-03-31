@@ -133,7 +133,7 @@ linked_data_restore <- function(x, attr_from) {
 
 ##' @export
 `[[.linked_data` <- function(x, i, ..., exact = TRUE) {
-  # NOTE we always use exact name matching
+  # NOTE always use exact name matching
   if (isFALSE(exact))
     warning("'exact' name matching cannot be disabled")
   linked_data_get(x, i = i)
@@ -211,14 +211,22 @@ str.linked_data <- function(object, ..., give.attr = FALSE, no.list = FALSE) {
 ##' @export
 summary.linked_data <- function(object, ...) {
   validate_linked_data(object)
+  slots <- attr(object, "slots")
   idx <- attr(object, "indices")
 
-  tibble::tibble(
-    indices = if (length(idx) > 0L) names(idx) else character(),
-    length = purrr::map_int(idx, length),
-    n_use = purrr::map_int(idx, sum),
-    frac_use = .data$n_use / .data$length,
-    keys = attr(object, "keys")[.data$indices]
+  list(
+    slots = tibble::tibble(
+        slot = names(slots),
+        indices = slots,
+        value = unclass(object)[names(slots)]
+    ),
+    indices = tibble::tibble(
+        indices = if (length(idx) > 0L) names(idx) else character(),
+        length = purrr::map_int(idx, length),
+        n_use = purrr::map_int(idx, sum),
+        frac_use = .data$n_use / .data$length,
+        keys = attr(object, "keys")[.data$indices]
+    )
   )
 }
 
@@ -365,9 +373,6 @@ linked_data_set <- function(x, slot, data, ..., .override = FALSE) {
 
 ##' @export
 linked_data_get <- function(x, i, ..., .drop = FALSE, .validate = TRUE) {
-  # TODO remove
-  print(rlang::trace_back())
-
   if (!isFALSE(.validate))
     validate_linked_data(x)
 
@@ -414,52 +419,6 @@ linked_data_get <- function(x, i, ..., .drop = FALSE, .validate = TRUE) {
     return(xi)
 
   do.call("[", args = c(list(xi), unname(idx_val), list(drop = .drop)))
-}
-
-##' @export
-linked_data_dim <- function(x, i, use_indices = TRUE, validate = TRUE) {
-  if (!isFALSE(validate))
-    validate_linked_data(x)
-  .stopifnotsingle(use_indices, what = "logical")
-  x <- unclass(x)
-
-  # Slots are accessed by name, so we might need to convert
-  if (is.numeric(i))
-    i <- names(x)[[i]]
-
-  res <- setNames(.dim(x[[i]]), nm = attr(x, "slots")[[i]])
-  if (!(use_indices && any(rlang::have_name(res))))
-    return(res)
-
-  # Subset dims using indices if element is named
-  purrr::imap_int(res, function(len, idx) {
-    if (is.na(idx) || idx == "")
-      return(len)
-    sum(attr(x, "indices")[[idx]])
-  })
-}
-
-##' @export
-linked_data_dimnames <- function(x, i, use_indices = TRUE, validate = TRUE) {
-  if (!isFALSE(validate))
-    validate_linked_data(x)
-  .stopifnotsingle(use_indices, what = "logical")
-  x <- unclass(x)
-
-  # Slots are accessed by name, so we might need to convert
-  if (is.numeric(i))
-    i <- names(x)[[i]]
-
-  res <- setNames(.dimnames(x[[i]]), nm = attr(x, "slots")[[i]])
-  if (!(use_indices && any(rlang::have_name(res))))
-    return(res)
-
-  # Subset dimnames using indices if element is named
-  purrr::imap(res, function(dname, idx) {
-    if (is.null(dname) || is.na(idx) || idx == "")
-      return(dname)
-    dname[attr(x, "indices")[[idx]]]
-  })
 }
 
 ##' @export
@@ -553,6 +512,52 @@ linked_data_trim <- function(x, indices = NULL) {
   attr(x, "keys") <- keys[intersect(names(keys), names(attr(x, "indices")))]
 
   x
+}
+
+##' @export
+linked_data_dim <- function(x, i, use_indices = TRUE, validate = TRUE) {
+  if (!isFALSE(validate))
+    validate_linked_data(x)
+  .stopifnotsingle(use_indices, what = "logical")
+  x <- unclass(x)
+
+  # Slots are accessed by name, so we might need to convert
+  if (is.numeric(i))
+    i <- names(x)[[i]]
+
+  res <- setNames(.dim(x[[i]]), nm = attr(x, "slots")[[i]])
+  if (!(use_indices && any(rlang::have_name(res))))
+    return(res)
+
+  # Subset dims using indices if element is named
+  purrr::imap_int(res, function(len, idx) {
+    if (is.na(idx) || idx == "")
+      return(len)
+    sum(attr(x, "indices")[[idx]])
+  })
+}
+
+##' @export
+linked_data_dimnames <- function(x, i, use_indices = TRUE, validate = TRUE) {
+  if (!isFALSE(validate))
+    validate_linked_data(x)
+  .stopifnotsingle(use_indices, what = "logical")
+  x <- unclass(x)
+
+  # Slots are accessed by name, so we might need to convert
+  if (is.numeric(i))
+    i <- names(x)[[i]]
+
+  res <- setNames(.dimnames(x[[i]]), nm = attr(x, "slots")[[i]])
+  if (!(use_indices && any(rlang::have_name(res))))
+    return(res)
+
+  # Subset dimnames using indices if element is named
+  purrr::imap(res, function(dname, idx) {
+    if (is.null(dname) || is.na(idx) || idx == "")
+      return(dname)
+    dname[attr(x, "indices")[[idx]]]
+  })
 }
 
 ##' @export
