@@ -5,7 +5,7 @@ standardize_cols <- function(x, message = TRUE) {
 
 ##' @export
 standardize_cols.varkit <- function(x, message = TRUE) {
-  all_site <- linked_data_unclass(x)$site
+  all_site <- rd_unclass(x)$site
   missing <- .find_missing_cols(colnames(all_site), message = message)
 
   if (length(missing) > 0) {

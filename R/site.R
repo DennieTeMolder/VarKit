@@ -10,13 +10,13 @@ site.varkit <- function(x, ..., .add_index = FALSE) {
   if (...length() > 0L) {
     col_select <- tidyselect::eval_select(
       rlang::expr(c(...)),
-      data = linked_data_unclass(x)$site
+      data = rd_unclass(x)$site
     )
-    res <- linked_data_get(x, i = "site", , col_select, .drop = is.null(...names()))
+    res <- rd_get(x, i = "site", , col_select, .drop = is.null(...names()))
     if (!is.vector(res))
       colnames(res) <- names(col_select)
   } else {
-    res <- linked_data_get(x, i = "site")
+    res <- rd_get(x, i = "site")
   }
 
   if (.add_index)

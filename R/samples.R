@@ -5,7 +5,7 @@ samples <- function(x) {
 
 ##' @export
 samples.varkit <- function(x) {
-  linked_data_dimnames(x, i = "geno")[["samples"]]
+  rd_dimnames(x, i = "geno")[["samples"]]
 }
 
 ##' @export

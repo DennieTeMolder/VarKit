@@ -10,7 +10,7 @@ delete_masked_sites.varkit <- function(x) {
   # Reset all other indices so they do not get applied
   indices <- .indices(x)
   reset_ind <- setdiff(names(indices), "sites")
-  x <- linked_data_reset(x, indices = reset_ind)
+  x <- rd_reset(x, indices = reset_ind)
 
   # Apply the mask
   x <- x[]

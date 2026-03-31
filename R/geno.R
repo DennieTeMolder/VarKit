@@ -9,11 +9,11 @@ geno.varkit <- function(x, ..., .drop = FALSE) {
     .data <- setNames(which(.indices(x)$samples), nm = samples.varkit(x))
     loc <- tidyselect::eval_select(rlang::expr(c(...)), data = .data)
 
-    res <- linked_data_get(x, i = "geno", samples = loc, , .drop = .drop)
+    res <- rd_get(x, i = "geno", samples = loc, , .drop = .drop)
     if (!is.vector(res))
       rownames(res) <- names(loc)
   } else {
-    res <- linked_data_get(x, i = "geno", .drop = .drop)
+    res <- rd_get(x, i = "geno", .drop = .drop)
   }
 
   res

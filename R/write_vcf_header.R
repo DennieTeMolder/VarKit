@@ -41,7 +41,7 @@ write_vcf_header.varkit_header <- function(x, file, timestamp = TRUE, compressio
 
 ##' @export
 write_vcf_header.varkit <- function(x, file, timestamp = TRUE, compression = NULL) {
-  x <- linked_data_unclass(x)
+  x <- rd_unclass(x)
   write_vcf_header.varkit_header(
     new_varkit_header(
       meta = x$meta,

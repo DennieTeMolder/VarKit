@@ -126,35 +126,35 @@ test <- rbind(
 seek(test, 1)
 seq_index(test)
 
-## Linked data ------
-obj <- linked_data()
-obj <- linked_data_register(obj, meta[, ], site[sites, ], geno[samples, sites])
+## Related data ------
+obj <- related_data()
+obj <- rd_register(obj, meta[, ], site[sites, ], geno[samples, sites])
 
 obj$meta <- vcf$meta
 
 obj <- obj |>
-  linked_data_set("site", vcf$site, sites = c(chrom, pos)) |>
-  linked_data_set("geno", vcf$geno, samples = c(sample = rownames(.)))
+  rd_set("site", vcf$site, sites = c(chrom, pos)) |>
+  rd_set("geno", vcf$geno, samples = c(sample = rownames(.)))
 
 # This should remain sorted
-linked_data_set(
+rd_set(
   obj,
   slot = "site",
   data = dplyr::slice_sample(vcf$site, prop = 1),
   sites = c(chrom, pos)
 )$site
 
-obj <- linked_data_filter(obj, samples = rep_len(c(T, F), n_samples(vcf)))
+obj <- rd_filter(obj, samples = rep_len(c(T, F), n_samples(vcf)))
 
-linked_data_get(obj, "geno", , 1)
-linked_data_get(obj, "geno", samples = 1:5)
+rd_get(obj, "geno", , 1)
+rd_get(obj, "geno", samples = 1:5)
 
 obj[]
 str(obj)
 summary(obj)
 
-linked_data_reset(obj, "samples")
+rd_reset(obj, "samples")
 
 obj2 <- obj
 obj2$geno <- NULL
-linked_data_trim(obj2)
+rd_trim(obj2)

@@ -21,7 +21,7 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
     return(geno.varkit(x))
 
   # Only character matrices can/need to be parsed
-  if (!is.character(linked_data_unclass(x)$geno))
+  if (!is.character(rd_unclass(x)$geno))
     stop("The matrix in the `geno()` slot should be of type character!")
 
   # Check if any/all FORMAT fields contain TYPE

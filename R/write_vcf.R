@@ -49,7 +49,7 @@ write_vcf.varkit <- function(x,
 
   # Unclass to prevent data masking
   indices <- .indices(x)
-  x <- linked_data_unclass(x)
+  x <- rd_unclass(x)
 
   # Ensure required columns are present and in the right order
   x <- standardize_cols.varkit(x)

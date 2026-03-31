@@ -1,4 +1,5 @@
-new_linked_data <- function(x = NULL, slots = NULL, indices = NULL, keys = NULL) {
+##' @export
+new_related_data <- function(x = NULL, slots = NULL, indices = NULL, keys = NULL) {
   x <- if (is.null(x)) list() else as.list(x)
   if (is.null(slots)) slots <- list()
   if (is.null(indices)) indices <- list()
@@ -10,16 +11,18 @@ new_linked_data <- function(x = NULL, slots = NULL, indices = NULL, keys = NULL)
     slots = slots,
     indices = indices,
     keys = keys,
-    class = c("linked_data", "list")
+    class = c("related_data", "list")
   )
 }
 
-is_linked_data <- function(x) {
-  inherits(x, "linked_data")
+##' @export
+is_related_data <- function(x) {
+  inherits(x, "related_data")
 }
 
-validate_linked_data <- function(x) {
-  stopifnot(is_linked_data(x), is.list(x))
+##' @export
+validate_related_data <- function(x) {
+  stopifnot(is_related_data(x), is.list(x))
 
   stopifnot(c("slots", "indices", "keys") %in% names(attributes(x)))
   stopifnot(is.list(attr(x, "slots")), rlang::is_named2(attr(x, "slots")))
@@ -29,42 +32,45 @@ validate_linked_data <- function(x) {
   x
 }
 
-linked_data <- function(x = NULL, ...) {
+##' @export
+related_data <- function(x = NULL, ...) {
   if (!is.null(x))
     stopifnot(is.list(x), rlang::is_named(x))
 
-  out <- new_linked_data()
+  out <- new_related_data()
   if (...length() > 0L)
-    out <- linked_data_register(out, ...)
+    out <- rd_register(out, ...)
   if (length(x) > 0L)
     out[names(x)] <- x
 
   out
 }
 
-linked_data_unclass <- function(x) {
+##' @export
+rd_unclass <- function(x) {
   x <- unclass(x)
   attributes(x)[c("slots", "indices", "keys")] <- NULL
   x
 }
 
 # REVIEW unused?
-linked_data_restore <- function(x, attr_from) {
+##' @export
+rd_restore <- function(x, attr_from) {
   stopifnot(is.list(x))
-  validate_linked_data(attr_from)
+  validate_related_data(attr_from)
 
   copy_attr <- c("slots", "indices", "keys")
   attributes(x)[copy_attr] <- attributes(attr_from)[copy_attr]
 
-  add_class <- c("linked_data", "list")
+  add_class <- c("related_data", "list")
   class(x) <- c(setdiff(class(x), add_class), add_class)
 
   x
 }
 
 ##' @export
-`[<-.linked_data` <- function(x, i, ..., value) {
-  validate_linked_data(x)
+`[<-.related_data` <- function(x, i, ..., value) {
+  validate_related_data(x)
   if (is.null(value)) {
     value <- list(NULL)
   } else {
@@ -78,31 +84,31 @@ linked_data_restore <- function(x, attr_from) {
     stop("Number of items to replace should match replacement length!")
   }
 
-  linked_data_set_nomatch(x, i = i, value = value, validate = FALSE)
+  rd_set_nomatch(x, i = i, value = value, validate = FALSE)
 }
 
 ##' @export
-`[[<-.linked_data` <- function(x, i, value) {
+`[[<-.related_data` <- function(x, i, value) {
   stopifnot(length(i) == 1L)
-  linked_data_set_nomatch(x, i = i, value = list(value))
+  rd_set_nomatch(x, i = i, value = list(value))
 }
 
 ##' @export
-`$<-.linked_data` <- function(x, name, value) {
+`$<-.related_data` <- function(x, name, value) {
   stopifnot(is.character(name), length(name) == 1L)
-  linked_data_set_nomatch(x, i = name, value = list(value))
+  rd_set_nomatch(x, i = name, value = list(value))
 }
 
 ##' @export
-`[.linked_data` <- function(x, i, ...) {
-  validate_linked_data(x)
+`[.related_data` <- function(x, i, ...) {
+  validate_related_data(x)
   if (missing(i)) {
     i <- names(x)
   } else if (!is.character(i)) {
     i <- names(x)[i]
   }
 
-  result <- purrr::map(i, function(ii) linked_data_get(x, ii, .validate = FALSE))
+  result <- purrr::map(i, function(ii) rd_get(x, ii, .validate = FALSE))
   names(result) <- i
 
   # Also subset the attributes to keep the new object valid
@@ -122,7 +128,7 @@ linked_data_restore <- function(x, attr_from) {
   })
   names(keys) <- keep_keys
 
-  result <- new_linked_data(result, slots = slots, indices = indices, keys = keys)
+  result <- new_related_data(result, slots = slots, indices = indices, keys = keys)
 
   # Restore remaining attributes
   copy_attr <- c("class", setdiff(names(attributes(x)), names(attributes(result))))
@@ -132,21 +138,21 @@ linked_data_restore <- function(x, attr_from) {
 }
 
 ##' @export
-`[[.linked_data` <- function(x, i, ..., exact = TRUE) {
+`[[.related_data` <- function(x, i, ..., exact = TRUE) {
   # NOTE always use exact name matching
   if (isFALSE(exact))
     warning("'exact' name matching cannot be disabled")
-  linked_data_get(x, i = i)
+  rd_get(x, i = i)
 }
 
 ##' @export
-`$.linked_data` <- function(x, name) {
-  linked_data_get(x, i = name)
+`$.related_data` <- function(x, name) {
+  rd_get(x, i = name)
 }
 
 ##' @export
-print.linked_data <- function(x, ...) {
-  .msg_h1("Linked data object")
+print.related_data <- function(x, ...) {
+  .msg_h1("Related data object")
   .msg_h2("Slots")
   .print_slots(x, ...)
   .msg_h2("Indices")
@@ -202,15 +208,15 @@ print.linked_data <- function(x, ...) {
 }
 
 ##' @export
-str.linked_data <- function(object, ..., give.attr = FALSE, no.list = FALSE) {
+str.related_data <- function(object, ..., give.attr = FALSE, no.list = FALSE) {
   if (!isTRUE(no.list))
-    cat("Linked data object <list of ", length(object), ">:\n", sep = "")
+    cat("Related data object <list of ", length(object), ">:\n", sep = "")
   utils::str(unclass(object), give.attr = give.attr, no.list = TRUE, ...)
 }
 
 ##' @export
-summary.linked_data <- function(object, ...) {
-  validate_linked_data(object)
+summary.related_data <- function(object, ...) {
+  validate_related_data(object)
   slots <- attr(object, "slots")
   idx <- attr(object, "indices")
 
@@ -231,8 +237,8 @@ summary.linked_data <- function(object, ...) {
 }
 
 ##' @export
-linked_data_register <- function(x, ...) {
-  validate_linked_data(x)
+rd_register <- function(x, ...) {
+  validate_related_data(x)
   rlang::check_dots_unnamed()
 
   if (...length() == 0L)
@@ -262,8 +268,8 @@ linked_data_register <- function(x, ...) {
 
 # REVIEW prefix arguments with a dot to prevent collisions with indices?
 ##' @export
-match_linked_data <- function(x, linked_data_obj, slot, ..., .return_unused = FALSE) {
-  validate_linked_data(linked_data_obj)
+match_rd <- function(data, rd, slot, ..., .return_unused = FALSE) {
+  validate_related_data(rd)
   .stopifnotsingle(slot, what = "character")
   .stopifnotsingle(.return_unused, what = "logical")
 
@@ -272,8 +278,8 @@ match_linked_data <- function(x, linked_data_obj, slot, ..., .return_unused = FA
   if (!rlang::is_named2(dots))
     stop("All additional arguments should be named!")
 
-  slots <- attr(linked_data_obj, "slots")
-  keys <- attr(linked_data_obj, "keys")
+  slots <- attr(rd, "slots")
+  keys <- attr(rd, "keys")
 
   if (!slot %in% names(slots))
     stop("No slot registered for: '", slot, "'!")
@@ -289,16 +295,16 @@ match_linked_data <- function(x, linked_data_obj, slot, ..., .return_unused = FA
     warning("Some indices with were keys not provided as arguments: ", .quote_collapse(omitted))
 
   if (length(dots) == 0L)
-    return(x)
+    return(data)
 
   if (is.null(curr_slot))
     stop("No indices registered for slot: '", slot, "'!")
 
   # Ensure data has the expected number of dimensions for the slot
-  if (.ndim(x) != length(curr_slot))
-    stop("Expected data to have ", length(curr_slot), " dimensions, but got ", .ndim(x), "!")
+  if (.ndim(data) != length(curr_slot))
+    stop("Expected data to have ", length(curr_slot), " dimensions, but got ", .ndim(data), "!")
 
-  dots <- .dots_compute_keys(dots, x = x, slot = curr_slot)
+  dots <- .dots_compute_keys(dots, data = data, slot = curr_slot)
 
   # Match on intersecting indices
   match_indices <- names(dots)[!purrr::map_lgl(keys[names(dots)], is.null)]
@@ -316,18 +322,18 @@ match_linked_data <- function(x, linked_data_obj, slot, ..., .return_unused = FA
     names(args) <- NULL
 
     # Apply re-ordering & return
-    x <- do.call("[", args = c(list(x), args, list(drop = FALSE)))
+    data <- do.call("[", args = c(list(data), args, list(drop = FALSE)))
   }
 
   if (.return_unused)
-    attr(x, "unused_keys") <- unused
-  x
+    attr(data, "unused_keys") <- unused
+  data
 }
 
 ##' @export
-linked_data_set_nomatch <- function(x, i, value, validate = TRUE) {
+rd_set_nomatch <- function(x, i, value, validate = TRUE) {
   if (!isFALSE(validate))
-    validate_linked_data(x)
+    validate_related_data(x)
   stopifnot(is.list(value))
   stopifnot(length(i) == length(value))
 
@@ -382,14 +388,14 @@ linked_data_set_nomatch <- function(x, i, value, validate = TRUE) {
 }
 
 ##' @export
-linked_data_set <- function(x, slot, data, ..., .override = FALSE) {
+rd_set <- function(x, slot, data, ..., .override = FALSE) {
   .stopifnotsingle(.override, what = "logical")
 
   keys <- attr(x, "keys")
   if (.override)
     attr(x, "keys") <- list()
 
-  data <- match_linked_data(data, linked_data_obj = x, slot = slot, ..., .return_unused = TRUE)
+  data <- match_rd(data, rd = x, slot = slot, ..., .return_unused = TRUE)
 
   unused <- attr(data, "unused_keys")
   attr(data, "unused_keys") <- NULL
@@ -398,13 +404,13 @@ linked_data_set <- function(x, slot, data, ..., .override = FALSE) {
     keys[names(unused)] <- unused
   attr(x, "keys") <- keys
 
-  linked_data_set_nomatch(x, i = slot, value = list(data), validate = FALSE)
+  rd_set_nomatch(x, i = slot, value = list(data), validate = FALSE)
 }
 
 ##' @export
-linked_data_get <- function(x, i, ..., .drop = FALSE, .validate = TRUE) {
+rd_get <- function(x, i, ..., .drop = FALSE, .validate = TRUE) {
   if (!isFALSE(.validate))
-    validate_linked_data(x)
+    validate_related_data(x)
 
   x <- unclass(x)
   xi <- x[[i]]
@@ -452,13 +458,13 @@ linked_data_get <- function(x, i, ..., .drop = FALSE, .validate = TRUE) {
 }
 
 ##' @export
-linked_data_filter <- function(x, ...) {
-  validate_linked_data(x)
+rd_filter <- function(x, ...) {
+  validate_related_data(x)
   if (...length() == 0L)
     stop("Please provide indices to subset as additional arguments!")
 
   dots <- purrr::map(rlang::enquos(...), function(quo) {
-    with_linked_data(x, expr = !!quo)
+    with_rd(x, expr = !!quo)
   })
   if (!rlang::is_named(dots))
     stop("All additional arguments should be named!")
@@ -491,8 +497,8 @@ linked_data_filter <- function(x, ...) {
 }
 
 ##' @export
-linked_data_reset <- function(x, indices = NULL) {
-  validate_linked_data(x)
+rd_reset <- function(x, indices = NULL) {
+  validate_related_data(x)
   attr_ind <- attr(x, "indices")
 
   # Reset all indices if NULL
@@ -516,8 +522,8 @@ linked_data_reset <- function(x, indices = NULL) {
 }
 
 ##' @export
-linked_data_trim <- function(x, indices = NULL) {
-  validate_linked_data(x)
+rd_trim <- function(x, indices = NULL) {
+  validate_related_data(x)
   slots <- attr(x, "slots")
   keys <- attr(x, "keys")
   attr_ind <- attr(x, "indices")
@@ -545,9 +551,9 @@ linked_data_trim <- function(x, indices = NULL) {
 }
 
 ##' @export
-linked_data_dim <- function(x, i, use_indices = TRUE, validate = TRUE) {
+rd_dim <- function(x, i, use_indices = TRUE, validate = TRUE) {
   if (!isFALSE(validate))
-    validate_linked_data(x)
+    validate_related_data(x)
   .stopifnotsingle(use_indices, what = "logical")
   x <- unclass(x)
 
@@ -568,9 +574,9 @@ linked_data_dim <- function(x, i, use_indices = TRUE, validate = TRUE) {
 }
 
 ##' @export
-linked_data_dimnames <- function(x, i, use_indices = TRUE, validate = TRUE) {
+rd_dimnames <- function(x, i, use_indices = TRUE, validate = TRUE) {
   if (!isFALSE(validate))
-    validate_linked_data(x)
+    validate_related_data(x)
   .stopifnotsingle(use_indices, what = "logical")
   x <- unclass(x)
 
@@ -591,8 +597,8 @@ linked_data_dimnames <- function(x, i, use_indices = TRUE, validate = TRUE) {
 }
 
 ##' @export
-linked_data_indices_set <- function(x, indices, add = FALSE) {
-  validate_linked_data(x)
+rd_indices_set <- function(x, indices, add = FALSE) {
+  validate_related_data(x)
   stopifnot(is.list(indices), rlang::is_named(indices))
   .stopifnotsingle(add, what = "logical")
 
@@ -619,14 +625,14 @@ linked_data_indices_set <- function(x, indices, add = FALSE) {
 }
 
 ##' @export
-linked_data_indices_get <- function(x) {
-  validate_linked_data(x)
+rd_indices_get <- function(x) {
+  validate_related_data(x)
   attr(x, "indices")
 }
 
 ##' @export
-with_linked_data <- function(x, expr) {
-  stopifnot(is_linked_data(x))
+with_rd <- function(x, expr) {
+  stopifnot(is_related_data(x))
   if (missing(expr))
     stop("The 'expr' argument is empty!")
   expr <- rlang::enquo(expr)
@@ -636,7 +642,7 @@ with_linked_data <- function(x, expr) {
   # Lazily bind elements of X so subsetting is only applied if needed
   bind_vars <- setNames(nm = names(x))
   bind_exprs <- lapply(bind_vars, function(var) {
-    rlang::expr(linked_data_get(x, i = !!var))
+    rlang::expr(rd_get(x, i = !!var))
   })
   rlang::env_bind_lazy(eval_env, !!!bind_exprs)
 
@@ -660,8 +666,8 @@ with_linked_data <- function(x, expr) {
   )
 }
 
-.dots_compute_keys <- function(dots_quos, x, slot) {
-  dims <- .dim(x)
+.dots_compute_keys <- function(dots_quos, data, slot) {
+  dims <- .dim(data)
   names(dims) <- slot
 
   purrr::imap(dots_quos, function(dot, name) {
@@ -669,7 +675,7 @@ with_linked_data <- function(x, expr) {
     if (rlang::quo_is_call(dot, "c"))
       dot <- .quo_replace_fn(dot, fn = tibble::tibble)
 
-    res <- rlang::eval_tidy(dot, data = c(list(. = x), if (is.list(x)) x))
+    res <- rlang::eval_tidy(dot, data = c(list(. = data), if (is.list(data)) data))
     if (!is.list(res))
       stop("All additional arguments should evaluate to a list/dataframe!", call. = FALSE)
     if (!rlang::is_named(res))

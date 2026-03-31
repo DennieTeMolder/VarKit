@@ -5,5 +5,5 @@ export_mask <- function(x) {
 
 ##' @export
 export_mask.varkit <- function(x) {
-  linked_data_indices_get(x)
+  rd_indices_get(x)
 }

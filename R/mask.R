@@ -22,10 +22,10 @@ mask.varkit <- function(x, site, why = NULL, na_mask = TRUE, ...) {
   if (!na_mask && anyNA(site))
     site[is.na(site)] <- TRUE
 
-  result <- linked_data_filter(x, sites = !.env$site)
+  result <- rd_filter(x, sites = !.env$site)
 
   if (!is.null(why)) {
-    if (!any("filter" == colnames(linked_data_unclass(x)$site)))
+    if (!any("filter" == colnames(rd_unclass(x)$site)))
       result$site$filter <- .if_else(.indices(x)$sites, "PASS", "MASKED")
     result$site$filter[which(.indices(x)$sites)[!site]] <- why
   }

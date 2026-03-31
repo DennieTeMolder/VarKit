@@ -48,7 +48,7 @@ new_varkit <- function(site = data.frame(chrom = character(), pos = integer()),
   stopifnot(nrow(site) == length(site_indices))
   stopifnot(nrow(geno) == length(sample_indices))
 
-  obj <- new_linked_data(
+  obj <- new_related_data(
     x = list(
       meta = tibble::as_tibble(meta),
       site = tibble::as_tibble(site),
@@ -80,8 +80,8 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
   .stopifnotsingle(check_format, what = "logical")
   stopifnot(is_varkit(x))
 
-  old_x <- validate_linked_data(x)
-  x <- linked_data_unclass(x)
+  old_x <- validate_related_data(x)
+  x <- rd_unclass(x)
 
   .validate_varkit_meta(x$meta)
   .validate_varkit_site(x$site, check_info = check_info, check_format = check_format)
@@ -134,7 +134,7 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
 
 ##' @export
 `[<-.varkit` <- function(x, i, ..., value) {
-  validate_linked_data(x)
+  validate_related_data(x)
 
   # Attempt to convert I to character using names(X)
   if (!is.character(i)) {
@@ -170,7 +170,7 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
   if (i_geno > 0L) {
     # Cast equal sized vectors to matrix because some operation drop the matrix class
     if (is.vector(value[[i_geno]])) {
-      xgeno <- linked_data_unclass(x)$geno
+      xgeno <- rd_unclass(x)$geno
       if (length(value) == length(xgeno)) {
         warning("Converting '$meta' to matrix, check if the values are in the right row & column.")
         value <- mtrx(value, nrow = nrow(xgeno), ncol = ncol(xgeno), dimnames = dimnames(xgeno))
@@ -182,11 +182,11 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
     value[[i_geno]] <- varkit_geno(value[[i_geno]])
 
     # Remove the old value, and attempt to free the 'samples' index so it can be modified
-    x <- linked_data_set_nomatch(x, i = "geno", value = list(NULL), validate = FALSE)
-    x <- linked_data_trim(x, indices = "samples")
+    x <- rd_set_nomatch(x, i = "geno", value = list(NULL), validate = FALSE)
+    x <- rd_trim(x, indices = "samples")
   }
 
-  validate_varkit(linked_data_set_nomatch(x, i = i, value = value, validate = FALSE))
+  validate_varkit(rd_set_nomatch(x, i = i, value = value, validate = FALSE))
 }
 
 ##' @export
@@ -211,7 +211,7 @@ print.varkit <- function(x, ..., n = NULL, n_samples = NULL) {
 
   # Fetch slots to print
   which_print <- c("meta", "site", "geno")
-  x_print <- linked_data_unclass(x[which_print])
+  x_print <- rd_unclass(x[which_print])
 
   # Number of samples to print
   if (is.null(n_samples))
@@ -261,7 +261,7 @@ print.varkit <- function(x, ..., n = NULL, n_samples = NULL) {
 ##' @export
 summary.varkit <- function(object, ...) {
   validate_varkit(object)
-  class(object) <- c("linked_data", "list")
+  class(object) <- c("related_data", "list")
   summary(object)
 }
 
@@ -282,7 +282,7 @@ as_tibble.varkit <- function(x, ..., optional = TRUE) {
 split.varkit <- function(x, f, drop = FALSE, ...) {
   if (missing(drop))
     drop <- TRUE
-  x <- linked_data_unclass(x)
+  x <- rd_unclass(x)
 
   # Add indexes so we can retrace the splits
   x$site$idx <- seq_len(nrow(x$site))
@@ -299,7 +299,7 @@ split.varkit <- function(x, f, drop = FALSE, ...) {
 
   # Recreate the varkit object for each split
   lapply(setNames(nm = names(split_geno)), function(name) {
-    linked_data_filter(
+    rd_filter(
       new_varkit(meta = x$meta, site = split_site[[name]], geno = split_geno[[name]]),
       samples = .env$split_mask$samples,
       sites = .env$split_mask$sites[[name]])

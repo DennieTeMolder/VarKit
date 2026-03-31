@@ -10,16 +10,16 @@ with_vcf <- function(vcf, expr) {
   eval_env <- rlang::env(. = vcf)
 
   # Lazily bind columns of SITE
-  bind_vars <- setNames(nm = names(linked_data_unclass(vcf)$site))
+  bind_vars <- setNames(nm = names(rd_unclass(vcf)$site))
   bind_exprs <- lapply(bind_vars, function(var) {
-    rlang::expr(linked_data_get(vcf, i = "site", , !!var, .drop = TRUE))
+    rlang::expr(rd_get(vcf, i = "site", , !!var, .drop = TRUE))
   })
   rlang::env_bind_lazy(eval_env, !!!bind_exprs)
 
   # Lazily bind elements of VCF
   bind_vars <- setNames(nm = names(vcf))
   bind_exprs <- lapply(bind_vars, function(var) {
-    rlang::expr(linked_data_get(vcf, i = !!var))
+    rlang::expr(rd_get(vcf, i = !!var))
   })
   rlang::env_bind_lazy(eval_env, !!!bind_exprs)
 
