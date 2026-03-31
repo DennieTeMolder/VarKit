@@ -49,7 +49,7 @@ groups.varkit_linkage_graph <- function(x) {
 
 # NOTE using saveRDS() also seems to work and uses 10x less disk space (binary format).
 ##' @export
-write_graph <- function(graph, file, format = "xml") {
+write_linkage_graph <- function(graph, file, format = "xml") {
   .ensure_igraph()
   if (!format[1] %in% c("xml", "graphml"))
     stop("Only the 'xml' (graphml) format is supported! Others lack graph and/or vertex attributes.")
@@ -57,7 +57,7 @@ write_graph <- function(graph, file, format = "xml") {
 }
 
 ##' @export
-read_graph <- function(file) {
+read_linkage_graph <- function(file) {
   .ensure_igraph()
   graph <- igraph::read_graph(file, format = "graphml")
   igraph::remove.vertex.attribute(graph, "id")
