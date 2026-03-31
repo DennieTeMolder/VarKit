@@ -308,7 +308,7 @@ split.varkit <- function(x, f, drop = FALSE, ...) {
   lapply(setNames(nm = names(split_geno)), function(name) {
     linked_data_filter(
       new_varkit(meta = x$meta, site = split_site[[name]], geno = split_geno[[name]]),
-      samples = split_mask$samples,
-      sites = split_mask$sites[[name]])
+      samples = .env$split_mask$samples,
+      sites = .env$split_mask$sites[[name]])
   })
 }

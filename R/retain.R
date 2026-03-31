@@ -22,7 +22,7 @@ retain.varkit <- function(x, site, why = NULL, na_retain = TRUE, ...) {
   if (na_retain && anyNA(site))
     site[is.na(site)] <- TRUE
 
-  result <- linked_data_filter(x, sites = site)
+  result <- linked_data_filter(x, sites = .env$site)
 
   if (!is.null(why)) {
     if (!any("filter" == colnames(linked_data_unclass(x)$site)))

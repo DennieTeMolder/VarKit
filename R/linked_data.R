@@ -469,7 +469,7 @@ linked_data_filter <- function(x, ...) {
     stop("Please provide indices to subset as additional arguments!")
 
   dots <- purrr::map(rlang::enquos(...), function(quo) {
-    rlang::eval_tidy(quo, data = list(. = x))
+    with_linked_data(x, expr = !!quo)
   })
   if (!rlang::is_named(dots))
     stop("All additional arguments should be named!")
