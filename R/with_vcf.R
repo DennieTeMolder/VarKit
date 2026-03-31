@@ -6,7 +6,7 @@ with_vcf <- function(vcf, expr) {
     stop("The 'expr' argument is empty!")
   expr <- rlang::enquo(expr)
 
-  # The VarKit object in the VCF argument can be referenced with '.'
+  # The VarKit object in the can be referenced with '.data' & '.'
   eval_env <- rlang::env(. = vcf)
 
   # Lazily bind columns of SITE
@@ -23,5 +23,9 @@ with_vcf <- function(vcf, expr) {
   })
   rlang::env_bind_lazy(eval_env, !!!bind_exprs)
 
-  rlang::eval_tidy(expr, data = rlang::new_data_mask(eval_env))
+  # Create data mask and add .data pronoun for tidyverse parity
+  eval_env <- rlang::new_data_mask(eval_env)
+  eval_env$.data <- rlang::as_data_pronoun(eval_env)
+
+  rlang::eval_tidy(expr, data = eval_env)
 }
