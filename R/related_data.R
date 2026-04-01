@@ -245,7 +245,7 @@ rd_register <- function(x, ...) {
     stop("Please provide the slots to add as additional arguments!")
 
   dots <- purrr::list_flatten(purrr::map(rlang::enexprs(...), function(exp) {
-    if (is.character(exp)) {
+    if (is.character(exp) && !is.na(exp)) {
       # Do nothing
     } else if (rlang::is_symbol(exp)) {
       exp <- as.character(exp)
@@ -412,13 +412,19 @@ rd_get <- function(x, i, ..., .drop = FALSE, .validate = TRUE) {
   if (!isFALSE(.validate))
     validate_related_data(x)
 
+  if (is.na(i[[1L]]))
+    stop("The value of 'i' cannot be NA!")
+  if (is.character(i) && !i[[1L]] %in% names(attr(x, "slots")))
+    stop("No slot registered for: '", i[[1L]], "'!")
+
   x <- unclass(x)
   xi <- x[[i]]
+
   if (is.null(xi))
     return(NULL)
 
-  # Slots are accessed by name, so we might need to convert
-  if (is.numeric(i))
+  # Slots are accessed by name, convert
+  if (!is.character(i))
     i <- names(x)[[i]]
 
   # Pull the index values associated to slot I if known
@@ -450,11 +456,14 @@ rd_get <- function(x, i, ..., .drop = FALSE, .validate = TRUE) {
     idx_val[has_value] <- dots[has_value]
   }
 
-  # Short circuit if there is nothing to select
-  if (all(purrr::map_lgl(idx_val, function(idx) is.logical(idx) && all(idx))))
-    return(xi)
+  # Check if subsetting is actually needed to improve performance
+  for (idx in idx_val) {
+    if (is.logical(idx) && !anyNA(idx) && all(idx))
+      next()
+    return(do.call("[", args = c(list(xi), unname(idx_val), list(drop = .drop))))
+  }
 
-  do.call("[", args = c(list(xi), unname(idx_val), list(drop = .drop)))
+  xi
 }
 
 ##' @export
