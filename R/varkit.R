@@ -247,7 +247,7 @@ print.varkit <- function(x, ..., n = NULL, n_samples = NULL) {
   cat("\n")
 
   # Summarize slots not printed, if any
-  if (!all(names(x) %in% which_print)) {
+  if (!all(names(attr(x, "slots")) %in% which_print)) {
     .msg_h2("Additional slots")
     .print_slots(x, .exclude = which_print)
   }
