@@ -6,8 +6,9 @@ geno <- function(x, ..., .drop = FALSE) {
 ##' @export
 geno.varkit <- function(x, ..., .drop = FALSE) {
   if (...length() > 0L) {
-    .data <- setNames(which(.indices(x)$samples), nm = samples.varkit(x))
+    .data <- setNames(nm = samples.varkit(x))
     loc <- tidyselect::eval_select(rlang::expr(c(...)), data = .data)
+    loc <- setNames(which(.indices(x)$samples)[loc], nm = names(loc))
 
     res <- rd_get(x, i = "geno", samples = loc, , .drop = .drop)
     if (!is.vector(res))

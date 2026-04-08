@@ -452,7 +452,7 @@ rd_get <- function(x, i, ..., .drop = FALSE, .validate = TRUE) {
     dots <- .dots_match_indices(dots, use_indices = use_indices)
 
     # Only replace index values if not null
-    has_value <- !purrr::map_lgl(dots, function(dot) is.null(dot))
+    has_value <- !purrr::map_lgl(dots, is.null)
     idx_val[has_value] <- dots[has_value]
   }
 
