@@ -257,7 +257,7 @@ rd_register <- function(x, ...) {
     setNames(list(if (length(exp) > 1L) exp[-1L]), nm = exp[1L])
   }))
 
-  # REVIEW re-validate slots instead?
+  # TODO re-validate slots instead
   occupied <- intersect(names(dots), names(x))
   if (length(occupied) > 0L)
     stop("Provided slot are already occupied: ", .quote_collapse(occupied), "!")

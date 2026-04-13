@@ -19,8 +19,8 @@ retain.varkit <- function(x, site, why = NULL, na_retain = TRUE, ...) {
   if (!is.logical(site))
     stop("The value of 'site' should be of type logical!")
 
-  if (na_retain && anyNA(site))
-    site[is.na(site)] <- TRUE
+  if (anyNA(site))
+    site[is.na(site)] <- na_retain
 
   result <- rd_filter(x, sites = .env$site)
 

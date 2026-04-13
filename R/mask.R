@@ -19,8 +19,8 @@ mask.varkit <- function(x, site, why = NULL, na_mask = TRUE, ...) {
   if (!is.logical(site))
     stop("The value of 'site' should be of type logical!")
 
-  if (!na_mask && anyNA(site))
-    site[is.na(site)] <- TRUE
+  if (anyNA(site))
+    site[is.na(site)] <- na_mask
 
   result <- rd_filter(x, sites = !.env$site)
 
