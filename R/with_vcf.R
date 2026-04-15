@@ -6,7 +6,7 @@ with_vcf <- function(vcf, expr) {
     stop("The 'expr' argument is empty!")
   expr <- rlang::enquo(expr)
 
-  # The VarKit object in the can be referenced with '.data' & '.'
+  # The VarKit object in the can be referenced with '.'
   eval_env <- rlang::env(. = vcf)
 
   # Lazily bind columns of SITE

@@ -646,7 +646,8 @@ with_rd <- function(x, expr) {
     stop("The 'expr' argument is empty!")
   expr <- rlang::enquo(expr)
 
-  eval_env <- rlang::env()
+  # The related data object itself can be referenced with '.'
+  eval_env <- rlang::env(. = x)
 
   # Lazily bind elements of X so subsetting is only applied if needed
   bind_vars <- setNames(nm = names(x))
@@ -655,7 +656,11 @@ with_rd <- function(x, expr) {
   })
   rlang::env_bind_lazy(eval_env, !!!bind_exprs)
 
-  rlang::eval_tidy(expr, data = rlang::new_data_mask(eval_env))
+  # Create data mask and add .data pronoun for tidyverse parity
+  eval_env <- rlang::new_data_mask(eval_env)
+  eval_env$.data <- rlang::as_data_pronoun(eval_env)
+
+  rlang::eval_tidy(expr, data = eval_env)
 }
 
 `.indices<-` <- function(x, value) {
