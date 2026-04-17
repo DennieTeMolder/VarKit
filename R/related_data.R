@@ -258,12 +258,12 @@ rd_register <- function(x, ...) {
     setNames(list(if (length(exp) > 1L) exp[-1L]), nm = exp[1L])
   }))
 
-  # TODO re-validate slots instead
-  occupied <- intersect(names(dots), names(x))
-  if (length(occupied) > 0L)
-    stop("Provided slot are already occupied: ", .quote_collapse(occupied), "!")
-
   attr(x, "slots")[names(dots)] <- dots
+
+  # Re-validate occupied slots by reassigning them
+  validate <- intersect(names(dots), names(x))
+  rd_set_nomatch(x, i = validate, value = unclass(x)[validate])
+
   x
 }
 
