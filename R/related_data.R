@@ -351,24 +351,28 @@ rd_set_nomatch <- function(x, i, value, validate = TRUE) {
   if (length(no_slot) > 0L)
     stop("Register slots before assigning: ", .quote_collapse(no_slot), "!")
 
-  # Check if the new dimensions match with existing indices, creating them if missing
+  # Enable extracting VALUE using I
+  names(value) <- i
+
+  # Check if dimensions of VALUE match with existing indices, creating them if missing
   indices <- attr(x, "indices")
-  for (ii in seq_along(i)) {
-    current <- i[ii]
+  for (current in i) {
     use_indices <- slots[[current]]
-    if (is.null(use_indices) || is.null(value[[ii]]))
+    if (is.null(use_indices) || is.null(value[[current]]))
       next()
 
-    dims <- .dim(value[[ii]])
-    if (length(dims) != length(use_indices))
-      stop("Expected ", length(use_indices), " dimensions, but got ", length(dims), "!")
+    dims <- .dim(value[[current]])
+    if (length(dims) != length(use_indices)) {
+      stop("At `$", current, "`: expected ", length(use_indices),
+           " dimension(s), but data has ", length(dims), "!")
+    }
 
     names(dims) <- use_indices
-    dims <- dims[use_indices != ""]
-
-    for (idx in names(dims)) {
-      if (is.null(indices[[idx]])) {
-        indices[[idx]] <- rep(TRUE, dims[[idx]])
+    for (idx in use_indices) {
+      if (idx == "") {
+        next()
+      } else if (is.null(indices[[idx]])) {
+        indices[[idx]] <- rep(TRUE, dims[idx])
       } else if (dims[idx] != length(indices[[idx]])) {
         stop("At dim ", which(use_indices == idx), " of `$", current,
              "`: expected length ", .frmt_big(length(indices[[idx]])),
