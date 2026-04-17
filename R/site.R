@@ -1,22 +1,28 @@
 ##' @export
-site <- function(x, ..., .add_index = FALSE) {
+site <- function(x, ..., .drop = NULL, .add_index = FALSE) {
   UseMethod("site", x)
 }
 
 ##' @export
-site.varkit <- function(x, ..., .add_index = FALSE) {
+site.varkit <- function(x, ..., .drop = NULL, .add_index = FALSE) {
   .stopifnotsingle(.add_index, what = "logical")
+  if (is.null(.drop)) {
+    # REVIEW should this always default to FALSE like geno()?
+    .drop <- ...length() > 0L && is.null(...names())
+  } else {
+    .stopifnotsingle(.drop, what = "logical")
+  }
 
   if (...length() > 0L) {
     col_select <- tidyselect::eval_select(
       rlang::expr(c(...)),
       data = rd_unclass(x)$site
     )
-    res <- rd_get(x, i = "site", , col_select, .drop = is.null(...names()))
+    res <- rd_get(x, i = "site", , col_select, .drop = .drop)
     if (!is.vector(res))
       colnames(res) <- names(col_select)
   } else {
-    res <- rd_get(x, i = "site")
+    res <- rd_get(x, i = "site", .drop = .drop)
   }
 
   if (.add_index)
