@@ -571,6 +571,9 @@ rd_dim <- function(x, i, use_indices = TRUE, validate = TRUE) {
   if (is.numeric(i))
     i <- names(x)[[i]]
 
+  if (is.null(x[[i]]))
+    return(NULL)
+
   res <- setNames(.dim(x[[i]]), nm = attr(x, "slots")[[i]])
   if (!(use_indices && any(rlang::have_name(res))))
     return(res)
@@ -593,6 +596,9 @@ rd_dimnames <- function(x, i, use_indices = TRUE, validate = TRUE) {
   # Slots are accessed by name, so we might need to convert
   if (is.numeric(i))
     i <- names(x)[[i]]
+
+  if (is.null(x[[i]]))
+    return(NULL)
 
   res <- setNames(.dimnames(x[[i]]), nm = attr(x, "slots")[[i]])
   if (!(use_indices && any(rlang::have_name(res))))
