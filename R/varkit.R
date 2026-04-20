@@ -185,9 +185,12 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
 
     value[[i_geno]] <- varkit_geno(value[[i_geno]])
 
-    # Remove the old value, and attempt to free the 'samples' index so it can be modified
-    x <- rd_set_nomatch(x, i = "geno", value = list(NULL), validate = FALSE)
-    x <- rd_trim(x, indices = "samples")
+    # If no other slots are using the 'samples' indices, clear them so they can be modified
+    slots_to_check <- attr(x, "slots")
+    exclude_slots <- union("geno", names(which(purrr::map_lgl(rd_unclass(x), is.null))))
+    slots_to_check[exclude_slots] <- NULL
+    if (!any("samples" == purrr::list_c(slots_to_check)))
+      attr(x, "indices")$samples <- NULL
   }
 
   validate_varkit(rd_set_nomatch(x, i = i, value = value, validate = FALSE))
