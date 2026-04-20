@@ -168,12 +168,16 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
 
   i_geno <- match("geno", i, nomatch = 0L)
   if (i_geno > 0L) {
-    # Cast equal sized vectors to matrix because some operation drop the matrix class
+    # Cast equal sized vectors to matrix because some operations drop the matrix class
     if (is.vector(value[[i_geno]])) {
       xgeno <- rd_unclass(x)$geno
-      if (length(value) == length(xgeno)) {
-        warning("Converting '$meta' to matrix, check if the values are in the right row & column.")
-        value <- mtrx(value, nrow = nrow(xgeno), ncol = ncol(xgeno), dimnames = dimnames(xgeno))
+      if (!is.null(xgeno) && length(value) == length(xgeno)) {
+        value[[i_geno]] <- mtrx(
+          value[[i_geno]],
+          nrow = nrow(xgeno),
+          ncol = ncol(xgeno),
+          dimnames = dimnames(xgeno)
+        )
       }
     } else if (!is.matrix(value[[i_geno]])) {
       stop("The '$geno' slot must be a matrix!")
