@@ -31,8 +31,8 @@ parse_meta(vcf, type = "INFO")
 parse_meta(vcf, type = "contig")
 
 parse_geno(vcf)
-parse_geno(vcf, type = "GT")
-parse_geno(vcf, type = "DP")
+parse_geno(vcf, type = "FMT/GT")
+parse_geno(vcf, type = "FORMAT/DP")
 
 parse_info(vcf)
 parse_info(vcf, type = "DP")

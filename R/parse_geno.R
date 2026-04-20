@@ -15,6 +15,13 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
     return(.get_format_types(x))
   }
 
+  # Elements of X can be referenced directly w/o parsing, the FORMAT/TAG always triggers parsing
+  if (stringr::str_detect(type, "^(FORMAT|FMT)/")) {
+    type <- stringr::str_remove(type, "[^/]*/")
+  } else if (type %in% names(x)) {
+    return(x[[type]])
+  }
+
   # Check if parsing is required
   frmt <- site.varkit(x, "format")
   if (all(frmt == type))
@@ -81,11 +88,17 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
   names(which_fixed_pos) <- uniq_mat[which_fixed_pos, 1L]
 
   types <- sort(unique(unlist(uniq)))
-  results <- tibble::tibble(type = types, index = which_fixed_pos[types])
+  results <- tibble::tibble(
+    type = paste0("FORMAT/", types),
+    index = which_fixed_pos[types]
+  )
 
   metadata <- parse_meta(x, "FORMAT")
   if (!is.null(metadata)) {
-    metadata <- tibble::tibble(type = metadata$ID, description = metadata$Description)
+    metadata <- tibble::tibble(
+      type = paste0("FORMAT/", metadata$ID),
+      description = metadata$Description
+    )
     return(dplyr::right_join(metadata, results, by = "type"))
   }
 
