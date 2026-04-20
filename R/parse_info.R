@@ -13,14 +13,27 @@ parse_info.varkit <- function(x, type = NULL, use_meta = TRUE) {
   if (is.null(type)) {
     warning("Please provide the 'type' argument, returning possible options.")
 
-    if (!use_meta)
-      return(.collect_all_keys(site.varkit(x, "info")))
+    if (!use_meta) {
+      keys <- .collect_all_keys(site.varkit(x, "info"))
+      return(tibble::tibble(type = paste0("INFO/", keys)))
+    }
 
     meta_info <- parse_meta.varkit(x, type = "INFO")
     if (is.null(meta_info))
       stop("The `$meta$name` column has no INFO entries, this is required when `use_meta = TRUE`!")
 
-    return(dplyr::transmute(meta_info, type = .data$ID, description = .data$Description))
+    return(dplyr::transmute(
+      meta_info,
+      type = paste0("INFO/", .data$ID),
+      description = .data$Description
+    ))
+  }
+
+  # Columns of x$site can be referenced directly w/o parsing, the INFO/TAG always triggers parsing
+  if (stringr::str_detect(type, "^INFO/")) {
+    type <- stringr::str_remove(type, "INFO/")
+  } else if (type %in% rd_dimnames(x, i = "site", use_indices = FALSE, validate = FALSE)[[2L]]) {
+    return(rd_get(x, i = "site", , type, .drop = TRUE, .validate = FALSE))
   }
 
   if (use_meta) {

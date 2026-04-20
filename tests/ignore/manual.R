@@ -35,7 +35,7 @@ parse_geno(vcf, type = "FMT/GT")
 parse_geno(vcf, type = "FORMAT/DP")
 
 parse_info(vcf)
-parse_info(vcf, type = "DP")
+parse_info(vcf, type = "INFO/DP")
 parse_info_all(vcf, use_meta = T)
 parse_info_all(vcf, use_meta = F)
 
