@@ -260,11 +260,12 @@ rd_register <- function(x, ...) {
 
   attr(x, "slots")[names(dots)] <- dots
 
-  # Re-validate occupied slots by reassigning them
-  validate <- intersect(names(dots), names(x))
-  rd_set_nomatch(x, i = validate, value = unclass(x)[validate])
+  # Re-assign occupied slots to validate and create new indices
+  reassign <- intersect(names(dots), names(x))
+  if (length(reassign) == 0L)
+    return(x)
 
-  x
+  rd_set_nomatch(x, i = reassign, value = unclass(x)[reassign], validate = FALSE)
 }
 
 # REVIEW prefix arguments with a dot to prevent collisions with indices?
