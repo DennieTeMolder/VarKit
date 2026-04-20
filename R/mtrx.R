@@ -72,7 +72,7 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL, advice = getOption("mtrx.
     sep = ""
   )
 
-  if (nrow(x) == 0L && ncol(x) == 0L)
+  if (length(x) == 0L)
     return(invisible(x))
 
   # Remove the dimnames names to prevent them from printing
@@ -121,7 +121,7 @@ str.mtrx <- function (object, ...) {
   utils::str(unclass(object), ...)
 }
 
-.max_print_col <- function(mat, row_idx = NULL, width = getOption("width")) {
+.max_print_col <- function(mat, row_idx = NULL, width = getOption("width", 80L)) {
   stopifnot(is.matrix(mat))
   if (!missing(row_idx) && is.null(row_idx))
     row_idx <- rlang::missing_arg()
