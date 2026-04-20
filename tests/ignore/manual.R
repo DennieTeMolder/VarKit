@@ -61,7 +61,7 @@ apply(geno(vcf), "samples", length)
 apply(geno(vcf), "sites", length)
 
 ## Linked sites ------
-vcf <- unmask_all(read_vcf(example))
+vcf <- read_vcf(example, use_filter = FALSE)
 geno(vcf) <- as_integer(round(ad2aaf(vcf)$aaf) * 2L)
 
 links <- find_linked_sites(vcf, windows = -1, return_r2 = TRUE, cores = 1)
@@ -96,7 +96,7 @@ next_chunk(index, col_select = NULL)
 ## Looping over indexes
 # Using a complete index
 res <- apply_index(index, function(vcf) {
-  Sys.sleep(2)
+  Sys.sleep(1)
   mask(vcf, qual < 1e5)
 })
 
@@ -106,7 +106,7 @@ concat_vcf(res[[1]])
 concat_vcf(res[[1]], res[2:3])
 
 # Using a partial index
-apply_index(index[c(1, 3), ], function(vcf) table(site(vcf, chrom)))
+str(apply_index(index[c(1, 3), ], function(vcf) table(site(vcf, chrom))))
 
 # Using a header only index while reading raw lines (also works with next_chunk)
 h_index <- index_vcf_header(example, chunk_size  = 25)
@@ -126,6 +126,7 @@ seek(test, 1)
 seq_index(test)
 
 ## Related data ------
+vcf <- read_vcf(example)
 obj <- related_data()
 obj <- rd_register(obj, meta[, ], site[sites, ], geno[samples, sites])
 

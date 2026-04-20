@@ -1,5 +1,5 @@
 ##' @export
-ad2aaf <- function(vcf, ad_cap = NULL, type = "AD", alt_idx = NULL) {
+ad2aaf <- function(vcf, ad_cap = NULL, type = "FORMAT/AD", alt_idx = NULL) {
   stopifnot(is_varkit(vcf))
   if (!is.null(ad_cap)) {
     .stopifnotsingle(ad_cap, what = is.numeric)
