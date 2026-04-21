@@ -1,3 +1,5 @@
+# REVIEW now that we have has_join() & is_linked() all operations can be
+# performed using mask() alone, should retain() be deprecated?
 ##' @export
 retain <- function(x, site, why = NULL, na_retain = TRUE, ...) {
   UseMethod("retain", x)

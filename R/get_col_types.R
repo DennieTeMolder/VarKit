@@ -1,10 +1,10 @@
 ##' @export
-get_col_types <- function(x, meta_type = "INFO", ...) {
-  UseMethod("get_col_types", x)
+get_info_types <- function(x, meta_type = "INFO", ...) {
+  UseMethod("get_info_types", x)
 }
 
 ##' @export
-get_col_types.varkit <- function(x, meta_type = "INFO", ...) {
+get_info_types.varkit <- function(x, meta_type = "INFO", ...) {
   info <- parse_meta(x, type = meta_type)
   if (is.null(info))
     return(NULL)
@@ -27,4 +27,4 @@ get_col_types.varkit <- function(x, meta_type = "INFO", ...) {
 }
 
 ##' @export
-get_col_types.varkit_header <- get_col_types.varkit
+get_info_types.varkit_header <- get_info_types.varkit

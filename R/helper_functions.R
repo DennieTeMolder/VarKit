@@ -54,9 +54,6 @@
     stop("Argument 'yes' has a length mismatch!")
   }
 
-  if (rlang::is_missing(x))
-    return(yes)
-
   if (length(no) == 1L) {
     res <- rep(no, len)
   } else if (length(no) != len) {

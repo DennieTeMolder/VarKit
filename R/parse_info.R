@@ -37,7 +37,7 @@ parse_info.varkit <- function(x, type = NULL, use_meta = TRUE) {
   }
 
   if (use_meta) {
-    col_types <- get_col_types.varkit(x, meta_type = "INFO")
+    col_types <- get_info_types.varkit(x, meta_type = "INFO")
     if (is.null(col_types))
       stop("The `$meta$name` column has no INFO entries, this is required when `use_meta = TRUE`!")
     if (!type %in% names(col_types))

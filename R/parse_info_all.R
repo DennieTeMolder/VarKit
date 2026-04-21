@@ -9,7 +9,7 @@ parse_info_all.varkit <- function(x, use_meta = TRUE) {
   .stopifnotsingle(use_meta, what = "logical")
 
   if (use_meta) {
-    col_types <- get_col_types.varkit(x, meta_type = "INFO")
+    col_types <- get_info_types.varkit(x, meta_type = "INFO")
     if (is.null(col_types))
         stop("The `$meta$name` column has no INFO entries, this is required when `use_meta = TRUE`!")
   } else {
