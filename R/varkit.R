@@ -150,47 +150,49 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
   } else if (length(i) != length(value)) {
     stop("Number of items to replace should match replacement length!")
   }
+  names(value) <- i
 
   # Validate an modify reserved slots
-  i_meta <- match("meta", i, nomatch = 0L)
-  if (i_meta > 0L) {
-    if (!is.data.frame(value[[i_meta]]))
+  if (any(names(value) == "meta")) {
+    if (!is.data.frame(value$meta))
       stop("The '$meta' slot must be a data frame!")
-    value[[i_meta]] <- tibble::as_tibble(value[[i_meta]])
+    value$meta <- tibble::as_tibble(value$meta)
   }
 
-  i_site <- match("site", i, nomatch = 0L)
-  if (i_site > 0L) {
-    if (!is.data.frame(value[[i_site]]))
+  if (any(names(value) == "site")) {
+    if (!is.data.frame(value$site))
       stop("The '$site' slot must be a data frame!")
-    value[[i_site]] <- tibble::as_tibble(value[[i_site]])
+    value$site <- tibble::as_tibble(value$site)
   }
 
-  i_geno <- match("geno", i, nomatch = 0L)
-  if (i_geno > 0L) {
+  if (any(names(value) == "geno")) {
+    geno_old <- rd_unclass(x)$geno
+
     # Cast equal sized vectors to matrix because some operations drop the matrix class
-    if (is.vector(value[[i_geno]])) {
-      xgeno <- rd_unclass(x)$geno
-      if (!is.null(xgeno) && length(value) == length(xgeno)) {
-        value[[i_geno]] <- mtrx(
-          value[[i_geno]],
-          nrow = nrow(xgeno),
-          ncol = ncol(xgeno),
-          dimnames = dimnames(xgeno)
+    if (is.vector(value$geno)) {
+      if (!is.null(geno_old) && length(value$geno) == length(geno_old)) {
+        value$geno <- mtrx(
+          value$geno,
+          nrow = nrow(geno_old),
+          ncol = ncol(geno_old),
+          dimnames = dimnames(geno_old)
         )
       }
-    } else if (!is.matrix(value[[i_geno]])) {
+    } else if (!is.matrix(value$geno)) {
       stop("The '$geno' slot must be a matrix!")
     }
 
-    value[[i_geno]] <- varkit_geno(value[[i_geno]])
+    value$geno <- varkit_geno(value$geno)
 
-    # If no other slots are using the 'samples' indices, clear them so they can be modified
-    slots_to_check <- attr(x, "slots")
-    exclude_slots <- union("geno", names(which(purrr::map_lgl(rd_unclass(x), is.null))))
-    slots_to_check[exclude_slots] <- NULL
-    if (!any("samples" == purrr::list_c(slots_to_check)))
-      attr(x, "indices")$samples <- NULL
+    # Support dropping samples by modifying $geno, this requires freeing the 'samples' index
+    if (any(dim(value$geno) != dim(geno_old))) {
+      # If no other slots are using the 'samples' indices, clear them so they can be modified
+      slots_to_check <- attr(x, "slots")
+      exclude_slots <- union("geno", names(which(purrr::map_lgl(rd_unclass(x), is.null))))
+      slots_to_check[exclude_slots] <- NULL
+      if (!any("samples" == purrr::list_c(slots_to_check)))
+        attr(x, "indices")$samples <- NULL
+    }
   }
 
   validate_varkit(rd_set_nomatch(x, i = i, value = value, validate = FALSE))
