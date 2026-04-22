@@ -19,7 +19,14 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
   if (stringr::str_detect(type, "^(FORMAT|FMT)/")) {
     type <- stringr::str_remove(type, "[^/]*/")
   } else if (type %in% names(x)) {
-    return(x[[type]])
+    res <- x[[type]]
+    if (!is.matrix(res)) {
+      stop("Expected cached value in `$", type, "` to be a matrix!")
+    } else if (any(dim(res) != rd_dim(x, i = "geno"))) {
+      stop("Expected dimensions for cached value in `$", type, "`: ", .collapse(.frmt_big(rd_dim(x, i = "geno"))),
+           "; but got: ", .collapse(.frmt_big(dim(res))))
+    }
+    return(res)
   }
 
   # Check if parsing is required

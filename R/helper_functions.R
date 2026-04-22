@@ -140,9 +140,9 @@
   stringr::str_replace(x, pattern, "\\1")
 }
 
-.frmt_big <- function(x, scientific = FALSE, ...) {
+.frmt_big <- function(x, scientific = FALSE, trim = TRUE, ...) {
   big.mark <- if (getOption("OutDec", ".") == ".") "," else "."
-  format(x, big.mark = big.mark, scientific = scientific, ...)
+  format(x, big.mark = big.mark, scientific = scientific, trim = trim, ...)
 }
 
 .curr_time <- function() {
