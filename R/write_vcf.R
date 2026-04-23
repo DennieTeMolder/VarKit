@@ -71,7 +71,7 @@ write_vcf.varkit <- function(x,
   x <- .replace_na_geno(x, na_geno = na_geno)
 
   # Convert body to a data frame
-  x <- cbind(x$site, t(x$geno))
+  x <- as.data.frame.varkit(x)
 
   .msg_step("Writing VCF body")
 

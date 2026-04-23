@@ -277,8 +277,8 @@ summary.varkit <- function(object, ...) {
 ##' @export
 as.data.frame.varkit <- function(x, row.names = NULL, optional = FALSE, ...) {
   cbind(
-    as.data.frame(site.varkit(x), row.names = row.names, optional = optional, ...),
-    as.data.frame(t(geno.varkit(x)), optional = optional)
+    as.data.frame(x$site, row.names = row.names, optional = optional, ...),
+    as.data.frame.list(asplit(x$geno, MARGIN = 1), optional = optional)
   )
 }
 
