@@ -568,7 +568,7 @@ rd_trim <- function(x, indices = NULL) {
 ##' @export
 rd_shrink <- function(x) {
   stopifnot(is_related_data(x))
-  x[]
+  `[.related_data`(x)
 }
 
 ##' @export

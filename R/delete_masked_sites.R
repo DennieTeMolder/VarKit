@@ -7,15 +7,32 @@ delete_masked_sites <- function(x) {
 delete_masked_sites.varkit <- function(x) {
   validate_varkit(x)
 
-  # Reset all other indices so they do not get applied
-  indices <- .indices(x)
-  reset_ind <- setdiff(names(indices), "sites")
-  x <- rd_reset(x, indices = reset_ind)
+  # Store 'related_data' specific attributes to restore later
+  slots <- attr(x, "slots")
+  indices <- attr(x, "indices")
+  keys <- attr(x, "keys")
 
-  # Apply the mask
-  x <- x[]
+  # Short-circuit if there are no masked sites
+  if (all(indices$sites))
+    return(x)
 
-  # Restore the unused indices
-  .indices(x)[reset_ind] <- indices[reset_ind]
+  # Clear all other indices from the slots so they are not shrunken
+  attr(x, "slots") <- lapply(slots, function(slot) {
+    slot[slot != "sites"] <- ""
+    slot
+  })
+
+  # Shrink to delete masked values
+  x <- rd_shrink(x)
+
+  # Transfer modified indices
+  indices[["sites"]] <- getElement(attr(x, "indices"), "sites")
+  keys[["sites"]] <- getElement(attr(x, "keys"), "sites")
+
+  # Restore
+  attr(x, "slots") <- slots
+  attr(x, "indices") <- indices
+  attr(x, "keys") <- keys
+
   x
 }
