@@ -28,8 +28,8 @@ write_vcf_header.varkit_header <- function(x, file, timestamp = TRUE, compressio
 
   # Standardize the column names of the fixed fields and convert to upper
   x <- standardize_cols.varkit_header(x)
-  which_to_upper <- seq_along(.fixed_columns())
-  x$col_names[which_to_upper] <- toupper(x$col_names[which_to_upper])
+  to_upper <- x$col_names %in% .fixed_columns()
+  x$col_names[to_upper] <- toupper(x$col_names[to_upper])
 
   header <- c(
     paste0("##", header$name, "=", header$value),
@@ -41,7 +41,7 @@ write_vcf_header.varkit_header <- function(x, file, timestamp = TRUE, compressio
 
 ##' @export
 write_vcf_header.varkit <- function(x, file, timestamp = TRUE, compression = NULL) {
-  x <- rd_unclass(x)
+  x <- standardize_cols.varkit(rd_unclass(x))
   write_vcf_header.varkit_header(
     new_varkit_header(
       meta = x$meta,

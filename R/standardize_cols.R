@@ -5,14 +5,20 @@ standardize_cols <- function(x, message = TRUE) {
 
 ##' @export
 standardize_cols.varkit <- function(x, message = TRUE) {
+  stopifnot("site" %in% names(x))
+
   all_site <- rd_unclass(x)$site
+  if (!is.data.frame(all_site))
+    stop("The '$site' slot should be a dataframe!")
+
   missing <- .find_missing_cols(colnames(all_site), message = message)
-
-  if (length(missing) > 0) {
+  if (length(missing) > 0L)
     all_site[, missing] <- rep(NA, nrow(all_site))
-  }
 
-  x$site <- dplyr::relocate(all_site, tidyselect::all_of(.fixed_columns()))
+  # Remove all non-fixed columns from $sites as the violate the VCF spec
+  all_site <- all_site[.fixed_columns()]
+  x$site <- all_site
+
   x
 }
 
