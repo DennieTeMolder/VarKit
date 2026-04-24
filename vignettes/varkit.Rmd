@@ -34,7 +34,7 @@ library(varkit)
 path <- "path/to/your/file.vcf.gz"
 
 # But we will use example data included with the package here
-path <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
+path <- system.file("extdata", "celegans.vcf.gz", package = "varkit")
 ```
 
 ## Loading a VCF into R

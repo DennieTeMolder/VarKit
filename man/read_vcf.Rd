@@ -16,7 +16,7 @@ read_vcf(
 )
 }
 \arguments{
-\item{file}{String, path to the vcf(.bgz) file to load}
+\item{file}{String, path to the vcf(.gz) file to load}
 
 \item{col_select}{Columns to include in the results. You can use the same mini-language as ‘dplyr::select()’ to refer to the columns by name. Use ‘c()’ to use more than one selection expression.}
 
@@ -39,7 +39,7 @@ A VarKit object
 Load A VCF File From Disk
 }
 \examples{
-file_path <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
+file_path <- system.file("extdata", "celegans.vcf.gz", package = "varkit")
 vcf <- read_vcf(file_path)
 }
 \author{

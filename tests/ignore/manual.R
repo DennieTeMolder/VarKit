@@ -1,6 +1,6 @@
 # Setup
 devtools::load_all()
-example <- "./inst/extdata/celegans.vcf.bgz"
+example <- "./inst/extdata/celegans.vcf.gz"
 
 # REVIEW allow all sites to masked in a VCF
 # REVIEW check use of anyNA (slow on mtrx)

@@ -1,7 +1,7 @@
 ##' Load A VCF File From Disk
 ##'
 ##' @title Load A VCF File From Disk
-##' @param file String, path to the vcf(.bgz) file to load
+##' @param file String, path to the vcf(.gz) file to load
 ##' @param col_select Columns to include in the results. You can use the same mini-language as ‘dplyr::select()’ to refer to the columns by name. Use ‘c()’ to use more than one selection expression.
 ##' @param header varkit_header object, used to determine the column names of 'file'.
 ##' @param n_max Integer, maximum number of variants to load. Zero or negative will load all.
@@ -13,7 +13,7 @@
 ##' @export
 ##' @author Dennie te Molder
 ##' @examples
-##' file_path <- system.file("extdata", "celegans.vcf.bgz", package = "varkit")
+##' file_path <- system.file("extdata", "celegans.vcf.gz", package = "varkit")
 ##' vcf <- read_vcf(file_path)
 read_vcf <- function(file,
                      col_select = NULL,
