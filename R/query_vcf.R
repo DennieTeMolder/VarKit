@@ -1,9 +1,9 @@
 ##' @export
 query_vcf <- function(path,
                       range = NULL,
-                      anno_type = NULL,
                       gene_name = NULL,
                       gene_path = NULL,
+                      anno_type = NULL,
                       site = NULL,
                       info = NULL,
                       geno = NULL,
@@ -18,16 +18,13 @@ query_vcf <- function(path,
     col_names = .parse_header_line(header[length(header)])
   )
 
-  if (is.null(range)) {
+  if (!is.null(range)) {
+    .stopifnotsingle(range, what = "character")
+  } else {
     # HACK: this value passes seqminer::isTabixRange() and returns all variants
     range <- ":"
     silent <- TRUE
-  } else {
-    .stopifnotsingle(range, what = "character")
   }
-
-  if (is.null(anno_type))
-    anno_type <- ""
 
   if (!is.null(gene_name)) {
     if (is.null(gene_path))
@@ -37,6 +34,9 @@ query_vcf <- function(path,
     # Patch in support for selecting entire chromosomes/contigs
     range <- .fix_seqminer_range(range, header)
   }
+
+  if (is.null(anno_type))
+    anno_type <- ""
 
   # When SITE, INFO, or GENO are null, all values are used
   if (is.null(site)) {
@@ -63,16 +63,16 @@ query_vcf <- function(path,
     site <- union(c("CHROM", "POS"), site)
 
   # Enable silencing of Seqminer's C++ code
-  with_sink_fn <- if (isTRUE(silent)) .with_sink else identity
+  sink_fn <- if (isTRUE(silent)) .with_sink else identity
 
   # Call the right seqminer function
   if (!is.null(range)) {
-    seq_list <- with_sink_fn(seqminer::readVCFToListByRange(
+    seq_list <- sink_fn(seqminer::readVCFToListByRange(
       path, range = range, annoType = anno_type,
       vcfColumn = site, vcfInfo = info, vcfIndv = geno
     ))
   } else if (!is.null(gene_name)) {
-    seq_list <- with_sink_fn(seqminer::readVCFToListByGene(
+    seq_list <- sink_fn(seqminer::readVCFToListByGene(
       path, geneFile = gene_path, geneName = gene_name, annoType = anno_type,
       vcfColumn = site, vcfInfo = info, vcfIndv = geno
     ))
@@ -96,10 +96,11 @@ query_vcf <- function(path,
 
 .fix_seqminer_range <- function(range, header) {
   splits <- stringr::str_split_1(range, stringr::fixed(","))
+  splits <- stringr::str_trim(splits)
 
   only_chrom <- !stringr::str_detect(splits, stringr::fixed(":"))
   if (!any(only_chrom))
-    return(range)
+    return(paste(splits, collapse = ","))
 
   # Determine CHROM end position using the HEADER
   chrom_sizes <- parse_meta.varkit_header(header, type = "contig")
@@ -108,7 +109,7 @@ query_vcf <- function(path,
   if (is.null(ends) || all(is.na(ends))) {
     if (all(only_chrom))
       stop("Chromosome(s) were not described in the VCF header: ", .quote_collapse(splits), "!", call. = FALSE)
-    return(range)
+    return(paste(splits, collapse = ","))
   }
 
   # Add the interval that spans the entire CHROM
