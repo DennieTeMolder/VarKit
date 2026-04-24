@@ -173,6 +173,22 @@
   cli::cli_progress_step(msg_time, msg_done = msg, .envir = .envir)
 }
 
+# Silence output from C++
+.with_sink <- function(expr, path = tempfile(), type = "output") {
+  # Open file to redirect output to
+  f <- file(path, open = "w")
+  .defer({
+    close(f)
+    unlink(path)
+  })
+
+  # Create the sink
+  sink(f, type = type)
+  .defer(sink(type = type))
+
+  eval(expr)
+}
+
 # X should be ordered from large to small (computationally)
 .split_load_balance <- function(x, cores, each = 4L) {
   stopifnot(is.vector(x))
