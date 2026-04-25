@@ -7,12 +7,15 @@ query_vcf <- function(path,
                       site = NULL,
                       info = NULL,
                       geno = NULL,
+                      use_filter = TRUE,
                       silent = FALSE
                       ) {
   rlang::check_installed("seqminer", version = "8.0.0")
 
   # Read header using Seqminer for BCF support
   header <- seqminer::tabix.read.header(path)[["header"]]
+  if (is.null(header))
+    stop("Failed to read header! Does the file have Tabix index (ending in .tbi)?")
   header <- varkit_header(
     meta = .parse_header_meta(header[-length(header)]),
     col_names = .parse_header_line(header[length(header)])
@@ -44,6 +47,9 @@ query_vcf <- function(path,
       header$col_names,
       setdiff(.fixed_columns(), c("info", "format"))
     ))
+  } else if (is.character(site)) {
+    # Convert to upper case and always include CHROM and POS
+    site <- union(c("CHROM", "POS"), toupper(site))
   }
   if (is.null(info))
     info <- parse_meta.varkit_header(header, type = "INFO")[["ID"]]
@@ -57,10 +63,6 @@ query_vcf <- function(path,
     info <- NULL
   if (isFALSE(geno))
     geno <- NULL
-
-  # Ensure CHROM & POS are always included to make for a valid VarKit object
-  if (!is.null(site) && is.character(site) && !is.null(geno))
-    site <- union(c("CHROM", "POS"), site)
 
   # Enable silencing of Seqminer's C++ code
   sink_fn <- if (isTRUE(silent)) .with_sink else identity
@@ -87,7 +89,7 @@ query_vcf <- function(path,
     return(NULL)
 
   # Attempt to convert to a VarKit object
-  vcf <- seqminer2varkit(seq_list, meta = header$meta)
+  vcf <- seqminer2varkit(seq_list, meta = header$meta, use_filter = use_filter)
 
   if (is.null(vcf))
     return(seq_list)
