@@ -1,5 +1,7 @@
 ##' @export
 parse_info <- function(x, type = NULL, use_meta = TRUE) {
+  if (!missing(type) && is.null(type))
+    warning("The 'type' argument is NULL, returning possible options.")
   UseMethod("parse_info", x)
 }
 
@@ -11,11 +13,9 @@ parse_info.varkit <- function(x, type = NULL, use_meta = TRUE) {
   .stopifnotsingle(use_meta, what = "logical")
 
   if (is.null(type)) {
-    warning("Please provide the 'type' argument, returning possible options.")
-
     if (!use_meta) {
       keys <- .collect_all_keys(site.varkit(x, "info"))
-      return(tibble::tibble(type = paste0("INFO/", keys)))
+      return(tibble::tibble(type = keys))
     }
 
     meta_info <- parse_meta.varkit(x, type = "INFO")
@@ -24,7 +24,7 @@ parse_info.varkit <- function(x, type = NULL, use_meta = TRUE) {
 
     return(dplyr::transmute(
       meta_info,
-      type = paste0("INFO/", .data$ID),
+      type = .data$ID,
       description = .data$Description
     ))
   }

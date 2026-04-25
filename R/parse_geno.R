@@ -1,5 +1,7 @@
 ##' @export
 parse_geno <- function(x, type = NULL, allow_missing = FALSE) {
+  if (!missing(type) && is.null(type))
+    warning("The 'type' argument is NULL, returning possible options.")
   UseMethod("parse_geno", x)
 }
 
@@ -11,7 +13,6 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
   if (!is.null(type)) {
     .stopifnotsingle(type, what = "character")
   } else {
-    warning("Please provide the 'type' argument, returning possible options.")
     return(.get_format_types(x))
   }
 
@@ -95,18 +96,18 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
   names(which_fixed_pos) <- uniq_mat[which_fixed_pos, 1L]
 
   types <- sort(unique(unlist(uniq)))
-  results <- tibble::tibble(
-    type = paste0("FORMAT/", types),
+  results <- dplyr::arrange(tibble::tibble(
+    type = types,
     index = which_fixed_pos[types]
-  )
+  ), index)
 
   metadata <- parse_meta(x, "FORMAT")
   if (!is.null(metadata)) {
     metadata <- tibble::tibble(
-      type = paste0("FORMAT/", metadata$ID),
+      type = metadata$ID,
       description = metadata$Description
     )
-    return(dplyr::right_join(metadata, results, by = "type"))
+    return(dplyr::left_join(results, metadata, by = "type"))
   }
 
   results

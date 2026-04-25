@@ -1,5 +1,7 @@
 ##' @export
 parse_meta <- function(x, type = NULL, na = ".") {
+  if (!missing(type) && is.null(type))
+    warning("The 'type' argument is NULL, returning possible options.")
   UseMethod("parse_meta", x)
 }
 
@@ -20,7 +22,6 @@ parse_meta.varkit_header <- function(x, type = NULL, na = ".") {
   if (!is.null(type)) {
     .stopifnotsingle(type, what = "character")
   } else {
-    warning("Please provide the 'type' argument, returning possible options.")
     return(.get_meta_types(meta))
   }
 
