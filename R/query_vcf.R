@@ -15,7 +15,7 @@ query_vcf <- function(path,
   # Read header using Seqminer for BCF support
   header <- seqminer::tabix.read.header(path)[["header"]]
   if (is.null(header))
-    stop("Failed to read header! Does the file have Tabix index (ending in .tbi)?")
+    stop("Failed to read header! Does the file have a '.tbi' Tabix index?")
   header <- varkit_header(
     meta = .parse_header_meta(header[-length(header)]),
     col_names = .parse_header_line(header[length(header)])
