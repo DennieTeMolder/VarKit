@@ -654,7 +654,7 @@ rd_indices_set <- function(x, indices, add = FALSE) {
 ##' @export
 rd_indices_get <- function(x) {
   validate_related_data(x)
-  attr(x, "indices")
+  attr(x, "indices", exact = TRUE)
 }
 
 ##' @export

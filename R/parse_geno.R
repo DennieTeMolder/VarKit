@@ -99,7 +99,7 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
   results <- dplyr::arrange(tibble::tibble(
     type = types,
     index = which_fixed_pos[types]
-  ), index)
+  ), .data$index)
 
   metadata <- parse_meta(x, "FORMAT")
   if (!is.null(metadata)) {

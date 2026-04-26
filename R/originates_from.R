@@ -1,6 +1,6 @@
 ##' @export
 set_origin <- function(x, origin) {
-  if (is.character(origin) && length(origin) == 1) {
+  if (is.character(origin) && length(origin) == 1L) {
     sha1 <- origin
   } else {
     sha1 <- digest::sha1(origin)

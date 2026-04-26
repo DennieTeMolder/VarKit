@@ -23,6 +23,11 @@
     res
 }
 
+# REVIEW: use in more place for performance?
+.unlist <- function(x, recursive = FALSE, use.names = FALSE) {
+  unlist(x, recursive = recursive, use.names = use.names)
+}
+
 # anyNA can be super slow on large non-primitive objects, like mtrx
 .any_na <- function(x, ...) {
   # There are more methods defined, but we skip those
@@ -230,20 +235,4 @@
     stop("Option on_even = '", on_even, "' not recognised!")
   }
   x[ceiling(len / 2L)]
-}
-
-.bi_gt2dosage <- function(mat) {
-  stopifnot(is.matrix(mat))
-  stopifnot(is.character(mat))
-  dims <- dim(mat)
-  res <- matrix(NA, dims[1L], dims[2L], dimnames = dimnames(mat))
-  for (j in 1:dims[2L]) {
-    alleles <- stringr::str_split(mat[, j], "[/|]")
-    for(i in 1:dims[1L]) {
-      if (all(alleles[[i]] %in% c("0", "1")))
-        res[i,j] <- sum(alleles[[i]] == "1")
-    }
-  }
-  class(res) <- class(mat)
-  res
 }

@@ -39,7 +39,7 @@ resolve_links <- function(links,
   cores <- min(floor(cores), length(links))
 
   # If links is a list we can solve each element individually (and in parallel)
-  if (cores < 2) {
+  if (cores < 2L) {
     res <- purrr::map(
       links, .resolve_links_internal,
       strategy = strategy, cluster_fn = cluster_fn,
@@ -87,7 +87,7 @@ resolve_links <- function(links,
       links[, 1:2, drop = FALSE],
       weight = links[, "r2", drop = TRUE] * links[, "n", drop = TRUE]
     )
-  } else if (ncol(links) > 2) {
+  } else if (ncol(links) > 2L) {
     # Non standard data type, notify the user
     cli::cli_alert_info("Using the third column as weights")
     links <- links[, 1:3, drop = FALSE]
@@ -219,7 +219,7 @@ resolve_links <- function(links,
     # Get nodes and edges that are connected with components (omit links between neighbours)
     # NOTE this 10x faster then calling incident_edges() on the entire graph
     sg <- igraph::neighborhood(graph, order = 1, nodes = comp)
-    sg <- igraph::induced_subgraph(graph, unlist(lapply(sg, as.integer)))
+    sg <- igraph::induced_subgraph(graph, unlist(lapply(sg, function(x) as.integer(x))))
     sg <- igraph::subgraph.edges(sg, do.call(c, igraph::incident_edges(sg, comp)))
 
     # Link component nodes to their neighbourhood (but do not link neighbours)
