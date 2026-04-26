@@ -63,21 +63,27 @@ apply(geno(vcf), "sites", length)
 ## Linked sites ------
 vcf <- read_vcf(example, use_filter = FALSE)
 geno(vcf) <- as_integer(round(ad2aaf(vcf)$aaf) * 2L)
+vcf <- mask(unmask_all(vcf), qual < 1e4)
 
 links <- find_linked_sites(vcf, windows = -1, return_r2 = TRUE, cores = 1)
 lgraph <- resolve_links(links, cores = 1)
 summary(lgraph, vcf = vcf)
 
-summary(mask(vcf, is_linked(lgraph, vcf = .)))
-summary(is_linked(lgraph, vcf))
+vcf <- mask(vcf, is_linked(., lgraph))
+summary(vcf)
 
 temp_file <- tempfile(fileext = ".xml")
 write_linkage_graph(lgraph, temp_file)
-read_linkage_graph(temp_file)
+summary(read_linkage_graph(temp_file), vcf)
 
 groups <- igraph::groups(lgraph)
 length(groups)
 length(unlist(groups))
+
+# Merge two linked graphs
+links2 <- find_linked_sites(vcf, cutoff = 0.3)
+lgraph <- merge_linkage_graphs(resolve_links(links2), lgraph)
+summary(lgraph, vcf = vcf)
 
 ## Index ------
 # TODO test N_MAX
