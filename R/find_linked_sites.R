@@ -35,7 +35,7 @@ find_linked_sites.varkit <- function(x,
     stop("geno(x) should be a numeric matrix!")
 
   # Label the columns with their index so they can be mapped back later
-  colnames(gt) <- seq_len(ncol(gt))
+  colnames(gt) <- which(.indices(x)$sites, useNames = FALSE)
 
   mat_list <- splitm(gt,
     f = if (by_chrom) site.varkit(x, "chrom") else NULL, # Split by CHROM

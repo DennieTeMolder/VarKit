@@ -15,9 +15,9 @@ retain.varkit <- function(x, site, why = NULL, na_retain = TRUE, ...) {
   site <- with_vcf(x, expr = {{ site }})
 
   if (is.data.frame(site))
-    lifecycle::deprecate_stop("v0.9.0", "retain(site = 'should be of type logical')", I("retain(site = has_join(df, site))"))
+    lifecycle::deprecate_stop("v0.9.0", "retain(site = 'should be of type logical')", I("retain(site = has_join(site, df))"))
   if (is_varkit_linkage_graph(site))
-    lifecycle::deprecate_stop("v0.9.0", "retain(site = 'should be of type logical')", I("retain(site = is_linked(lgraph, .))"))
+    lifecycle::deprecate_stop("v0.9.0", "retain(site = 'should be of type logical')", I("retain(site = is_linked(., linkage_graph))"))
   if (!is.logical(site))
     stop("The value of 'site' should be of type logical!")
 

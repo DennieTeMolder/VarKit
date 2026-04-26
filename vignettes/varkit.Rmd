@@ -135,11 +135,8 @@ which requires you to input a logical vector (TRUE if the site should be
 masked). For this example we will mask/hide all sites on chromosome I:
 
 ```{r mask}
-# This is a logical vector
-mask_site <- site(vcf, "chrom") == "I"
-
 # Be sure to reassign the returned object to `vcf` otherwise the mask will not take effect
-vcf <- mask(vcf, mask_site)
+vcf <- mask(vcf, chrom == "I")
 
 # Use the summary function to check the number of visible sites
 summary(vcf)$indices
@@ -160,7 +157,8 @@ demonstrate this we will only mask sites matching to an external data frame on
 the 'chrom', 'pos', and 'alt' columns using the `has_join()` function.
 
 ```{r mask_seq}
-# Let's use a data frame this time around
+# We use a dataframe for demonstration purposes here,
+# but `mask(vcf, qual < 3000)` would be easier
 sites_to_mask <- dplyr::filter(site(vcf), qual < 3000)
 nrow(sites_to_mask)
 
@@ -193,9 +191,9 @@ actually removed from memory, they are just skipped by the VarKit functions.
 This allows you to quickly unmask sites or restore an exported set of masked sites.
 
 In this example we will fist export the mask we just created (which masks sites
-on CHROM = "I" or sites with a QUAL < 3000) and assign it to the `my_mask`
-variable, then we will remove the mask from the vcf object which verify through
-the `summary()` function:
+on CHROM == "I", with a QUAL < 3000, or with no variation in the FORMAT/GT field)
+and assign it to the `my_mask` variable, then we will remove the mask from the
+vcf object which verify through the `summary()` function:
 
 ```{r mask_export}
 my_mask <- export_mask(vcf)
@@ -236,7 +234,7 @@ if `replace_filter = TRUE`, allowing you to save and load a masked VCF:
 temp_file <- tempfile(fileext = ".vcf")
 write_vcf(vcf, file = temp_file, replace_filter = TRUE)
 
-read_vcf(temp_file)
+summary(read_vcf(temp_file))$indices
 ```
 
 > NOTE: R does not support writing in the block-gzipped format (only the regular
@@ -247,15 +245,14 @@ read_vcf(temp_file)
 ## Detecting linkage between sites
 
 Lastly, the VarKit package provides functionality to detect and remove linkage
-between sites. Internally this package reimplements `stats::cor(..., method =
-"pearson", use = "pairwise.complete.obs")` to utilize BLAS, thus using a faster
-BLAS library like openBLAS should improve performance.
+between sites. To do this we first compute the R-squared correlation between
+sites in a windowed fashion and then use the correlations to find variants that
+should be removed to reduce linkage. 
 
-In order for this to work `geno(vcf)` should contain only **numeric** values (or
-NA). Most likely your genotype fields will be in the string format and thus need
-to be converted. How to achieve this is highly circumstantial and will require
-manual parsing/conversion. For tips take a look at the "Notes for advanced
-users" section at the bottom.
+In order to compute correlations, `geno(vcf)` must be a **numeric** matrix
+(NAs are allowed). Most likely your genotype fields will be in the string format
+and thus need to be converted. How to achieve this is highly circumstantial and
+will require manual parsing/conversion.
 
 As you might have noticed, the example file contains complex genotypes that
 consist of multiple parts (delimited by a colon) that are described in the
@@ -267,14 +264,15 @@ a hidden function:
 # Overwriting geno(vcf) is only allowed when it has no masked sites
 vcf <- unmask_all(vcf)
 geno(vcf) <- parse_geno(vcf, type = "GT")
-# The function below is not exported as it is not very robust, use it with caution!
-geno(vcf) <- varkit:::.bi_gt2dosage(geno(vcf))
+# The function below is not exported as it slow and not robust
+geno(vcf) <- varkit:::bi_gt2dosage(geno(vcf))
 ```
 
 Now we run `find_linked_sites()` to obtain a list of dataframes with sites that
-have an R^2^ above the specified cutoff for each CHROM. Then we call
-`resolve_links()` to determine which sites should be excluded if we want to
-remove as many of the detected links as possible (very few links could remain).
+have an R^2^ above the specified cutoff within a 200,000 bp window per CHROM.
+Then we call `resolve_links()` to determine which sites should be excluded if we
+want to remove as many of the detected links as possible (few links above the
+specified cutoff could remain if each of the nodes represent distinct groups).
 
 ```{r linked_sites, results = 'hide'}
 links <- find_linked_sites(vcf, cutoff = 0.9, size_bp = 1e5, windows = 2, by_chrom = TRUE, cores = 1)
@@ -293,23 +291,33 @@ lgraph <- resolve_links(links, cores = 1)
 > chromosomes set `by_chrom` to FALSE (when `n_window > 0` only chromosomes that
 > follow one another in the VCF are compared).
 
+> Internally the `find_linked_sites()` function uses `pcor_pairwise()` which
+> reimplements `stats::cor(..., method = "pearson", use =
+> "pairwise.complete.obs")` so it can utilize BLAS, thus using a faster BLAS
+> library like openBLAS on Linux should improve performance here.
+
 ```{r linked_sites_summary}
 summary(lgraph, vcf = vcf)
 ```
 
 This will return a directed acyclic graph in which each node is labeled with the
-(column) index of a site in the **unmasked** vcf. Each node that should be
-removed to reduce linkage is connected to a note that will be retained and is
-guaranteed to have an R^2^ above the cutoff (retained -> removed). Please refer
-to the Igraph package for information on working with these graphs.
+row index of `unmask_all(site(vcf))`. Each node that should be removed to reduce
+linkage is connected to a node that will be retained and is guaranteed to have
+an R^2^ above the cutoff (retained -> removed). When using
+`find_linked_sites(return_r2 = TRUE` the variant with the least amount of
+missing data and strongest correlation to the other members of the group is
+kept, otherwise the choice is arbitrary. Refer to the Igraph package and
+`igraph::groups()` function for information on working with these graphs.
+
+Now we combine the `is_linked()` and `mask()` function 
 
 Luckily there is no need to understand graph theory as the removal of linked
-sites can be automated by passing the graph as the second argument to the
-`mask()` function. In the resulting vcf, for each group of linked sites, the
-single best site is retained and all others are masked, thus representing the
-most amount of information with the least amount of variants.
+sites can be achieved by combining the `mask() and `is_linked()` functions. In
+the resulting vcf, for each group of linked sites, the single best site is
+retained and all others are masked, thus representing the most amount of
+information with the least amount of variants.
 
 ```{r mask_linked}
-vcf <- mask(vcf, site = is_linked(lgraph, vcf = .))
+vcf <- mask(vcf, site = is_linked(., lgraph))
 summary(vcf)$indices
 ```

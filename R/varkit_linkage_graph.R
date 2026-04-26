@@ -20,31 +20,24 @@ is_varkit_linkage_graph <- function(x) {
 
 ##' @export
 summary.varkit_linkage_graph <- function(object, vcf = NULL, ...) {
+  rlang::check_dots_used()
   .ensure_igraph()
   if (!is.null(vcf))
     stopifnot(is_varkit(vcf), originates_from(object, origin = vcf))
 
-  tbl <- tibble::tibble(
-    n_remove = sum(igraph::degree(object, mode = "in") == 1),
+  tibble::tibble(
     n_proxy = sum(igraph::degree(object, mode = "out") > 0),
+    n_remove = sum(igraph::degree(object, mode = "in") == 1),
+    n_total = if (!is.null(vcf)) n_sites.varkit(vcf, mask = FALSE),
+    frac_remove = if (!is.null(vcf)) .data$n_remove / .data$n_total
   )
-
-  if (!is.null(vcf)) {
-    tbl$n_singletons <- n_sites.varkit(vcf) - tbl$n_proxy - tbl$n_remove
-    tbl$n_total <- with(tbl, n_remove + n_proxy + n_singletons)
-    tbl$frac_remove <- tbl$n_remove / tbl$n_total
-  }
-
-  tbl
 }
 
 ##' @exportS3Method igraph::groups
 groups.varkit_linkage_graph <- function(x) {
-  nodes <- igraph::degree(x, mode = "out")
-  nodes <- names(nodes)[nodes > 0]
-  sapply(nodes, function(node) {
-    igraph::neighbors(x, v = node, mode = "out")$name
-  }, simplify = FALSE)
+  res <- igraph::as_edgelist(x, names = TRUE)
+  res <- split(res[, 2L, drop = TRUE], f = res[, 1L, drop = TRUE])
+  res[order(as.integer(names(res)))]
 }
 
 # NOTE using saveRDS() also seems to work and uses 10x less disk space (binary format).
@@ -60,5 +53,6 @@ write_linkage_graph <- function(graph, file, format = "xml") {
 read_linkage_graph <- function(file) {
   .ensure_igraph()
   graph <- igraph::read_graph(file, format = "graphml")
-  igraph::remove.vertex.attribute(graph, "id")
+  graph <- igraph::delete_vertex_attr(graph, "id")
+  varkit_linkage_graph(graph)
 }

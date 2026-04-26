@@ -1,28 +1,17 @@
 ##' @export
-is_linked <- function(x, ...) {
-  UseMethod("is_linked", x)
-}
-
-##' @export
-is_linked.varkit_linkage_graph <- function(x, vcf, ...) {
-  rlang::check_dots_used()
-  stopifnot(is_varkit(vcf))
+is_linked <- function(vcf, linkage_graph) {
+  validate_varkit(vcf)
+  stopifnot(is_varkit_linkage_graph(linkage_graph))
   .ensure_igraph()
 
-  if (is.null(get_origin(x))) {
-    stop("The linkage graph 'x' does not have a 'varkit_origin' attribute!\n",
-         "The linkage graph is most likely corrupted.", call. = FALSE)
-  } else if (!originates_from(x, origin = vcf)) {
-    stop("The provided linkage graph does not originate from 'vcf'!\n",
-         "Likely either the mask or samples(vcf) differs between the two.", call. = FALSE)
-  }
+  if (!originates_from(linkage_graph, origin = vcf))
+    stop("The 'linkage_graph' does not originate from 'vcf'!")
 
-  deg <- igraph::degree(x, mode = "in", loops = FALSE)
-  if (any(deg >= 2))
-    stop("The linkage graph appears to be corrupted!", call. = FALSE)
+  deg <- igraph::degree(linkage_graph, mode = "in")
+  if (any(deg >= 2L))
+    stop("The 'linkage_graph' appears to be corrupted!")
 
-  #
-  is_linked <- rep(FALSE, n_sites.varkit(vcf))
+  is_linked <- rep(FALSE, n_sites.varkit(vcf, mask = FALSE))
   is_linked[as.integer(names(which(deg == 1)))] <- TRUE
-  is_linked
+  is_linked[.indices(vcf)$sites]
 }
