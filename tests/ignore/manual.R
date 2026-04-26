@@ -80,6 +80,9 @@ groups <- igraph::groups(lgraph)
 length(groups)
 length(unlist(groups))
 
+# Retrieve a set of linked sites for a specific candidate
+unmask_linked(retain(vcf, chrom == "I" & pos == 2560055), lgraph)
+
 # Merge two linked graphs
 links2 <- find_linked_sites(vcf, cutoff = 0.3)
 lgraph <- merge_linkage_graphs(resolve_links(links2), lgraph)
