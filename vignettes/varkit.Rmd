@@ -256,16 +256,17 @@ will require manual parsing/conversion.
 
 As you might have noticed, the example file contains complex genotypes that
 consist of multiple parts (delimited by a colon) that are described in the
-'format' column of `site(vcf)`. We first extract the genotype calls (GT, e.g.
-"0/1") from these complex fields, which we then convert to numeric dosages using
-a hidden function:
+'format' column of `site(vcf)`. How to get to a numeric value will depend on the
+needs of your specific analysis, but fairly simple and common approach is to to
+convert genotype calls (FORMAT/GT, e.g. "0/1") to dosages by counting the 1's.
+The `bi_gt2dosage()` function automates this process and sets any calls with
+genotypes other than 0 and 1 to NA. The result of which can then be assigned
+back to the genotype slot:
 
 ```{r convert_geno}
 # Overwriting geno(vcf) is only allowed when it has no masked sites
 vcf <- unmask_all(vcf)
-geno(vcf) <- parse_geno(vcf, type = "GT")
-# The function below is not exported as it slow and not robust
-geno(vcf) <- varkit:::bi_gt2dosage(geno(vcf))
+geno(vcf) <- bi_gt2dosage(vcf)
 ```
 
 Now we run `find_linked_sites()` to obtain a list of dataframes with sites that

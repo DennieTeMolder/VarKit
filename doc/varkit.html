@@ -426,16 +426,16 @@ certain fixed fields and want to save memory.</p>
 <p>For example here we exclude the “INFO” and “FILTER” fixed fields and
 the sample “N2”:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>vcf <span class="ot">&lt;-</span> <span class="fu">read_vcf</span>(path, <span class="at">col_select =</span> <span class="fu">c</span>(<span class="sc">-</span>info, <span class="sc">-</span>filter, <span class="sc">-</span>N2))</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; ℹ Reading VCF header &lt;Sun 01:09&gt;</span></span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt; ✔ Reading VCF header [14ms]</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; ℹ Reading VCF header &lt;Sun 12:26&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt; ✔ Reading VCF header [17ms]</span></span>
 <span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co">#&gt; ℹ Guessing data type of genotype matrix &lt;Sun 01:09&gt;</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co">#&gt; ℹ Guessing data type of genotype matrix &lt;Sun 12:26&gt;</span></span>
 <span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">#&gt; ✔ Guessing data type of genotype matrix [20ms]</span></span>
 <span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt; ℹ Reading VCF body &lt;Sun 01:09&gt;</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt; ℹ Reading VCF body &lt;Sun 12:26&gt;</span></span>
 <span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt; ✔ Reading VCF body [53ms]</span></span>
 <span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt; ℹ Collecting results &lt;Sun 01:09&gt;</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt; ℹ Collecting results &lt;Sun 12:26&gt;</span></span>
 <span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt; ✔ Collecting results [11ms]</span></span>
 <span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="fu">print</span>(vcf)</span>
@@ -567,11 +567,12 @@ functions are available for any given object use the
 <span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a><span class="co">#&gt; • standardize_cols(vcf)</span></span>
 <span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a><span class="co">#&gt; • summary(vcf)</span></span>
 <span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a><span class="co">#&gt; • unmask_all(vcf)</span></span>
-<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a><span class="co">#&gt; • write_bcftools_regions(vcf)</span></span>
-<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a><span class="co">#&gt; • write_bcftools_samples(vcf)</span></span>
-<span id="cb6-32"><a href="#cb6-32" tabindex="-1"></a><span class="co">#&gt; • write_vcf(vcf)</span></span>
-<span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a><span class="co">#&gt; • write_vcf_header(vcf)</span></span>
-<span id="cb6-34"><a href="#cb6-34" tabindex="-1"></a><span class="co">#&gt; # ℹ Use `?function_name` for more info (e.g. ?samples)</span></span></code></pre></div>
+<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a><span class="co">#&gt; • unmask_linked(vcf)</span></span>
+<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a><span class="co">#&gt; • write_bcftools_regions(vcf)</span></span>
+<span id="cb6-32"><a href="#cb6-32" tabindex="-1"></a><span class="co">#&gt; • write_bcftools_samples(vcf)</span></span>
+<span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a><span class="co">#&gt; • write_vcf(vcf)</span></span>
+<span id="cb6-34"><a href="#cb6-34" tabindex="-1"></a><span class="co">#&gt; • write_vcf_header(vcf)</span></span>
+<span id="cb6-35"><a href="#cb6-35" tabindex="-1"></a><span class="co">#&gt; # ℹ Use `?function_name` for more info (e.g. ?samples)</span></span></code></pre></div>
 </div>
 <div id="accessing-header-metadata" class="section level2">
 <h2>Accessing header metadata</h2>
@@ -776,24 +777,24 @@ load a masked VCF:</p>
 <div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a>temp_file <span class="ot">&lt;-</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">&quot;.vcf&quot;</span>)</span>
 <span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a><span class="fu">write_vcf</span>(vcf, <span class="at">file =</span> temp_file, <span class="at">replace_filter =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a><span class="co">#&gt; ℹ Creating missing columns: FILTER, INFO</span></span>
-<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a><span class="co">#&gt; ℹ Writing VCF header &lt;Sun 01:09&gt;</span></span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a><span class="co">#&gt; ℹ Writing VCF header &lt;Sun 12:26&gt;</span></span>
 <span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a><span class="co">#&gt; ✔ Writing VCF header [6ms]</span></span>
 <span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a><span class="co">#&gt; ℹ Writing VCF body &lt;Sun 01:09&gt;</span></span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a><span class="co">#&gt; ℹ Writing VCF body &lt;Sun 12:26&gt;</span></span>
 <span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a><span class="co">#&gt; ✔ Writing VCF body [9ms]</span></span>
 <span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a></span>
 <span id="cb17-11"><a href="#cb17-11" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">read_vcf</span>(temp_file))<span class="sc">$</span>indices</span>
-<span id="cb17-12"><a href="#cb17-12" tabindex="-1"></a><span class="co">#&gt; ℹ Reading VCF header &lt;Sun 01:09&gt;</span></span>
+<span id="cb17-12"><a href="#cb17-12" tabindex="-1"></a><span class="co">#&gt; ℹ Reading VCF header &lt;Sun 12:26&gt;</span></span>
 <span id="cb17-13"><a href="#cb17-13" tabindex="-1"></a><span class="co">#&gt; ✔ Reading VCF header [7ms]</span></span>
 <span id="cb17-14"><a href="#cb17-14" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb17-15"><a href="#cb17-15" tabindex="-1"></a><span class="co">#&gt; ℹ Guessing data type of genotype matrix &lt;Sun 01:09&gt;</span></span>
+<span id="cb17-15"><a href="#cb17-15" tabindex="-1"></a><span class="co">#&gt; ℹ Guessing data type of genotype matrix &lt;Sun 12:26&gt;</span></span>
 <span id="cb17-16"><a href="#cb17-16" tabindex="-1"></a><span class="co">#&gt; ✔ Guessing data type of genotype matrix [10ms]</span></span>
 <span id="cb17-17"><a href="#cb17-17" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb17-18"><a href="#cb17-18" tabindex="-1"></a><span class="co">#&gt; ℹ Reading VCF body &lt;Sun 01:09&gt;</span></span>
+<span id="cb17-18"><a href="#cb17-18" tabindex="-1"></a><span class="co">#&gt; ℹ Reading VCF body &lt;Sun 12:26&gt;</span></span>
 <span id="cb17-19"><a href="#cb17-19" tabindex="-1"></a><span class="co">#&gt; ✔ Reading VCF body [10ms]</span></span>
 <span id="cb17-20"><a href="#cb17-20" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb17-21"><a href="#cb17-21" tabindex="-1"></a><span class="co">#&gt; ℹ Collecting results &lt;Sun 01:09&gt;</span></span>
+<span id="cb17-21"><a href="#cb17-21" tabindex="-1"></a><span class="co">#&gt; ℹ Collecting results &lt;Sun 12:26&gt;</span></span>
 <span id="cb17-22"><a href="#cb17-22" tabindex="-1"></a><span class="co">#&gt; ✔ Collecting results [10ms]</span></span>
 <span id="cb17-23"><a href="#cb17-23" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb17-24"><a href="#cb17-24" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 5</span></span>
@@ -822,14 +823,16 @@ converted. How to achieve this is highly circumstantial and will require
 manual parsing/conversion.</p>
 <p>As you might have noticed, the example file contains complex
 genotypes that consist of multiple parts (delimited by a colon) that are
-described in the ‘format’ column of <code>site(vcf)</code>. We first
-extract the genotype calls (GT, e.g. “0/1”) from these complex fields,
-which we then convert to numeric dosages using a hidden function:</p>
+described in the ‘format’ column of <code>site(vcf)</code>. How to get
+to a numeric value will depend on the needs of your specific analysis,
+but fairly simple and common approach is to to convert genotype calls
+(FORMAT/GT, e.g. “0/1”) to dosages by counting the 1’s. The
+<code>bi_gt2dosage()</code> function automates this process and sets any
+calls with genotypes other than 0 and 1 to NA. The result of which can
+then be assigned back to the genotype slot:</p>
 <div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="co"># Overwriting geno(vcf) is only allowed when it has no masked sites</span></span>
 <span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>vcf <span class="ot">&lt;-</span> <span class="fu">unmask_all</span>(vcf)</span>
-<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a><span class="fu">geno</span>(vcf) <span class="ot">&lt;-</span> <span class="fu">parse_geno</span>(vcf, <span class="at">type =</span> <span class="st">&quot;GT&quot;</span>)</span>
-<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a><span class="co"># The function below is not exported as it slow and not robust</span></span>
-<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a><span class="fu">geno</span>(vcf) <span class="ot">&lt;-</span> varkit<span class="sc">:::</span><span class="fu">bi_gt2dosage</span>(<span class="fu">geno</span>(vcf))</span></code></pre></div>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a><span class="fu">geno</span>(vcf) <span class="ot">&lt;-</span> <span class="fu">bi_gt2dosage</span>(vcf)</span></code></pre></div>
 <p>Now we run <code>find_linked_sites()</code> to obtain a list of
 dataframes with sites that have an R<sup>2</sup> above the specified
 cutoff within a 200,000 bp window per CHROM. Then we call
@@ -839,8 +842,8 @@ links above the specified cutoff could remain if each of the nodes
 represent distinct groups).</p>
 <div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a>links <span class="ot">&lt;-</span> <span class="fu">find_linked_sites</span>(vcf, <span class="at">cutoff =</span> <span class="fl">0.9</span>, <span class="at">size_bp =</span> <span class="fl">1e5</span>, <span class="at">windows =</span> <span class="dv">2</span>, <span class="at">by_chrom =</span> <span class="cn">TRUE</span>, <span class="at">cores =</span> <span class="dv">1</span>)</span>
 <span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a><span class="co">#&gt; ℹ Running 5 comparisons between 4 windows</span></span>
-<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a><span class="co">#&gt; ℹ Collecting results &lt;Sun 01:09&gt;</span></span>
-<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a><span class="co">#&gt; ✔ Collecting results [6ms]</span></span>
+<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a><span class="co">#&gt; ℹ Collecting results &lt;Sun 12:26&gt;</span></span>
+<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a><span class="co">#&gt; ✔ Collecting results [9ms]</span></span>
 <span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb19-6"><a href="#cb19-6" tabindex="-1"></a>lgraph <span class="ot">&lt;-</span> <span class="fu">resolve_links</span>(links, <span class="at">cores =</span> <span class="dv">1</span>)</span></code></pre></div>
 <blockquote>
@@ -867,10 +870,10 @@ so it can utilize BLAS, thus using a faster BLAS library like openBLAS
 on Linux should improve performance here.</p>
 </blockquote>
 <div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="fu">summary</span>(lgraph, <span class="at">vcf =</span> vcf)</span>
-<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a><span class="co">#&gt; # A tibble: 1 × 5</span></span>
-<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a><span class="co">#&gt;   n_proxy n_remove n_total n_singletons frac_remove</span></span>
-<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a><span class="co">#&gt;     &lt;int&gt;    &lt;int&gt;   &lt;int&gt;        &lt;int&gt;       &lt;dbl&gt;</span></span>
-<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a><span class="co">#&gt; 1      13       34      60           13       0.567</span></span></code></pre></div>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a><span class="co">#&gt; # A tibble: 1 × 4</span></span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a><span class="co">#&gt;   n_proxy n_remove n_total frac_remove</span></span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a><span class="co">#&gt;     &lt;int&gt;    &lt;int&gt;   &lt;int&gt;       &lt;dbl&gt;</span></span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a><span class="co">#&gt; 1      13       34      60       0.567</span></span></code></pre></div>
 <p>This will return a directed acyclic graph in which each node is
 labeled with the row index of <code>unmask_all(site(vcf))</code>. Each
 node that should be removed to reduce linkage is connected to a node
