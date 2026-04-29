@@ -4,9 +4,8 @@ as_varkit <- function(x, ...) {
 }
 
 ##' @export
-as_varkit.data.frame <- function(x, ..., meta = NULL, use_filter = TRUE) {
+as_varkit.data.frame <- function(x, ...) {
   stopifnot(is.data.frame(x))
-  .stopifnotsingle(use_filter, what = "logical")
 
   if (nrow(x) == 0L)
     return(NULL)
@@ -18,5 +17,5 @@ as_varkit.data.frame <- function(x, ..., meta = NULL, use_filter = TRUE) {
   colnames(site) <- tolower(colnames(site))
   geno <- t(geno)
 
-  varkit(site = site, geno = geno, meta = meta, use_filter = use_filter)
+  varkit(site = site, geno = geno, ...)
 }

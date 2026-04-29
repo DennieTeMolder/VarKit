@@ -23,7 +23,16 @@
     res
 }
 
-# REVIEW: use in more place for performance?
+# Similar to rlang::is_named()
+.valid_names <- function(nms, check_dup = FALSE) {
+  if (is.null(nms) || anyNA(nms) || any(nms == ""))
+    return(FALSE)
+  if (check_dup && anyDuplicated(nms) != 0L)
+    return(FALSE)
+  TRUE
+}
+
+# REVIEW: use in more places for performance?
 .unlist <- function(x, recursive = FALSE, use.names = FALSE) {
   unlist(x, recursive = recursive, use.names = use.names)
 }

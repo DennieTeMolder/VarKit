@@ -1,5 +1,5 @@
 ##' @export
-varkit <- function(site, geno, meta = NULL, use_filter = TRUE) {
+varkit <- function(site, geno, meta = NULL, use_filter = TRUE, sample_keys = TRUE, site_keys = TRUE) {
   stopifnot(is.data.frame(site))
   stopifnot(is.matrix(geno))
   if (nrow(site) != ncol(geno))
@@ -12,11 +12,32 @@ varkit <- function(site, geno, meta = NULL, use_filter = TRUE) {
     site$filter == "PASS" | is.na(site$filter)
   }
 
+  # Add default keys match_rd(), TRUE values indicate the default value should be used
+  if (isTRUE(sample_keys) && .valid_names(rownames(geno), check_dup = TRUE)) {
+    sample_keys <- tibble::tibble(name = rownames(geno))
+  } else {
+    sample_keys <- NULL
+  }
+
+  if (isTRUE(site_keys)) {
+    if ("id" %in% colnames(site) && .valid_names(site$id, check_dup = TRUE)) {
+      site_keys <- "id"
+    } else if (all(c("chrom", "pos") %in% colnames(site))) {
+      site_keys <- c("chrom", "pos")
+    }
+  }
+  if (is.character(site_keys))
+    site_keys <- site[site_keys]
+  if (!is.data.frame(site_keys) || dplyr::n_distinct(site_keys, na.rm = TRUE) != nrow(site))
+    site_keys <- NULL
+
   validate_varkit(new_varkit(
     site = site,
     geno = geno,
     meta = meta,
-    site_indices = site_indices
+    site_indices = site_indices,
+    sample_keys = sample_keys,
+    site_keys = site_keys
   ))
 }
 
@@ -25,7 +46,9 @@ new_varkit <- function(site = data.frame(chrom = character(), pos = integer()),
                        geno = varkit_geno(),
                        meta = data.frame(name = character(), value = character()),
                        sample_indices = logical(),
-                       site_indices = logical()
+                       site_indices = logical(),
+                       sample_keys = NULL,
+                       site_keys = NULL
                        ) {
   stopifnot(is.data.frame(site))
   stopifnot(is.matrix(geno))
@@ -48,6 +71,16 @@ new_varkit <- function(site = data.frame(chrom = character(), pos = integer()),
   stopifnot(nrow(site) == length(site_indices))
   stopifnot(nrow(geno) == length(sample_indices))
 
+  keys <- list()
+  if (!is.null(sample_keys)) {
+    stopifnot(is.data.frame(sample_keys), nrow(sample_keys) == nrow(geno))
+    keys$samples <- tibble::as_tibble(sample_keys)
+  }
+  if (!is.null(site_keys)) {
+    stopifnot(is.data.frame(site_keys), nrow(site_keys) == nrow(site))
+    keys$sites <- tibble::as_tibble(site_keys)
+  }
+
   obj <- new_related_data(
     x = list(
       meta = tibble::as_tibble(meta),
@@ -62,7 +95,8 @@ new_varkit <- function(site = data.frame(chrom = character(), pos = integer()),
     indices = list(
       samples = sample_indices,
       sites = site_indices
-    )
+    ),
+    keys = keys
   )
 
   class(obj) <- c("varkit", class(obj))
@@ -307,6 +341,7 @@ split.varkit <- function(x, f, drop = FALSE, ...) {
   split_mask$sites <- split(split_mask$sites, f = groups)
 
   # Recreate the varkit object for each split
+  # TODO split keys
   lapply(setNames(nm = names(split_geno)), function(name) {
     rd_filter(
       new_varkit(meta = x$meta, site = split_site[[name]], geno = split_geno[[name]]),
