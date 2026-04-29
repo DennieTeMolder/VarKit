@@ -19,8 +19,7 @@ parse_geno.varkit <- function(x, type = NULL, allow_missing = FALSE) {
   # Elements of X can be referenced directly w/o parsing, the FORMAT/TAG always triggers parsing
   if (stringr::str_detect(type, "^(FORMAT|FMT)/")) {
     type <- stringr::str_remove(type, "[^/]*/")
-  } else if (type %in% names(x)) {
-    res <- x[[type]]
+  } else if (type %in% names(x) && !is.null(res <- x[[type]])) {
     if (!is.matrix(res)) {
       stop("Expected cached value in `$", type, "` to be a matrix!")
     } else if (any(dim(res) != rd_dim(x, i = "geno"))) {
