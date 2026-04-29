@@ -708,10 +708,15 @@ with_rd <- function(x, expr) {
       dot <- .quo_replace_fn(dot, fn = tibble::tibble)
 
     res <- rlang::eval_tidy(dot, data = c(list(. = data), if (is.list(data)) data))
-    if (!is.list(res))
-      stop("All additional arguments should evaluate to a list/dataframe!", call. = FALSE)
-    if (!rlang::is_named(res))
-      stop("All elements should be named!", call. = FALSE)
+    if (!is.list(res)) {
+      if (is.vector(res)) {
+        res <- tibble::enframe(res, name = NULL, value = rlang::as_label(dot))
+      } else {
+        stop("All additional arguments should evaluate to a list/dataframe!", call. = FALSE)
+      }
+    } else if (!rlang::is_named(res)) {
+      stop("The list/dataframe is missing names!", call. = FALSE)
+    }
 
     res <- tibble::as_tibble(res)
     if (nrow(res) != dims[[name]]) {
