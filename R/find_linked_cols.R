@@ -1,9 +1,9 @@
 ##' @export
 find_linked_cols <- function(mat,
-                             cutoff = 0.9,
-                             windows = -1,
+                             cutoff,
+                             windows = 2,
                              cols_each = 2000,
-                             return_r2 = FALSE,
+                             return_r2 = TRUE,
                              cores = 1,
                              min_ncol = 20
                              ) {
@@ -14,6 +14,9 @@ find_linked_cols <- function(mat,
   .stopifnotsingle(return_r2, what = "logical")
   .stopifnotsingle(cores, what = is.numeric)
   .stopifnotsingle(min_ncol, what = is.numeric)
+
+  # Unclass to ensure primitive functions are used
+  mat <- unclass(mat)
 
   # Ensure the matrix has col names so it can be reconstructed
   if (is.null(colnames(mat)))

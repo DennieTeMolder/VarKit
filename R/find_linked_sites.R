@@ -1,10 +1,10 @@
 ##' @export
 find_linked_sites <- function(x,
-                              cutoff = 0.9,
-                              windows = 1,
+                              cutoff,
+                              windows = 2,
                               size_bp = 1e5,
                               by_chrom = TRUE,
-                              return_r2 = FALSE,
+                              return_r2 = TRUE,
                               cores = 1,
                               min_ncol = 20
                               ) {
@@ -13,11 +13,11 @@ find_linked_sites <- function(x,
 
 ##' @export
 find_linked_sites.varkit <- function(x,
-                                     cutoff = 0.9,
-                                     windows = 1,
+                                     cutoff,
+                                     windows = 2,
                                      size_bp = 1e5,
                                      by_chrom = TRUE,
-                                     return_r2 = FALSE,
+                                     return_r2 = TRUE,
                                      cores = 1,
                                      min_ncol = 20
                                      ) {

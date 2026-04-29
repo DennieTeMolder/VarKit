@@ -130,8 +130,7 @@ resolve_links <- function(links,
   # Loop over each clusters, take node with the highest degree (whilst being sure
   # to protect nodes that represent others) and drop its neighbours to ensure we
   # are not creating links that fall below the correlation threshold
-  protected <- NULL
-  .resolve_links_safe_internal <- function(graph) {
+  .resolve_links_safe_internal <- function(graph, protected) {
     clusters <- unname(cluster_fn(graph))
 
     compute_degree <- if (igraph::is_weighted(graph)) igraph::strength else igraph::degree
@@ -175,8 +174,9 @@ resolve_links <- function(links,
   results <- igraph::make_empty_graph(igraph::vcount(graph), directed = TRUE)
   igraph::V(results)$name <- igraph::V(graph)$name
 
+  protected <- NULL
   while (TRUE) {
-    new <- .resolve_links_safe_internal(graph)
+    new <- .resolve_links_safe_internal(graph, protected = protected)
 
     new_edges <- mapply(names(new), new, FUN = function(from, to) {
       as.vector(rbind(from, to))

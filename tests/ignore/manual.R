@@ -65,7 +65,7 @@ vcf <- read_vcf(example, use_filter = FALSE)
 geno(vcf) <- as_integer(round(ad2aaf(vcf)$aaf) * 2L)
 vcf <- mask(unmask_all(vcf), qual < 1e4)
 
-links <- find_linked_sites(vcf, windows = -1, return_r2 = TRUE, cores = 1)
+links <- find_linked_sites(vcf, cutoff = 0.9, windows = -1, return_r2 = TRUE, cores = 1)
 lgraph <- resolve_links(links, cores = 1)
 summary(lgraph, vcf = vcf)
 
