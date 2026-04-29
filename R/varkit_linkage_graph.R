@@ -19,17 +19,13 @@ is_varkit_linkage_graph <- function(x) {
 }
 
 ##' @export
-summary.varkit_linkage_graph <- function(object, vcf = NULL, ...) {
+summary.varkit_linkage_graph <- function(object, ...) {
   rlang::check_dots_used()
   .ensure_igraph()
-  if (!is.null(vcf))
-    stopifnot(is_varkit(vcf), originates_from(object, origin = vcf))
 
   tibble::tibble(
     n_proxy = sum(igraph::degree(object, mode = "out") > 0),
-    n_remove = sum(igraph::degree(object, mode = "in") == 1),
-    n_total = if (!is.null(vcf)) n_sites.varkit(vcf, mask = FALSE),
-    frac_remove = if (!is.null(vcf)) .data$n_remove / .data$n_total
+    n_remove = sum(igraph::degree(object, mode = "in") == 1)
   )
 }
 
