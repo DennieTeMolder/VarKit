@@ -278,6 +278,7 @@ specified cutoff could remain if each of the nodes represent distinct groups).
 ```{r linked_sites, results = 'hide'}
 links <- find_linked_sites(vcf, cutoff = 0.9, size_bp = 1e5, windows = 2, by_chrom = TRUE, cores = 1)
 lgraph <- resolve_links(links, cores = 1)
+summary(lgraph)
 ```
 
 > Here we use a sliding window spanning 2 (`n_window`) X 1e5 base pairs
@@ -297,26 +298,21 @@ lgraph <- resolve_links(links, cores = 1)
 > "pairwise.complete.obs")` so it can utilize BLAS, thus using a faster BLAS
 > library like openBLAS on Linux should improve performance here.
 
-```{r linked_sites_summary}
-summary(lgraph, vcf = vcf)
-```
-
 This will return a directed acyclic graph in which each node is labeled with the
 row index of `unmask_all(site(vcf))`. Each node that should be removed to reduce
-linkage is connected to a node that will be retained and is guaranteed to have
-an R^2^ above the cutoff (retained -> removed). When using
+linkage is connected to a node that will be retained (retained -> removed) and
+is guaranteed to have an R^2^ above the cutoff. When using
 `find_linked_sites(return_r2 = TRUE` the variant with the least amount of
 missing data and strongest correlation to the other members of the group is
-kept, otherwise the choice is arbitrary. Refer to the Igraph package and
-`igraph::groups()` function for information on working with these graphs.
+kept, if this option is omitted the first variant is kept. Refer to the Igraph
+package and `igraph::groups()` function for information on working with these
+graphs.
 
-Now we combine the `is_linked()` and `mask()` function 
-
-Luckily there is no need to understand graph theory as the removal of linked
-sites can be achieved by combining the `mask() and `is_linked()` functions. In
-the resulting vcf, for each group of linked sites, the single best site is
-retained and all others are masked, thus representing the most amount of
-information with the least amount of variants.
+Now to apply this information to our varkit/vcf object we use the `is_linked()`
+function in conjuction with `mask()` to optimally reduce linkage between the
+remaining sites. In the resulting vcf, for each group of linked sites, the
+single best site is retained and all others are masked, thus representing the
+most amount of information with the least amount of variants.
 
 ```{r mask_linked}
 vcf <- mask(vcf, site = is_linked(., lgraph))
