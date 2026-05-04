@@ -12,5 +12,10 @@ To learn more about varkit, start with the vignette:
 \author{
 \strong{Maintainer}: Dennie te Molder \email{dennie.temolder@wur.nl} (\href{https://orcid.org/0000-0003-2857-2812}{ORCID})
 
+Authors:
+\itemize{
+  \item Dennie te Molder \email{dennie.temolder@wur.nl} (\href{https://orcid.org/0000-0003-2857-2812}{ORCID})
+}
+
 }
 \keyword{internal}
