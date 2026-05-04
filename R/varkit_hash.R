@@ -1,15 +1,9 @@
-##' @exportS3Method digest::sha1
-sha1.varkit <- function(x, ...) {
-  validate_varkit(x)
-  all_sites <- rd_unclass(x)$site
-  digest::sha1(list(
-    all_sites[intersect(names(all_sites), c("chrom", "pos", "ref", "alt"))],
-    samples.varkit(x)
+##' @export
+varkit_hash <- function(origin) {
+  if (!is_varkit(origin))
+    return(rlang::hash(origin))
+  rlang::hash(list(
+    samples.varkit(origin),
+    site.varkit(origin, "chrom", "pos")
   ))
-}
-
-##' @exportS3Method digest::sha1
-sha1.varkit_header <- function(x, ...) {
-  validate_varkit_header(x)
-  digest::sha1(list(meta(x), samples.varkit_header(x)))
 }

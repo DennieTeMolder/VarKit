@@ -10,12 +10,12 @@ unmask_linked.varkit <- function(x, linkage_graph, linked_only = FALSE) {
   .stopifnotsingle(linked_only, what = "logical")
   .ensure_igraph()
 
-  if (!originates_from(linkage_graph, origin = x))
-    stop("The 'linkage_graph' does not originate from 'x'!")
+  unmask_idx <- as_integer(igraph::as_edgelist(linkage_graph, names = TRUE))
 
   use_site <- .indices(x)$sites
+  if (max(unmask_idx) > length(use_site))
+    stop("The 'linkage_graph' references sites not in 'x'!")
 
-  unmask_idx <- as_integer(igraph::as_edgelist(linkage_graph, names = TRUE))
   unmask_idx <- unmask_idx[unmask_idx[, 1L, drop = TRUE] %in% which(use_site), 2L, drop = TRUE]
 
   if (linked_only)

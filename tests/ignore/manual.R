@@ -65,16 +65,16 @@ vcf <- read_vcf(example, use_filter = FALSE)
 geno(vcf) <- as_integer(round(ad2aaf(vcf)$aaf) * 2L)
 vcf <- mask(unmask_all(vcf), qual < 1e4)
 
-links <- find_linked_sites(vcf, cutoff = 0.9, windows = -1, return_r2 = TRUE, cores = 1)
+links <- find_linked_sites(vcf, cutoff = 0.9, windows = -1, cores = 1)
 lgraph <- resolve_links(links, cores = 1)
-summary(lgraph, vcf = vcf)
+summary(lgraph)$indices
 
 vcf <- mask(vcf, is_linked(., lgraph))
 summary(vcf)
 
 temp_file <- tempfile(fileext = ".xml")
 write_linkage_graph(lgraph, temp_file)
-summary(read_linkage_graph(temp_file), vcf)
+summary(read_linkage_graph(temp_file))$indices
 
 groups <- igraph::groups(lgraph)
 length(groups)
@@ -86,7 +86,9 @@ unmask_linked(retain(vcf, chrom == "I" & pos == 2560055), lgraph)
 # Merge two linked graphs
 links2 <- find_linked_sites(vcf, cutoff = 0.3)
 lgraph <- merge_linkage_graphs(resolve_links(links2), lgraph)
-summary(lgraph, vcf = vcf)
+summary(lgraph)
+
+summary(mask(vcf, is_linked(., lgraph)))$indices
 
 ## Index ------
 # TODO test N_MAX
@@ -133,6 +135,10 @@ test <- rbind(
 
 seek(test, 1)
 seq_index(test)
+
+index <- index_vcf(temp_file)
+write_vcf_index(index, temp_file)
+read_vcf_index(temp_file)
 
 ## Related data ------
 vcf <- read_vcf(example)

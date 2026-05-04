@@ -6,10 +6,11 @@ varkit_linkage_graph <- function(graph, origin = NULL) {
   stopifnot(igraph::vcount(graph) > igraph::ecount(graph))
 
   if (!is.null(origin)) {
-    graph <- set_origin(graph, origin)
+    stopifnot(is.character(origin), is.vector(origin))
+    igraph::graph_attr(graph, "varkit_origin") <- origin
   }
 
-  class(graph) <- unique(c("varkit_linkage_graph", class(graph)))
+  class(graph) <- union("varkit_linkage_graph", class(graph))
   graph
 }
 
@@ -39,8 +40,10 @@ groups.varkit_linkage_graph <- function(x) {
 # NOTE using saveRDS() also seems to work and uses 10x less disk space (binary format).
 ##' @export
 write_linkage_graph <- function(graph, file, format = "xml") {
+  .stopifnotsingle(format, what = "character")
   .ensure_igraph()
-  if (!format[1] %in% c("xml", "graphml"))
+
+  if (!format %in% c("xml", "graphml"))
     stop("Only the 'xml' (graphml) format is supported! Others lack graph and/or vertex attributes.")
   igraph::write_graph(graph, file = file, format = "graphml")
 }

@@ -21,12 +21,10 @@ read_vcf_index <- function(vcf_path, validate = TRUE, ...) {
 }
 
 .has_matching_index <- function(path) {
-  index_path <- get_index_file(path)
-
-  origin <- readLines(index_path, n = 1L)
-  if (!stringr::str_starts(origin, "#varkit_header_sha1="))
-    stop("The first line of the index is missing the 'varkit_header_sha1' attribute!")
+  origin <- readLines(get_index_file(path), n = 1L)
+  if (!stringr::str_starts(origin, "#varkit_header_hash="))
+    stop("The first line of the index is missing the 'varkit_header_hash' attribute!")
   origin <- stringr::str_sub(origin, start = 21L)
 
-  origin == digest::sha1(read_vcf_header(path))
+  identical(origin, varkit_hash(read_vcf_header(path)))
 }

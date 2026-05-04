@@ -3,9 +3,9 @@ merge_linkage_graphs <- function(child, parent) {
   stopifnot(is_varkit_linkage_graph(child))
   stopifnot(is_varkit_linkage_graph(parent))
 
-  origin <- get_origin(parent)
-  if (origin != get_origin(child))
-    stop("Both linkage graphs do not originate from the same VCF!")
+  # Combine origins to create a lineage
+  origin <- c(get_origin(child), get_origin(parent))
+  origin <- origin[!duplicated(origin, fromLast = TRUE)]
 
   # Convert graphs to a quickly searchable format
   # NOTE: this code should be similar to groups.varkit_linkage_graph()

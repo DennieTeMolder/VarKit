@@ -1,15 +1,11 @@
 ##' @export
 set_origin <- function(x, origin) {
-  if (is.character(origin) && length(origin) == 1L) {
-    sha1 <- origin
-  } else {
-    sha1 <- digest::sha1(origin)
-  }
+  hash <- varkit_hash(origin)
   if (inherits(x, "igraph")) {
     .ensure_igraph()
-    igraph::graph_attr(x, "varkit_origin") <- sha1
+    igraph::graph_attr(x, "varkit_origin") <- hash
   } else {
-    attr(x, "varkit_origin") <- sha1
+    attr(x, "varkit_origin") <- hash
   }
   x
 }
@@ -29,5 +25,5 @@ get_origin <- function(x, ensure = FALSE) {
 
 ##' @export
 originates_from <- function(x, origin) {
-  get_origin(x, ensure = TRUE) == digest::sha1(origin)
+  any(get_origin(x, ensure = TRUE) == varkit_hash(origin))
 }
