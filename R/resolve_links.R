@@ -11,7 +11,7 @@ cluster_stable <- function(graph) {
 
 ##' @export
 resolve_links <- function(links,
-                          strategy = c("safe", "greedy"),
+                          strategy = c("greedy", "safe"),
                           cluster_fn = cluster_fast,
                           cores = 1
                           ) {
@@ -99,32 +99,36 @@ resolve_links <- function(links,
   }
 
   # Handle more complex cases with a network approach
-  if (strategy == "greedy")
-    return(.resolve_links_greedy(links, cluster_fn = cluster_fn))
-  .resolve_links_safe(links, cluster_fn = cluster_fn)
+  if (strategy == "greedy") {
+    .resolve_links_greedy(links, cluster_fn = cluster_fn)
+  } else if (strategy == "safe") {
+    .resolve_links_safe(links, cluster_fn = cluster_fn)
+  } else {
+    stop("Unexpected!")
+  }
 }
 
 .resolve_links_greedy <- function(links, cluster_fn) {
   graph <- igraph::graph_from_data_frame(links, directed = FALSE)
   stopifnot(igraph::is_named(graph))
 
-  clusters <- unname(cluster_fn(graph))
-
   compute_degree <- if (igraph::is_weighted(graph)) igraph::strength else igraph::degree
 
-  res <- lapply(clusters, function(cl) {
-    len <- length(cl)
-    if (len == 1L)
+  clusters <- unname(cluster_fn(graph))
+  edges <- .unlist(lapply(clusters, function(cl) {
+    if (length(cl) == 1L)
       return(NULL)
-    if (len == 2L)
-      return(data.frame(from = cl[1L], to = cl[2L]))
+    if (length(cl) == 2L)
+      return(c(from = cl[1L], to = cl[2L]))
     deg <- compute_degree(igraph::induced_subgraph(graph, cl))
     cl_keep <- names(which.max(deg))
-    data.frame(from = cl_keep, to = setdiff(cl, cl_keep))
-  })
-  res <- do.call(rbind, res)
+    as.vector(rbind(from = cl_keep, to = cl[cl != cl_keep]))
+  }))
 
-  igraph::graph_from_data_frame(res, directed = TRUE)
+  # Create a directed graph to store the result
+  results <- igraph::make_empty_graph(igraph::vcount(graph), directed = TRUE)
+  igraph::V(results)$name <- igraph::V(graph)$name
+  igraph::add_edges(results, edges = edges)
 }
 
 .resolve_links_safe <- function(links, cluster_fn) {
