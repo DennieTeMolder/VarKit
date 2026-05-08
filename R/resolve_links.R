@@ -35,6 +35,8 @@ resolve_links <- function(links,
     sizes <- sizes[sizes >= 1L]
   }
 
+  .msg_info("Resolving ", .frmt_big(sum(sizes)), " links")
+
   # Adjust cores
   cores <- min(floor(cores), length(links))
 
@@ -65,6 +67,8 @@ resolve_links <- function(links,
     cli::cli_progress_done()
   }
 
+  .msg_step("Collecting results")
+
   res <- do.call(igraph::disjoint_union, res)
   varkit_linkage_graph(res, origin = origin)
 }
@@ -89,7 +93,7 @@ resolve_links <- function(links,
     )
   } else if (ncol(links) > 2L) {
     # Non standard data type, notify the user
-    cli::cli_alert_info("Using the third column as weights")
+    .msg_info("Using the third column as weights")
     links <- links[, 1:3, drop = FALSE]
     colnames(links)[3L] <- "weight"
   }

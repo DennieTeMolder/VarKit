@@ -1,7 +1,7 @@
 .r2_cutoff_parallel <- function(mat_list, comps, cutoff, return_r2, cores) {
   cores <- min(floor(cores), nrow(comps))
 
-  cli::cli_alert_info(c("Running ", .frmt_big(nrow(comps)), " comparisons between ", .frmt_big(length(mat_list)), " windows"))
+  .msg_info("Running ", .frmt_big(nrow(comps)), " comparisons between ", .frmt_big(length(mat_list)), " windows")
 
   if (cores < 2) {
     return(purrr::map2(comps$i, comps$j, function(i, j) {
