@@ -67,14 +67,14 @@ vcf <- mask(unmask_all(vcf), qual < 1e4)
 
 links <- find_linked_sites(vcf, cutoff = 0.9, windows = -1, cores = 1)
 lgraph <- resolve_links(links, cores = 1)
-summary(lgraph)$indices
+summary(lgraph)
 
 vcf <- mask(vcf, is_linked(., lgraph))
-summary(vcf)
+summary(vcf)$indices
 
 temp_file <- tempfile(fileext = ".xml")
 write_linkage_graph(lgraph, temp_file)
-summary(read_linkage_graph(temp_file))$indices
+summary(read_linkage_graph(temp_file))
 
 groups <- igraph::groups(lgraph)
 length(groups)
@@ -84,11 +84,11 @@ length(unlist(groups))
 unmask_linked(retain(vcf, chrom == "I" & pos == 2560055), lgraph)
 
 # Merge two linked graphs
-links2 <- find_linked_sites(vcf, cutoff = 0.3)
-lgraph <- merge_linkage_graphs(resolve_links(links2), lgraph)
-summary(lgraph)
+links2 <- merge_links(find_linked_sites(vcf, cutoff = 0.3), links)
+lgraph2 <- resolve_links(links2)
+summary(lgraph2)
 
-summary(mask(vcf, is_linked(., lgraph)))$indices
+summary(mask(vcf, is_linked(., lgraph2)))$indices
 
 ## Index ------
 # TODO test N_MAX
