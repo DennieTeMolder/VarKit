@@ -12,7 +12,7 @@ varkit <- function(site, geno, meta = NULL, use_filter = TRUE, sample_keys = TRU
     site$filter == "PASS" | is.na(site$filter)
   }
 
-  # Add default keys match_rd(), TRUE values indicate the default value should be used
+  # Add keys for match_rd(), TRUE values indicate we should compute defaults
   if (isTRUE(sample_keys) && .valid_names(rownames(geno), check_dup = TRUE)) {
     sample_keys <- tibble::tibble(name = rownames(geno))
   } else {

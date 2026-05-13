@@ -320,7 +320,9 @@ match_rd <- function(data, rd, slot, ..., .return_unused = FALSE) {
   if (!all(purrr::map_lgl(dots, isTRUE))) {
     # Match arguments to indices to construct slicing arguments
     args <- rlang::rep_named(curr_slot, list(TRUE))
-    args[names(dots)] <- dots
+    arg_match_dot <- match(names(args), names(dots))
+    has_match <- !is.na(arg_match_dot)
+    args[has_match] <- dots[arg_match_dot[has_match]]
     names(args) <- NULL
 
     # Apply re-ordering & return
