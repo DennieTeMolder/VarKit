@@ -790,10 +790,11 @@ with_rd <- function(x, expr) {
   if (length(missing) > 0L)
     stop("The following arguments do not match any indices: ", .quote_collapse(missing))
 
-  dots_match_idx <- match(names(named_dots), use_indices)
+  idx_match_dots <- match(use_indices, names(named_dots))
+  has_match <- !is.na(idx_match_dots)
 
   # Ensure named and unnamed arguments don't reference the same position
-  overlap <- sort(intersect(dots_match_idx, which(!have_name)))
+  overlap <- intersect(which(has_match), which(!sapply(dots, is.null)))
   if (length(overlap) > 0L) {
     stop("Positional and named arguments collide: ",
          paste0(overlap, " & '", use_indices[overlap], "'", collapse = ", "), "!")
@@ -801,7 +802,7 @@ with_rd <- function(x, expr) {
 
   # Match size first so named dots can be given the correct position
   dots <- c(dots, rep(list(NULL), length(use_indices) - length(dots)))
-  dots[dots_match_idx] <- named_dots
+  dots[has_match] <- named_dots[idx_match_dots[has_match]]
 
   dots
 }
