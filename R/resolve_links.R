@@ -108,6 +108,8 @@ resolve_links <- function(links,
   }
 }
 
+# The greedy version only clusters once and assigns all members to the strongest
+# even if they do not share a direct link.
 .resolve_links_greedy <- function(links, cluster_fn) {
   graph <- igraph::graph_from_data_frame(links, directed = FALSE)
   stopifnot(igraph::is_named(graph))
@@ -131,6 +133,9 @@ resolve_links <- function(links,
   igraph::add_edges(results, edges = edges)
 }
 
+# The safe version only assigns members if they share a direct link and will
+# iterative continue clustering and assigning until the solution doesn't
+# improve. This has the potential to be very slow depending on network topology.
 .resolve_links_safe <- function(links, cluster_fn) {
   graph <- igraph::graph_from_data_frame(links, directed = FALSE)
   stopifnot(igraph::is_named(graph))
