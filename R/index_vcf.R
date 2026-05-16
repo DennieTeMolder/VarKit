@@ -83,7 +83,7 @@ index_vcf <- function(file, size_bp = -1, chunk_size = 1e4, ...) {
 
     # Bin positions based on size_bp
     if (use_pos) {
-      tbl <- paste0(tbl$chrom, ":", tbl$pos %/% size_bp)
+      tbl <- paste0(tbl$chrom, ":", (tbl$pos %/% size_bp) * size_bp)
     } else {
       tbl <- tbl$chrom
     }
