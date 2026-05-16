@@ -1,11 +1,18 @@
 # Eval EXPR with tidy data pronouns (+ ., site, geno, meta, names(site))
 ##'@export
-with_vcf <- function(vcf, expr, return_env = FALSE) {
+with_vcf <- function(vcf, expr, unmask = FALSE, return_env = FALSE) {
   stopifnot(is_varkit(vcf))
   .stopifnotsingle(return_env, what = "logical")
-  if (missing(expr))
-    stop("The 'expr' argument is empty!")
+
   expr <- rlang::enquo(expr)
+  if (rlang::quo_is_missing(expr))
+    stop("Please provide the 'expr' argument!")
+
+  # Reset desired indices before eval, NULL resets all indices
+  if (isTRUE(unmask))
+    unmask <- "sites"
+  if (!isFALSE(unmask))
+    vcf <- rd_reset(vcf, indices = unmask)
 
   # The VarKit object in the can be referenced with '.'
   eval_env <- rlang::env(. = vcf)

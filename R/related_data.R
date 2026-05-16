@@ -516,6 +516,8 @@ rd_filter <- function(x, ...) {
 ##' @export
 rd_reset <- function(x, indices = NULL) {
   validate_related_data(x)
+  stopifnot(is.null(indices) || is.character(indices))
+
   attr_ind <- attr(x, "indices")
 
   # Reset all indices if NULL
