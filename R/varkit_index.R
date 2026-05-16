@@ -26,7 +26,7 @@ new_varkit_index <- function(index = data.frame(id = character(), linum = intege
   stopifnot(is.data.frame(index))
   structure(index,
     env = list2env(list(...), parent = rlang::empty_env()),
-    class = unique(c("varkit_index", class(index)))
+    class = union("varkit_index", class(index))
   )
 }
 
@@ -45,7 +45,7 @@ validate_varkit_index <- function(index) {
   if (any(diff(index$linum) < utils::head(index$n_lines, n = -1)))
     stop("The 'n_lines' column is larger then the difference in 'linum'!")
   if (is.null(.env(index)$file))
-    stop("The index env has no associated 'file'!")
+    stop("The index has no associated 'file'!")
   if (!file.exists(.env(index)$file))
     stop("The 'file' associated to the index does not seem to exists!")
   index
@@ -104,6 +104,7 @@ close.varkit_index <- function(con, ...) {
 
 ##' @export
 seek.varkit_index <- function(con, where = NA, origin = "start", ..., max_header_lines = 1e6) {
+  validate_varkit_index(con)
   if (!is.na(where))
     stopifnot(length(where) == 1L, is.character(where) || is.numeric(where))
   origin <- match.arg(origin, c("start", "current", "end"))
@@ -123,10 +124,10 @@ seek.varkit_index <- function(con, where = NA, origin = "start", ..., max_header
     if (origin == "current") {
       where <- where + .env(con)$curr_line
     } else if (origin == "end") {
-      where <- with(utils::tail(con, n = 1L), linum + n_lines) - where
+      where <- con$linum[nrow(con)] + con$n_lines[nrow(con)] - where
     }
   } else {
-    stop("Unexpected!")
+    stop("Value of 'where' not recognized!")
   }
 
   # Close file if target line is before current line
