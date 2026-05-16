@@ -1,11 +1,11 @@
 ##' @export
-merge_links <- function(x, y) {
+concat_links <- function(x, y) {
   if (!is.list(x))
     stop("'x' must be a dataframe or list!")
   if (!identical(class(x), class(y)))
     stop("'x' and 'y' must be of the same class!")
 
-  .merge_linked_internal <- function(name = NULL) {
+  .concat_links_internal <- function(name = NULL) {
     if (!is.null(name)) {
       x <- x[[name]]
       y <- y[[name]]
@@ -29,11 +29,11 @@ merge_links <- function(x, y) {
   }
 
   if (is.data.frame(x)) {
-    res <- .merge_linked_internal()
+    res <- .concat_links_internal()
   } else {
     chroms <- union(names(x), names(y))
     names(chroms) <- chroms
-    res <- purrr::map(chroms, .merge_linked_internal)
+    res <- purrr::map(chroms, .concat_links_internal)
   }
 
   # Combine origins to create a lineage

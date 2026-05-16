@@ -84,7 +84,7 @@ length(unlist(groups))
 unmask_linked(retain(vcf, chrom == "I" & pos == 2560055), lgraph)
 
 # Merge two linked graphs
-links2 <- merge_links(find_linked_sites(vcf, cutoff = 0.3), links)
+links2 <- concat_links(find_linked_sites(vcf, cutoff = 0.3), links)
 lgraph2 <- resolve_links(links2)
 summary(lgraph2)
 
