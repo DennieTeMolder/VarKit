@@ -53,10 +53,10 @@ splitm <- function(x,
     }
 
     x <- as.data.frame(x)
-    x[[".IDX"]] <- seq_len(nrow(x))
+    x[[ncol(x) + 1L]] <- seq_len(nrow(x))
 
     x <- split.data.frame(x = x, f = f, ...)
-    lapply(x, function(xx) xx[[".IDX"]])
+    lapply(x, function(xx) xx[[ncol(xx)]])
   }
 
   .extract <- function(ind, data, margin) {
@@ -64,7 +64,7 @@ splitm <- function(x,
       return(data)
 
     # Return original object if all indices are selected (assuming no duplicates/NAs)
-    if (ind[[1L]] == 1L) {
+    if (length(ind) > 0L && ind[[1L]] == 1L) {
       total <- switch(margin + 1L, length, nrow, ncol)(data)
       if (total == length(ind))
         return(data)
@@ -108,12 +108,13 @@ splitm <- function(x,
       }
     }
   } else {
-    f_split_ind <- split(seq_len(n), f = f, ...)
+    f_split_ind <- split.default(seq_len(n), f = f, ...)
   }
 
   # Apply the splits and perform splitting by size if requested
   res <- lapply(f_split_ind, function(ind) {
     split <- .extract(ind, data = x, margin = margin)
+
     if (is.null(distances)) {
       dist <- seq_len(.get_size(split)) - 1L
     } else {
@@ -121,10 +122,10 @@ splitm <- function(x,
     }
 
     # Split by size
-    if (is.null(size) || size >= max(dist)) {
+    if (is.null(size) || length(dist) == 0L || size >= max(dist)) {
       size_split_ind <- list(0L)
     } else {
-      size_split_ind <- unname(split(seq_along(dist), dist %/% size))
+      size_split_ind <- unname(split.default(seq_along(dist), dist %/% size))
     }
 
     # Apply the splits and perform splitting by 'na pattern' if requested
@@ -154,7 +155,7 @@ splitm <- function(x,
       }
 
       # Split such that each subset has the same pattern of NAs (except below_min_size)
-      na_split_ind <- split(seq_along(is_na), is_na)
+      na_split_ind <- split.default(seq_along(is_na), is_na)
       lapply(na_split_ind, .extract, data = split2, margin = margin)
     })
   })
