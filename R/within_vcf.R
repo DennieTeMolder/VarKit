@@ -1,6 +1,6 @@
 ##'@export
-within_vcf <- function(vcf, expr) {
-  eval_env <- with_vcf(vcf, {{ expr }}, return_env = TRUE)
+within_vcf <- function(vcf, expr, unmask = TRUE) {
+  eval_env <- with_vcf(vcf, expr = {{ expr }}, unmask = unmask, return_env = TRUE)
 
   # Retrieve modified variables from EVAL_ENV
   has_new <- ls(eval_env, pattern = "^[^~.]")
@@ -24,7 +24,7 @@ within_vcf <- function(vcf, expr) {
         stop("The value of 'site' should be a data frame!")
       if (nrow(site) != n_total) {
         if (nrow(site) == n_visible)
-          stop("Unmask before assigning! See `unmask_all()`.")
+          stop("Unmask before assigning!")
         stop("Expected 'site' to have ", .frmt_big(n_total),
             "rows, but got ", .frmt_big(nrow(site)), "!")
       }
@@ -39,7 +39,7 @@ within_vcf <- function(vcf, expr) {
         if (any(length(val) == c(1L, n_total)))
           next()
         if (length(val) == n_visible)
-          stop("Unmask before assigning! See `unmask_all()`.")
+          stop("Unmask before assigning!")
       }
       stop("No slot registered for: '", name, "'!")
     }
