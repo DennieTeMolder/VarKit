@@ -322,30 +322,46 @@ as_tibble.varkit <- function(x, ..., optional = TRUE) {
 }
 
 ##' @export
-split.varkit <- function(x, f, drop = FALSE, ...) {
-  if (missing(drop))
-    drop <- TRUE
+split.varkit <- function(x, f, drop = TRUE, ...) {
+  rlang::check_dots_used()
+  validate_varkit(x)
+
+  split_mask <- export_mask.varkit(x)
+  split_keys <- attr(x, "keys")
   x <- rd_unclass(x)
 
   # Add indexes so we can retrace the splits
-  x$site$idx <- seq_len(nrow(x$site))
+  x$site[[ncol(x$site) + 1L]] <- seq_len(nrow(x$site))
+  split_site <- splitm(x$site, f = f, drop = drop, keep_f = TRUE)
 
-  # Split sites and determine grouping using the index
-  split_site <- splitm(x$site, f = f, drop = drop, margin = 1, keep_f = TRUE, ...)
-  groups <- purrr::list_rbind(lapply(split_site, function(xx) xx[, "idx"]), names_to = "label")
-  groups <- groups$label[order(groups$idx)]
+  # Extract splits
+  groups <- purrr::list_rbind(
+    lapply(split_site, function(xx) data.frame(idx = xx[[ncol(xx)]])),
+    names_to = "label"
+  )
+  groups <- factor(groups$label[order(groups$idx)], levels = names(split_site))
+
+  # Remove index column
+  split_site <- lapply(split_site, function(xx) {
+    xx[[ncol(xx)]] <- NULL
+    xx
+  })
 
   # Split the other parts of the varkit object in the same way
-  split_geno <- splitm(x$geno, f = groups, margin = 2)
-  split_mask <- export_mask.varkit(x)
-  split_mask$sites <- split(split_mask$sites, f = groups)
+  split_geno <- splitm(x$geno, f = groups, margin = 2, drop = drop)
+  split_mask$sites <- split(split_mask$sites, f = groups, drop = drop)
+  split_keys$sites <- split(split_keys$sites, f = groups, drop = drop)
 
   # Recreate the varkit object for each split
-  # TODO split keys
-  lapply(setNames(nm = names(split_geno)), function(name) {
-    rd_filter(
-      new_varkit(meta = x$meta, site = split_site[[name]], geno = split_geno[[name]]),
-      samples = .env$split_mask$samples,
-      sites = .env$split_mask$sites[[name]])
+  lapply(setNames(nm = names(split_site)), function(name) {
+      new_varkit(
+        meta = x$meta,
+        site = split_site[[name]],
+        geno = split_geno[[name]],
+        sample_indices = split_mask$samples,
+        site_indices = split_mask$sites[[name]],
+        sample_keys = split_keys$samples,
+        site_keys = split_keys$sites[[name]]
+      )
   })
 }
