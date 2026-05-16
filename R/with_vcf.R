@@ -1,7 +1,8 @@
 # Eval EXPR with tidy data pronouns (+ ., site, geno, meta, names(site))
 ##'@export
-with_vcf <- function(vcf, expr) {
+with_vcf <- function(vcf, expr, return_env = FALSE) {
   stopifnot(is_varkit(vcf))
+  .stopifnotsingle(return_env, what = "logical")
   if (missing(expr))
     stop("The 'expr' argument is empty!")
   expr <- rlang::enquo(expr)
@@ -17,7 +18,7 @@ with_vcf <- function(vcf, expr) {
   rlang::env_bind_lazy(eval_env, !!!bind_exprs)
 
   # Lazily bind elements of VCF
-  bind_vars <- setNames(nm = names(vcf))
+  bind_vars <- setNames(nm = names(attr(vcf, "slots")))
   bind_exprs <- lapply(bind_vars, function(var) {
     rlang::expr(rd_get(vcf, i = !!var))
   })
@@ -27,5 +28,10 @@ with_vcf <- function(vcf, expr) {
   eval_env <- rlang::new_data_mask(eval_env)
   eval_env$.data <- rlang::as_data_pronoun(eval_env)
 
-  rlang::eval_tidy(expr, data = eval_env)
+  res <- rlang::eval_tidy(expr, data = eval_env)
+  if (return_env) {
+    eval_env
+  } else {
+    res
+  }
 }
