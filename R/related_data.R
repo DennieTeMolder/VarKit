@@ -660,8 +660,9 @@ rd_indices_get <- function(x) {
 }
 
 ##' @export
-with_rd <- function(x, expr) {
+with_rd <- function(x, expr, return_env = FALSE) {
   stopifnot(is_related_data(x))
+  .stopifnotsingle(return_env, what = "logical")
   if (missing(expr))
     stop("The 'expr' argument is empty!")
   expr <- rlang::enquo(expr)
@@ -669,8 +670,8 @@ with_rd <- function(x, expr) {
   # The related data object itself can be referenced with '.'
   eval_env <- rlang::env(. = x)
 
-  # Lazily bind elements of X so subsetting is only applied if needed
-  bind_vars <- setNames(nm = names(x))
+  # Lazily bind slots of X so subsetting is only applied if needed
+  bind_vars <- setNames(nm = names(attr(x, "slots")))
   bind_exprs <- lapply(bind_vars, function(var) {
     rlang::expr(rd_get(x, i = !!var))
   })
@@ -680,7 +681,20 @@ with_rd <- function(x, expr) {
   eval_env <- rlang::new_data_mask(eval_env)
   eval_env$.data <- rlang::as_data_pronoun(eval_env)
 
-  rlang::eval_tidy(expr, data = eval_env)
+  res <- rlang::eval_tidy(expr, data = eval_env)
+  if (return_env) {
+    eval_env
+  } else {
+    res
+  }
+}
+
+##'@export
+within_rd <- function(x, expr) {
+  eval_env <- with_rd(x, {{ expr }}, return_env = TRUE)
+  has_new <- ls(eval_env, pattern = "^[^~.]")
+  x[has_new] <- mget(has_new, envir = eval_env)
+  x
 }
 
 `.indices<-` <- function(x, value) {
