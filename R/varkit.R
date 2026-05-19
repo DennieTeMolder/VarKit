@@ -350,7 +350,8 @@ split.varkit <- function(x, f, drop = TRUE, ...) {
   # Split the other parts of the varkit object in the same way
   split_geno <- splitm(x$geno, f = groups, margin = 2, drop = drop)
   split_mask$sites <- split(split_mask$sites, f = groups, drop = drop)
-  split_keys$sites <- split(split_keys$sites, f = groups, drop = drop)
+  if (!is.null(split_keys$sites))
+    split_keys$sites <- split(split_keys$sites, f = groups, drop = drop)
 
   # Recreate the varkit object for each split
   lapply(setNames(nm = names(split_site)), function(name) {
