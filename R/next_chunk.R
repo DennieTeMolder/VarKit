@@ -53,8 +53,6 @@ next_chunk.varkit_index <- function(x, col_select = NULL, ...) {
 }
 
 .seek_next <- function(index, skip_header = TRUE) {
-  stopifnot(is_varkit_index(index))
-
   pos <- seek.varkit_index(index)
 
   # If the pointer is outside of an index element, move to the next if possible

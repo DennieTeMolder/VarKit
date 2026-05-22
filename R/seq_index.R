@@ -7,13 +7,11 @@ seq_index <- function(x, n_max = NULL) {
 seq_index.varkit_index <- function(x, n_max = NULL) {
   if (nrow(x) < 1L)
     stop(substitute(x), " is zero length!")
-  open.varkit_index(x)
 
   if (is.null(n_max))
     n_max <- read_vcf_args(x)$n_max
-
-  if (!is.null(n_max) && !(is.numeric(n_max) && length(n_max) == 1L))
-    stop("Please provide a single numeric value for the 'n_max' argument!")
+  if (!is.null(n_max))
+    .stopifnotsingle(n_max, what = is.numeric)
 
   # Ignore negative N_MAX
   if (!isTRUE(n_max >= 1L))
@@ -24,11 +22,11 @@ seq_index.varkit_index <- function(x, n_max = NULL) {
     return(integer())
 
   # Add the row position index and select applicable data
-  x$idx <- 1:nrow(x)
-  x <- x[x$n_lines >= 1L, c("id", "n_lines", "idx")]
+  x$idx <- seq_len(nrow(x))
 
-  # Subset from current position to end of index
+  # Subset from current position to end of index, remove empty lines
   x <- x[seq(as.integer(rownames(pos)), nrow(x)), ]
+  x <- x[x$n_lines >= 1L, c("id", "n_lines", "idx")]
 
   # Simple case if N_MAX does not apply
   if (is.null(n_max) || !any(x$n_lines > n_max))
