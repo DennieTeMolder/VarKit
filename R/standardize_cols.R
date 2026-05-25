@@ -33,7 +33,7 @@ standardize_cols.varkit_header <- function(x, message = TRUE) {
   missing <- setdiff(.fixed_columns(), tolower(col_names))
 
   if (message && length(missing) > 0L)
-    .msg_info("Creating missing columns: ", toupper(.collapse(missing)))
+    .alert_info("Creating missing columns: ", toupper(.collapse(missing)))
 
   missing
 }

@@ -198,7 +198,7 @@ print.related_data <- function(x, ...) {
 
       key <- keys[[name]]
       if (isTRUE(show_keys) && !is.null(key))
-        key <- sprintf("{%s}", .collapse(names(key), delim = ","))
+        key <- .style_subtle("{", .collapse(names(key), delim = ","), "}")
 
       cli::cat_bullet(paste0(name, key, ": ", msg), bullet = bullet)
     })

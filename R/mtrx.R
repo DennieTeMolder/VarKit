@@ -63,14 +63,14 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL, advice = getOption("mtrx.
   row_name <- paste0(" ", ndn[1L])
   col_name <- paste0(" ", ndn[2L])
 
-  cat(
+  .catn(.style_subtle(
     sprintf(
-      "# A matrix<%s>: %s%s x %s%s",
-      typeof(x), .frmt_big(nrow(x)), row_name, .frmt_big(ncol(x)), col_name
+      "# A matrix<%s>: %s%s %s %s%s",
+      typeof(x), .frmt_big(nrow(x)), row_name,
+      cli::symbol$times, .frmt_big(ncol(x)), col_name
     ),
-    if (.any_na(x)) "; containing NA/NaN values!", "\n",
-    sep = ""
-  )
+    if (.any_na(x)) "; containing NA/NaN values!"
+  ))
 
   if (length(x) == 0L)
     return(invisible(x))

@@ -138,6 +138,10 @@
   x
 }
 
+.catn <- function(..., sep = "") {
+  cat(..., "\n", sep = sep)
+}
+
 .collapse <- function(x, delim = ", ") {
   paste(x, collapse = delim)
 }
@@ -163,6 +167,14 @@
   format(Sys.time(), "%a %H:%M")
 }
 
+.style_subtle <- function(...) {
+  pillar::style_subtle(paste0(...))
+}
+
+.alert_info <- function(...) {
+  cli::cli_alert_info(paste0(...))
+}
+
 .msg_vec <- function(x, before = NULL, after = NULL, sep = ", ", last = sep, n_max = 100L) {
   if (is.null(x)) return(NULL)
   x <- cli::cli_vec(x, style = list(`vec-sep` = sep, `vec-last` = last, `vec-trunc` = n_max))
@@ -170,7 +182,7 @@
 }
 
 .msg_info <- function(...) {
-  cat(paste0("# ", cli::symbol$info, " ", ..., "\n"))
+  .catn(.style_subtle("# ", cli::symbol$info, " ", ...))
 }
 
 .msg_h1 <- function(...) {

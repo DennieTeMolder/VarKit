@@ -18,6 +18,7 @@ Imports:
     matrixStats,
     methods,
     parallel,
+    pillar,
     purrr (>= 1.0.0),
     RhpcBLASctl,
     rlang,
