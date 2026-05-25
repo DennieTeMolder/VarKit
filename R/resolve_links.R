@@ -16,31 +16,45 @@ resolve_links <- function(links,
                           cores = 1
                           ) {
   .ensure_igraph()
+  stopifnot(is.list(links))
   strategy <- match.arg(strategy)
   origin <- get_origin(links)
 
-  if (is.data.frame(links) || !is.list(links)) {
-    results <- .resolve_links_internal(links, strategy = strategy, cluster_fn = cluster_fn)
-    return(varkit_linkage_graph(results, origin = origin))
-  } else if (!isTRUE(all(sapply(links, is.data.frame)))) {
-    stop("Not all elements of 'links' are a data frame!")
-  }
+  if (is.data.frame(links))
+    links <- list(links)
+
+  purrr::walk(links, function(current) {
+    if (!is.data.frame(current))
+      stop("All elements of 'links' must be a data frame!")
+    if (ncol(current) < 2L)
+      stop("Expected 'links' to have at least two columns")
+    if (!identical(colnames(current)[1L], "row"))
+      stop("Expected the first column of 'links' to be named 'row'")
+    if (!identical(colnames(current)[2L], "col"))
+      stop("Expected the second column of 'links' to be named 'col'")
+  })
 
   # Remove zero length elements
   sizes <- sapply(links, nrow)
   if (all(sizes < 1L)) {
     return(NULL)
-  } else if (any(sizes < 1L)) {
-    links <- links[sizes >= 1L]
-    sizes <- sizes[sizes >= 1L]
+  } else if (any(sizes == 0L)) {
+    links <- links[sizes != 0L]
+    sizes <- sizes[sizes != 0L]
   }
 
   .alert_info("Resolving ", .frmt_big(sum(sizes)), " links")
 
+  for (current in links) {
+    if (ncol(current) > 2L && !all(c("r2", "n") %in% colnames(current))) {
+      .alert_info("Using the third column as weights")
+      break()
+    }
+  }
+
   # Adjust cores
   cores <- min(floor(cores), length(links))
 
-  # If links is a list we can solve each element individually (and in parallel)
   if (cores < 2L) {
     res <- purrr::map(
       links, .resolve_links_internal,
@@ -69,14 +83,16 @@ resolve_links <- function(links,
 
   .msg_step("Collecting results")
 
-  res <- do.call(igraph::disjoint_union, res)
+  if (length(res) == 1L) {
+    res <- res[[1L]]
+  } else {
+    res <- do.call(igraph::disjoint_union, res)
+  }
+
   varkit_linkage_graph(res, origin = origin)
 }
 
 .resolve_links_internal <- function(links, strategy, cluster_fn) {
-  stopifnot(is.data.frame(links) || is.matrix(links))
-  stopifnot(!is.null(colnames(links)), colnames(links)[1:2] == c("row", "col"))
-
   # Simple cases
   if (nrow(links) < 1L) {
     return(NULL)
@@ -92,8 +108,6 @@ resolve_links <- function(links,
       weight = links[, "r2", drop = TRUE] * links[, "n", drop = TRUE]
     )
   } else if (ncol(links) > 2L) {
-    # Non standard data type, notify the user
-    .alert_info("Using the third column as weights")
     links <- links[, 1:3, drop = FALSE]
     colnames(links)[3L] <- "weight"
   }
