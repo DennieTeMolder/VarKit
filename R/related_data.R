@@ -155,6 +155,8 @@ print.related_data <- function(x, ...) {
   .msg_h1("Related data object")
   .msg_h2("Slots")
   .print_slots(x, ...)
+
+  cat("\n")
   .msg_h2("Indices")
   .print_indices(x)
 }
@@ -170,7 +172,7 @@ print.related_data <- function(x, ...) {
       indices = paste0("[", purrr::map_chr(slots, .collapse), "]"),
       value = unclass(x)[names(slots)]
     )
-    cat(format(tbl, ...)[-c(1L, 3L)], "", sep = "\n")
+    cat(format(tbl, ...)[-c(1L, 3L)], sep = "\n")
   }
 
   invisible(x)
@@ -202,7 +204,6 @@ print.related_data <- function(x, ...) {
 
       cli::cat_bullet(paste0(name, key, ": ", msg), bullet = bullet)
     })
-    cat("\n")
   }
 
   invisible(x)

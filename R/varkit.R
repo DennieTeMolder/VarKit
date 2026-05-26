@@ -273,13 +273,13 @@ print.varkit <- function(x, ..., n = NULL, n_samples = NULL) {
 
   .msg_h2("$meta, Metadata header")
   print(x_print$meta, ...)
-  cat("\n")
 
+  cat("\n")
   .msg_h2("$site, Site information")
   print(x_print$site, ..., n = n)
   if (site_trunc) .msg_info("Use `print(n = ...)` to see more sites")
-  cat("\n")
 
+  cat("\n")
   .msg_h2("$geno, Transposed genotype matrix")
   print(x_print$geno, n = n_samples, n_col = n)
   if (site_trunc && sample_trunc) {
@@ -289,14 +289,16 @@ print.varkit <- function(x, ..., n = NULL, n_samples = NULL) {
   } else if (sample_trunc) {
     .msg_info("Use `print(n_samples = ...)` to see more samples")
   }
-  cat("\n")
 
   # Summarize slots not printed, if any
   if (!all(names(attr(x, "slots")) %in% which_print)) {
+    cat("\n")
     .msg_h2("Additional slots")
-    .print_slots(x, .exclude = which_print)
+    .print_slots(x, .exclude = which_print, n = Inf)
+    cat
   }
 
+  cat("\n")
   .msg_h2("Soft-mask status, `summary(...)`")
   .print_indices(x)
 
