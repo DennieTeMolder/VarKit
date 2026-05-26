@@ -59,10 +59,14 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL, advice = getOption("mtrx.
   col_trunc <- isTRUE(n_col < ncol(x))
   col_idx <- if (col_trunc) seq_len(n_col) else rlang::missing_arg()
 
+  # Ensure max.print doesn't interfere
+  rlang::local_options(max.print = n * n_col)
+
   ndn <- .namesdimnames(x)
   row_name <- paste0(" ", ndn[1L])
   col_name <- paste0(" ", ndn[2L])
 
+  # Print header
   .catn(.style_subtle(
     sprintf(
       "# A matrix<%s>: %s%s %s %s%s",
@@ -80,6 +84,7 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL, advice = getOption("mtrx.
   names(dimnames(xp)) <- NULL
   print.default(unclass(xp[row_idx, col_idx, drop = FALSE]))
 
+  # Print footer
   if (row_trunc && col_trunc) {
     .msg_info(.frmt_big(nrow(x) - n), " more", row_name, " and ", .frmt_big(ncol(x) - n_col), " more", col_name)
     if (advice)
