@@ -63,7 +63,7 @@ write_vcf.varkit <- function(x,
   # Check if filter column reflects current state, replace if indicated
   x <- .check_filter(x, replace_filter = replace_filter, use_site = indices$sites)
 
-  # Apply DIGITS argument
+  # Apply DIGITS argument here as replacing NAs converts to character
   x$site <- .round(x$site, digits = digits)
   x$geno <- .round(x$geno, digits = digits)
 
@@ -93,7 +93,7 @@ write_vcf.varkit <- function(x,
     return(x)
 
   if (is.null(na_geno)) {
-    .msg_step("Determining VCF compliant NA format for geno()")
+    .msg_step("Determining VCF compliant NA format for $geno")
 
     # Find all columns with NAs to save on computation time
     na_col <- unique(which_na[, 2L])
@@ -110,7 +110,7 @@ write_vcf.varkit <- function(x,
 
   # NOTE this step can appear slow for non-character matrices as they need to be
   # cast before replacing, but this time is saved when writing to file.
-  .msg_step("Replacing NA geno() values")
+  .msg_step("Replacing NA $geno values")
   if (has_no_variation(na_geno, na.rm = TRUE)) {
     # Simple case with a single replacement value
     x$geno[which_na] <- na_geno[[1L]]

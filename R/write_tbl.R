@@ -1,4 +1,4 @@
-# NOTE in contrast to the R options DIGITS controls the actual number of digits
+# NOTE in contrast to the R options, DIGITS controls the actual number of digits
 # (using round()) and NSIGNIF controls the number of significant numbers.
 ##' @export
 write_tbl <- function(x,
