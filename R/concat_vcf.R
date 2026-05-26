@@ -19,6 +19,10 @@ concat_vcf <- function(...) {
   # Unclass to ignore masking
   dots <- lapply(dots, unclass)
 
+  site_keys <- do.call(rbind, lapply(dots, function(x) attr(x, "keys")[["sites"]]))
+  if (dplyr::n_distinct(site_keys) != nrow(site_keys))
+    site_keys <- NULL
+
   new_varkit(
     meta = dots[[1L]][["meta"]],
     site = do.call(rbind, lapply(dots, function(x) x[["site"]])),
@@ -26,6 +30,6 @@ concat_vcf <- function(...) {
     sample_indices = .indices(dots[[1L]])[["samples"]],
     site_indices = do.call(c, lapply(dots, function(x) .indices(x)[["sites"]])),
     sample_keys = attr(dots[[1L]], "keys")[["samples"]],
-    site_keys = do.call(rbind, lapply(dots, function(x) attr(x, "keys")[["sites"]]))
+    site_keys = site_keys
   )
 }
