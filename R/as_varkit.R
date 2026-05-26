@@ -15,7 +15,7 @@ as_varkit.data.frame <- function(x, ...) {
   rm(x)
 
   colnames(site) <- tolower(colnames(site))
-  geno <- t(geno)
+  geno <- do.call(rbind, geno)
 
   varkit(site = site, geno = geno, ...)
 }
