@@ -218,14 +218,16 @@ validate_varkit <- function(x, check_info = FALSE, check_format = FALSE) {
 
     value$geno <- varkit_geno(value$geno)
 
-    # Support dropping samples by modifying $geno, this requires freeing the 'samples' index
-    if (any(dim(value$geno) != dim(geno_old))) {
-      # If no other slots are using the 'samples' indices, clear them so they can be modified
-      slots_to_check <- attr(x, "slots")
-      exclude_slots <- union("geno", names(which(purrr::map_lgl(rd_unclass(x), is.null))))
-      slots_to_check[exclude_slots] <- NULL
-      if (!any("samples" == purrr::list_c(slots_to_check)))
-        attr(x, "indices")$samples <- NULL
+    # Allow changing $geno to drop samples by updating 'indices' & 'keys' attributes
+    if (nrow(value$geno) != nrow(geno_old)) {
+      # Only update if no other slots are using the 'samples' index
+      check_slots <- names(which(!sapply(rd_unclass(x), is.null)))
+      check_slots <- check_slots[check_slots != "geno"]
+      if (all("samples" != .unlist(attr(x, "slots")[check_slots]))) {
+        attr(x, "indices")$samples <- rep(TRUE, nrow(value$geno))
+        attr(x, "keys")$samples <- if (.valid_names(rownames(value$geno), check_dup = TRUE))
+          tibble::tibble(name = rownames(value$geno))
+      }
     }
   }
 
