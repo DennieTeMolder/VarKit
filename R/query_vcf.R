@@ -35,7 +35,7 @@ query_vcf <- function(path,
     range <- NULL
   } else {
     # Patch in support for selecting entire chromosomes/contigs
-    range <- .fix_seqminer_range(range, header)
+    range <- .clean_seqminer_range(range)
   }
 
   if (is.null(anno_type))
@@ -96,28 +96,14 @@ query_vcf <- function(path,
   vcf
 }
 
-.fix_seqminer_range <- function(range, header) {
+.clean_seqminer_range <- function(range) {
   splits <- stringr::str_split_1(range, stringr::fixed(","))
   splits <- stringr::str_trim(splits)
 
-  only_chrom <- !stringr::str_detect(splits, stringr::fixed(":"))
-  if (!any(only_chrom))
-    return(paste(splits, collapse = ","))
-
-  # Determine CHROM end position using the HEADER
-  chrom_sizes <- parse_meta.varkit_header(header, type = "contig")
-  ends <- chrom_sizes$length[match(splits[only_chrom], chrom_sizes[["ID"]])]
-
-  if (is.null(ends) || all(is.na(ends))) {
-    if (all(only_chrom))
-      stop("Chromosome(s) were not described in the VCF header: ", .quote_collapse(splits), "!", call. = FALSE)
-    return(paste(splits, collapse = ","))
-  }
-
-  # Add the interval that spans the entire CHROM
-  intervals <- paste0(":0-", ends)
-  intervals[is.na(ends)] <- ""
-  splits[only_chrom] <- paste0(splits[only_chrom], intervals)
+  # Detect elements that don't specify a range and make their range arbitrarily large
+  # Ref: https://github.com/zhanxw/seqminer/issues/3
+  no_range <- !stringr::str_detect(splits, stringr::fixed(":"))
+  splits[no_range] <- paste0(splits[no_range], ":0-", .Machine$integer.max)
 
   paste(splits, collapse = ",")
 }
