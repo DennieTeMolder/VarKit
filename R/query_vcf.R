@@ -86,11 +86,19 @@ query_vcf <- function(path,
     return(NULL)
 
   # Attempt to convert to a VarKit object
-  vcf <- seqminer2varkit(seq_list, meta = header$meta, use_filter = use_filter)
+  seq_list <- .parse_seqminer(seq_list)
+  if (is.null(seq_list))
+    return(NULL)
 
-  if (is.null(vcf))
-    return(seq_list)
-  vcf
+  vcf <- .parsed_seqminer2varkit(seq_list, meta = header$meta, use_filter = use_filter)
+  if (!is.null(vcf))
+    return(vcf)
+
+  if (is.null(seq_list$geno))
+    return(seq_list$site)
+  if (is.null(seq_list$site))
+    return(seq_list$geno)
+  c(seq_list["site"], seq_list[["geno"]])
 }
 
 .clean_seqminer_range <- function(range) {
