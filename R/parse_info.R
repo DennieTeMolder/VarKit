@@ -12,20 +12,23 @@ parse_info.varkit <- function(x, type = NULL, use_meta = TRUE) {
     .stopifnotsingle(type, what = "character")
   .stopifnotsingle(use_meta, what = "logical")
 
+  if (use_meta && !any(x$meta$name == "INFO")) {
+    warning("The `$meta$name` column has no INFO entries, reverting to `use_meta = FALSE`!")
+    use_meta <- FALSE
+  }
+
+  # When TYPE is NULL, return all possible values
   if (is.null(type)) {
-    if (!use_meta) {
-      keys <- .collect_all_keys(site.varkit(x, "info"))
-      return(tibble::tibble(type = keys))
+    if (use_meta) {
+      return(dplyr::transmute(
+        parse_meta.varkit(x, type = "INFO"),
+        type = .data$ID,
+        description = .data$Description
+      ))
     }
 
-    meta_info <- parse_meta.varkit(x, type = "INFO")
-    if (is.null(meta_info))
-      stop("The `$meta$name` column has no INFO entries, this is required when `use_meta = TRUE`!")
-
-    return(dplyr::transmute(
-      meta_info,
-      type = .data$ID,
-      description = .data$Description
+    return(tibble::tibble(
+      type = .collect_all_keys(site.varkit(x, "info"))
     ))
   }
 
@@ -38,8 +41,6 @@ parse_info.varkit <- function(x, type = NULL, use_meta = TRUE) {
 
   if (use_meta) {
     col_types <- get_info_types.varkit(x, meta_type = "INFO")
-    if (is.null(col_types))
-      stop("The `$meta$name` column has no INFO entries, this is required when `use_meta = TRUE`!")
     if (!type %in% names(col_types))
       stop("The type '", type, "' could not be found in parse_meta(x, 'INFO')$ID!")
   } else  {
@@ -54,10 +55,16 @@ parse_info.varkit <- function(x, type = NULL, use_meta = TRUE) {
 }
 
 .collect_all_keys <- function(str) {
+  is_na <- is.na(str)
+  if (all(is_na))
+    return(NULL)
+  if (any(is_na))
+    str <- str[!is_na]
+
   keys <- stringr::str_remove_all(str, pattern = "=[^;]*")
   keys <- unique(keys) # This seems to speed up the procedure
   keys <- stringr::str_split(keys, ";")
-  keys <- unlist(keys)
+  keys <- .unlist(keys)
   sort(unique(keys))
 }
 
@@ -82,11 +89,13 @@ parse_info.varkit <- function(x, type = NULL, use_meta = TRUE) {
 }
 
 .convert_info <- function(info, convert_to = NULL, na = c("", ".")) {
+  if (!is.character(info))
+    stop("Unexpected!")
   if (is.null(convert_to))
     return(utils::type.convert(info, na.strings = na, as.is = TRUE, tryLogical = TRUE))
 
   # Convert NAs for parity w/ type.convert()
-  info[info %in% na] <- NA_character_
+  info[info %in% na] <- NA
 
   switch(convert_to,
     l = as.logical(info),
