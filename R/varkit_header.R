@@ -19,7 +19,7 @@ new_varkit_header <- function(meta = data.frame(name = character(), value = char
 
   structure(
     list(meta = tibble::as_tibble(meta), col_names = col_names),
-    class = "varkit_header"
+    class = c("varkit_header", "list")
   )
 }
 
@@ -62,17 +62,16 @@ is_varkit_header <- function(x) {
 print.varkit_header <- function(x, ..., n = NULL) {
   .msg_h1("VarKit Header Object")
 
-  .msg_h2("Header metadata, `meta(header)`")
+  .msg_h2("$meta, Header metadata")
   print(meta.varkit_header(x), ..., n = n)
-  cat("\n")
 
-  .msg_h2("Column names (for 'col_select'), `header$col_names`")
+  cat("\n")
+  .msg_h2("$col_names, Column names (for 'col_select')")
   if (length(x$col_names) > 0L) {
     cnames <- cli::cli_vec(x$col_names, style = list(
       "vec-sep" = ", ", "vec-last" = ", ", "vec-trunc" = 100
     ))
     cli::cli_text("{cnames}")
+    .msg_info("Use `samples()` to get only columns recognized as sample names")
   }
-
-  .msg_info("Use `samples(header)` to get only columns recognised as sample names")
 }

@@ -299,7 +299,7 @@ print.varkit <- function(x, ..., n = NULL, n_samples = NULL) {
   }
 
   cat("\n")
-  .msg_h2("Soft-mask status, `summary(...)`")
+  .msg_h2("Soft-mask status, `summary()`")
   .print_indices(x)
 
   invisible(x)
