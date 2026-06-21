@@ -4,9 +4,9 @@ query_vcf <- function(path,
                       gene_name = NULL,
                       gene_path = NULL,
                       anno_type = NULL,
-                      site = NULL,
-                      info = NULL,
-                      geno = NULL,
+                      site = TRUE,
+                      info = TRUE,
+                      geno = TRUE,
                       use_filter = TRUE,
                       silent = FALSE
                       ) {
@@ -21,28 +21,25 @@ query_vcf <- function(path,
     col_names = .parse_header_line(header[length(header)])
   )
 
-  if (!is.null(range)) {
+  if (!is.null(gene_name)) {
+    if (is.null(gene_path))
+      stop("Specifying 'gene_name' requires providing a 'gene_path' with gene annotations!")
+    range <- NULL
+  } else if (!is.null(range)) {
     .stopifnotsingle(range, what = "character")
+    # Patch in support for selecting entire chromosomes/contigs
+    range <- .clean_seqminer_range(range)
   } else {
     # HACK: this value passes seqminer::isTabixRange() and returns all variants
     range <- ":"
     silent <- TRUE
   }
 
-  if (!is.null(gene_name)) {
-    if (is.null(gene_path))
-      stop("Specifying 'gene_name' requires providing a 'gene_path' with gene annotations!")
-    range <- NULL
-  } else {
-    # Patch in support for selecting entire chromosomes/contigs
-    range <- .clean_seqminer_range(range)
-  }
-
   if (is.null(anno_type))
     anno_type <- ""
 
-  # When SITE, INFO, or GENO are null, all values are used
-  if (is.null(site)) {
+  # When SITE, INFO, or GENO are TRUE, all values are used
+  if (isTRUE(site)) {
     site <- toupper(intersect(
       header$col_names,
       setdiff(.fixed_columns(), c("info", "format"))
@@ -51,9 +48,9 @@ query_vcf <- function(path,
     # Convert to upper case and always include CHROM and POS
     site <- union(c("CHROM", "POS"), toupper(site))
   }
-  if (is.null(info))
+  if (isTRUE(info))
     info <- parse_meta.varkit_header(header, type = "INFO")[["ID"]]
-  if (is.null(geno))
+  if (isTRUE(geno))
     geno <- parse_meta.varkit_header(header, type = "FORMAT")[["ID"]]
 
   # Setting SITE, INFO, or GENO to FALSE excludes them
