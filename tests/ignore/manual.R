@@ -5,12 +5,6 @@ example <- "./inst/extdata/celegans.vcf.gz"
 # REVIEW allow all sites to masked in a VCF
 # REVIEW check use of anyNA (slow on mtrx)
 
-header <- read_vcf_header(example)
-body <- read_tbl(example, col.names = header$col_names)
-x <- as_varkit(body, meta = meta(header))
-
-x <- read_vcf(example)
-
 
 ### Examples ------
 ## Varkit object ------

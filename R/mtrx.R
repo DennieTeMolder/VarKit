@@ -60,7 +60,7 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL, advice = getOption("mtrx.
   col_idx <- if (col_trunc) seq_len(n_col) else rlang::missing_arg()
 
   # Ensure max.print doesn't interfere
-  rlang::local_options(max.print = n * n_col)
+  rlang::local_options(max.print = .Machine$integer.max)
 
   ndn <- .namesdimnames(x)
   row_name <- paste0(" ", ndn[1L])
