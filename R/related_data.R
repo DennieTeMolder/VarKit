@@ -190,8 +190,18 @@ print.related_data <- function(x, ...) {
       } else {
         bullet <- "info"
         n_use <- sum(idx)
-        perc <- n_use / length(idx) * 100
-        perc <- if (perc <= 0.1) 0.1 else if (perc >= 99.9) 99.9 else round(perc, digits = 1)
+        if (n_use == 0L) {
+          perc <- 0
+        } else {
+          perc <- n_use / length(idx) * 100
+          perc <- if (perc <= 0.1) {
+            0.1
+          } else if (perc >= 99.9) {
+            99.9
+          } else {
+            round(perc, digits = 1)
+          }
+        }
         msg <- sprintf(
           "use %s%% of elements (%s/%s)",
           perc, .frmt_big(n_use), .frmt_big(length(idx))
