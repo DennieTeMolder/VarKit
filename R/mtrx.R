@@ -159,15 +159,17 @@ str.mtrx <- function (object, ...) {
     # Add 3 for the [,] and 1 for the space before the column
     cname_len <- nchar(seq_len(ncol(mat))) + 4L
   } else {
-    # Add 2 here for the potential `` around var names + 1 for the space
-    cname_len <- nchar(colnames(mat)) + 3L
+    # Add 1 for the space between columns
+    cname_len <- nchar(colnames(mat)) + 1L
   }
 
   if (nrow(mat) == 0L) {
     col_widths <- cname_len
   } else {
-    # Add 1 for space between columns and 2 for the quotes around character values
+    # Add 1 for space between columns
     cval_len <- apply(mat, 2, .max_nchar) + 1L
+
+    # Add 2 for the quotes around character values
     if (is.character(mat))
       cval_len <- cval_len + 2L
 
