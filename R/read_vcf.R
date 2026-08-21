@@ -6,6 +6,8 @@
 ##' @param header varkit_header object, used to determine the column names of 'file'.
 ##' @param n_max Integer, maximum number of variants to load. Zero or negative will load all.
 ##' @param na_geno Character vector, exact string(s) to convert to NA. Empty strings and "." are always converted to NA
+##' @param comment String, used to identify comments. Use "" to disable. Any text after the comment characters will be silently ignored.
+##' @param max_header_lines Integer, maximum number of VCF header lines allowed, raises an error when exceeded.
 ##' @param guess_max Integer, number of variants to use for guessing the type/class of the genotype matrix, negative to disable.
 ##' @param geno_ptype Vector/array, prototype of the genotype matrix (i.e. double()). When provided guess_max is ignored.
 ##' @param use_filter TRUE/FALSE, whether to mask all sites where the FILTER column != PASS
@@ -20,6 +22,8 @@ read_vcf <- function(file,
                      header = NULL,
                      n_max = -1,
                      na_geno = c("./.", ".|."),
+                     comment = "",
+                     max_header_lines = 1e6,
                      guess_max = 100,
                      geno_ptype = NULL,
                      use_filter = TRUE) {
@@ -40,10 +44,11 @@ read_vcf <- function(file,
     .defer(close(file))
   }
 
-  # NOTE the header part of the file is skipped by "comment.char" if not read here
   if (is.null(header)) {
     .msg_step("Reading VCF header")
-    header <- read_vcf_header(file)
+    header <- read_vcf_header(file, max_lines = max_header_lines)
+  } else {
+    file <- .skip_header(file)
   }
 
   validate_varkit_header(header)
@@ -74,7 +79,7 @@ read_vcf <- function(file,
   # Shared arguments for reading the body
   shared_args <- list(
     file = file, na.strings = na.strings, header = FALSE, check.names = FALSE,
-    quote = "", as.is = TRUE, fill = FALSE, strip.white = TRUE, comment.char = "#"
+    quote = "", as.is = TRUE, fill = FALSE, strip.white = TRUE, comment.char = comment
   )
 
   # The genotypes will be combined into a single matrix, coercing all values to a shared type
@@ -112,4 +117,15 @@ read_vcf <- function(file,
   if (any(all_na)) body[all_na] <- NA
 
   as_varkit.data.frame(body, meta = header$meta, use_filter = use_filter)
+}
+
+.skip_header <- function(con, header_char = "#") {
+  repeat {
+    line <- readLines(con, n = 1L)
+    if (!startsWith(line, header_char)) {
+      pushBack(line, con)
+      break()
+    }
+  }
+  con
 }

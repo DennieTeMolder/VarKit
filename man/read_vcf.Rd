@@ -10,6 +10,8 @@ read_vcf(
   header = NULL,
   n_max = -1,
   na_geno = c("./.", ".|."),
+  comment = "",
+  max_header_lines = 1e+06,
   guess_max = 100,
   geno_ptype = NULL,
   use_filter = TRUE
@@ -25,6 +27,10 @@ read_vcf(
 \item{n_max}{Integer, maximum number of variants to load. Zero or negative will load all.}
 
 \item{na_geno}{Character vector, exact string(s) to convert to NA. Empty strings and "." are always converted to NA}
+
+\item{comment}{String, used to identify comments. Use "" to disable. Any text after the comment characters will be silently ignored.}
+
+\item{max_header_lines}{Integer, maximum number of VCF header lines allowed, raises an error when exceeded.}
 
 \item{guess_max}{Integer, number of variants to use for guessing the type/class of the genotype matrix, negative to disable.}
 
