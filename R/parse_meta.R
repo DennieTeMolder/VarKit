@@ -1,47 +1,53 @@
 ##' @export
-parse_meta <- function(x, type = NULL, na = ".") {
+parse_meta <- function(x, type = NULL, na = ".", add_index = FALSE) {
   if (!missing(type) && is.null(type))
     warning("The 'type' argument is NULL, returning possible options.")
   UseMethod("parse_meta", x)
 }
 
 ##' @export
-parse_meta.varkit <- function(x, type = NULL, na = ".") {
+parse_meta.varkit <- function(x, type = NULL, na = ".", add_index = FALSE) {
   validate_varkit(x)
-  .parse_meta_internal(meta.varkit(x), type = type, na = na)
+  .parse_meta_internal(meta.varkit(x), type = type, na = na, add_index = add_index)
 }
 
 ##' @export
-parse_meta.varkit_header <- function(x, type = NULL, na = ".") {
+parse_meta.varkit_header <- function(x, type = NULL, na = ".", add_index = FALSE) {
   validate_varkit_header(x)
-  .parse_meta_internal(meta.varkit_header(x), type = type, na = na)
+  .parse_meta_internal(meta.varkit_header(x), type = type, na = na, add_index = add_index)
 }
 
-.parse_meta_internal <- function(meta, type, na) {
+.parse_meta_internal <- function(meta, type, na, add_index) {
   stopifnot(is.character(na))
   if (!is.null(type)) {
     .stopifnotsingle(type, what = "character")
   } else {
     return(.get_meta_types(meta))
   }
+  .stopifnotsingle(add_index, what = "logical")
 
-  values <- with(meta, value[name == type])
+  if (add_index)
+    meta$index <- seq_len(nrow(meta))
 
-  if (length(values) == 0)
+  meta_type <- meta[meta$name == type, ]
+  if (nrow(meta_type) == 0)
     return(NULL)
 
   # Values should be surrounded by <...> according to the VCF spec, else abort
-  if (!all(startsWith(values, "<") & endsWith(values, ">"), na.rm = TRUE))
-    return(tibble::tibble(value = values))
+  if (!all(startsWith(meta_type$value, "<") & endsWith(meta_type$value, ">"), na.rm = TRUE))
+    return(meta_type)
 
   # Strip <...>
-  values <- stringr::str_sub(values, 2L, -2L)
+  meta_type$value <- stringr::str_sub(meta_type$value, 2L, -2L)
 
   # First group of the regex should match the key, second should match the corresponding value
-  values <- .match_key_value(values, pattern = '([^="]+)=("(?:[^"\\\\]|\\\\.)+"|[^,]+)(?:,|$)')
+  res <- .match_key_value(meta_type$value, pattern = '([^="]+)=("(?:[^"\\\\]|\\\\.)+"|[^,]+)(?:,|$)')
 
-  values <- lapply(values, .cleanup_meta_col, na = na)
-  do.call(tibble::tibble, values)
+  res <- lapply(res, .cleanup_meta_col, na = na)
+  if (add_index)
+    res <- c(res, list(index = meta_type$index))
+
+  do.call(tibble::tibble, res)
 }
 
 .get_meta_types <- function(meta) {
