@@ -23,7 +23,8 @@ seqminer2varkit <- function(seq_list, ...) {
   seq_list <- purrr::map(seq_list, function(x) {
     if (!is.character(x))
       return(x)
-    utils::type.convert(x, na.strings = c("", "."), as.is = TRUE)
+    x[stringr::str_detect(x , pattern ="^[.,|/]*$")] <- NA_character_
+    utils::type.convert(x, as.is = TRUE, na.strings = "")
   })
 
   # Values from 'vcfIndv' are returned as arrays
