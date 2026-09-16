@@ -111,7 +111,7 @@ write_vcf.varkit <- function(x,
   # NOTE this step can appear slow for non-character matrices as they need to be
   # cast before replacing, but this time is saved when writing to file.
   .msg_step("Replacing NA $geno values")
-  if (has_no_variation(na_geno, na.rm = TRUE)) {
+  if (has_no_variation(na_geno)) {
     # Simple case with a single replacement value
     x$geno[which_na] <- na_geno[[1L]]
   } else {
