@@ -102,9 +102,9 @@ print.mtrx <- function(x, ..., n = NULL, n_col = NULL, advice = getOption("mtrx.
   invisible(x)
 }
 
-# Contrary to base R we set 'drop = F' mirroring tibble:::`[.tbl_df`
 ##' @export
-`[.mtrx` <- function(x, i, j, drop = FALSE, ...) {
+# Allow changing the default value of 'drop' (FALSE emulates tibble:::`[.tbl_df`)
+`[.mtrx` <- function(x, i, j, drop = getOption("mtrx.drop", TRUE), ...) {
   # Remove class() to prevent potential NextMethod() infinite loops
   x <- unclass(x)
 
