@@ -9,7 +9,7 @@ read_vcf(
   col_select = NULL,
   header = NULL,
   n_max = -1,
-  na_geno = c("./.", ".|."),
+  na_geno = c(".", "./.", ".|."),
   comment = "",
   max_header_lines = 1e+06,
   guess_max = 100,
