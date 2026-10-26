@@ -32,7 +32,7 @@ read_vcf <- function(file,
   .stopifnotsingle(guess_max, what = is.numeric)
   .stopifnotsingle(use_filter, what = "logical")
   col_select <- rlang::enquo(col_select)
-  na.strings <- unique(c("", ".", na_geno))
+  na.strings <- union(c("", "."), na_geno)
 
   # Disable guessing if fewer variants are requested
   if (n_max >= 1 && guess_max >= n_max)
@@ -107,7 +107,7 @@ read_vcf <- function(file,
   # We have already performed the guessing if requested, disable GUESS.MAX here
   body <- do.call(read_tbl, c(shared_args, list(col.names = colClasses, nrows = n_max, guess.max = -1)))
 
-  if (nrow(body) < 1)
+  if (nrow(body) < 1L)
     return(NULL)
 
   .msg_step("Collecting results")
@@ -122,7 +122,7 @@ read_vcf <- function(file,
 .skip_header <- function(con, header_char = "#") {
   repeat {
     line <- readLines(con, n = 1L)
-    if (!startsWith(line, header_char)) {
+    if (length(line) != 1L || !startsWith(line, header_char)) {
       pushBack(line, con)
       break()
     }
