@@ -13,7 +13,7 @@ write_vcf_index.varkit_index <- function(index, vcf_path) {
     stop("The first value of 'linum' does not match with the VCF header size! Expected value: ", expected_start)
 
   index_path <- get_index_file(vcf_path)
-  .msg_step("Writing VCF index to: {index_path}")
+  .cli_step("Writing VCF index to: {index_path}")
 
   con <- file_con(index_path, "w")
   .defer(close(con))

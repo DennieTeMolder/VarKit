@@ -67,12 +67,12 @@ is_varkit_index <- function(x) {
 
 ##' @export
 print.varkit_index <- function(x, ...) {
-  .msg_h1("VarKit Index Object")
+  .cat_h1("VarKit Index Object")
   NextMethod("print")
   if (is_open.varkit_index(x)) {
-    .msg_info("With a pointer at line ", .env(x)$curr_line, " in ", .env(x)$file)
+    .cat_info("With a pointer at line ", .env(x)$curr_line, " in ", .env(x)$file)
   } else {
-    .msg_info("For file ", .env(x)$file)
+    .cat_info("For file ", .env(x)$file)
   }
   invisible(x)
 }

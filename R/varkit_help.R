@@ -28,8 +28,8 @@ varkit_help <- function(x, varkit_only = TRUE, hidden = FALSE) {
     stop("There are no methods associated with 'x'.")
 
   # Print
-  .msg_h2("Available methods")
+  .cat_h2("Available methods")
   cli::cat_bullet(paste0(methods, "(", substitute(x), ")"))
-  .msg_info("Use `?function_name` for more info (e.g. ?samples)")
+  .cat_info("Use `?function_name` for more info (e.g. ?samples)")
   invisible(methods)
 }

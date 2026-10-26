@@ -11,7 +11,7 @@
     }, .progress = TRUE))
   }
 
-  .msg_step("Setting up parallel workers")
+  .cli_step("Setting up parallel workers")
 
   # Rearrange lower half for better data usage by clusters
   half <- max(comps$i) / 2
@@ -57,12 +57,13 @@
   mem_usage <- mem_usage * factor + cores * session_size
   class(mem_usage) <- "object_size"
   if (mem_usage > 1074e6) {
-    cli::cli_alert_warning(c(
+    .alert_warn(
       "A minimum ", format(mem_usage, units = "Gb", digits = 2L),
-      " of RAM will be needed for parallel computations"))
+      " of RAM will be needed for parallel computations"
+    )
   }
 
-  .msg_step("Running parallel computations")
+  .cli_step("Running parallel computations")
 
   # NOTE Using an anonymous function here will copy the enclosing env to the workers, using a lot of memory
   res <- parallel::clusterMap(cl, .r2_cutoff_worker,

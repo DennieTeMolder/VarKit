@@ -60,18 +60,15 @@ is_varkit_header <- function(x) {
 
 ##'@export
 print.varkit_header <- function(x, ..., n = NULL) {
-  .msg_h1("VarKit Header Object")
+  .cat_h1("VarKit Header Object")
 
-  .msg_h2("$meta, Header metadata")
+  .cat_h2("$meta, Header metadata")
   print(meta.varkit_header(x), ..., n = n)
 
   cat("\n")
-  .msg_h2("$col_names, Column names (for 'col_select')")
+  .cat_h2("$col_names, Column names (for 'col_select')")
   if (length(x$col_names) > 0L) {
-    cnames <- cli::cli_vec(x$col_names, style = list(
-      "vec-sep" = ", ", "vec-last" = ", ", "vec-trunc" = 100
-    ))
-    cli::cli_text("{cnames}")
-    .msg_info("Use `samples()` to get only columns recognized as sample names")
+    .cat_vec(x$col_names)
+    .cat_info("Use `samples()` to get only columns recognized as sample names")
   }
 }

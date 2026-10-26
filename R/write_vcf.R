@@ -55,7 +55,7 @@ write_vcf.varkit <- function(x,
   x <- standardize_cols.varkit(x)
 
   if (!append) {
-    .msg_step("Writing VCF header")
+    .cli_step("Writing VCF header")
     write_vcf_header.varkit(x, file = file, timestamp = timestamp, compression = compression)
     cli::cli_progress_done()
   }
@@ -73,7 +73,7 @@ write_vcf.varkit <- function(x,
   # Convert body to a data frame
   x <- as.data.frame.varkit(x)
 
-  .msg_step("Writing VCF body")
+  .cli_step("Writing VCF body")
 
   write_tbl(
     x,
@@ -93,7 +93,7 @@ write_vcf.varkit <- function(x,
     return(x)
 
   if (is.null(na_geno)) {
-    .msg_step("Determining VCF compliant NA format for $geno")
+    .cli_step("Determining VCF compliant NA format for $geno")
 
     # Find all columns with NAs to save on computation time
     na_col <- unique(which_na[, 2L])
@@ -110,7 +110,7 @@ write_vcf.varkit <- function(x,
 
   # NOTE this step can appear slow for non-character matrices as they need to be
   # cast before replacing, but this time is saved when writing to file.
-  .msg_step("Replacing NA $geno values")
+  .cli_step("Replacing NA $geno values")
   if (has_no_variation(na_geno)) {
     # Simple case with a single replacement value
     x$geno[which_na] <- na_geno[[1L]]
@@ -139,8 +139,10 @@ write_vcf.varkit <- function(x,
     x$site$filter[is_pass] <- "MASKED"
     x$site$filter[use_site] <- "PASS"
   } else {
-    cli::cli_alert_warning("FILTER column does not reflect currently masked sites!")
-    cli::cli_alert_warning("Use `replace_filter = TRUE` if this is desired.")
+    .alert_warn(
+      "FILTER column does not reflect currently masked sites.\n",
+      "Use `replace_filter = TRUE` if this is desired."
+    )
   }
 
   x

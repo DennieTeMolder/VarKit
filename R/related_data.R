@@ -152,12 +152,12 @@ rd_restore <- function(x, attr_from) {
 
 ##' @export
 print.related_data <- function(x, ...) {
-  .msg_h1("Related data object")
-  .msg_h2("Slots")
+  .cat_h1("Related data object")
+  .cat_h2("Slots")
   .print_slots(x, ...)
 
   cat("\n")
-  .msg_h2("Indices")
+  .cat_h2("Indices")
   .print_indices(x)
 }
 

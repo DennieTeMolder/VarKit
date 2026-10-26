@@ -269,37 +269,37 @@ print.varkit <- function(x, ..., n = NULL, n_samples = NULL) {
     n <- min(10L, .max_print_col(x_print$geno, row_idx = seq_len(n_samples)))
   site_trunc <- n < ncol(x_print$geno)
 
-  .msg_h1("VarKit Variant Object")
+  .cat_h1("VarKit Variant Object")
 
-  .msg_h2("$meta, Metadata header")
+  .cat_h2("$meta, Metadata header")
   print(x_print$meta, ...)
 
   cat("\n")
-  .msg_h2("$site, Site information")
+  .cat_h2("$site, Site information")
   print(x_print$site, ..., n = n)
-  if (site_trunc) .msg_info("Use `print(n = ...)` to see more sites")
+  if (site_trunc) .cat_info("Use `print(n = ...)` to see more sites")
 
   cat("\n")
-  .msg_h2("$geno, Transposed genotype matrix")
+  .cat_h2("$geno, Transposed genotype matrix")
   print(x_print$geno, n = n_samples, n_col = n)
   if (site_trunc && sample_trunc) {
-    .msg_info("Use `print(n = ..., n_samples = ...)` to see more sites and samples respectively")
+    .cat_info("Use `print(n = ..., n_samples = ...)` to see more sites and samples respectively")
   } else if (site_trunc) {
-    .msg_info("Use `print(n = ...)` to see more sites")
+    .cat_info("Use `print(n = ...)` to see more sites")
   } else if (sample_trunc) {
-    .msg_info("Use `print(n_samples = ...)` to see more samples")
+    .cat_info("Use `print(n_samples = ...)` to see more samples")
   }
 
   # Summarize slots not printed, if any
   if (!all(names(attr(x, "slots")) %in% which_print)) {
     cat("\n")
-    .msg_h2("Additional slots")
+    .cat_h2("Additional slots")
     .print_slots(x, .exclude = which_print, n = Inf)
     cat
   }
 
   cat("\n")
-  .msg_h2("Soft-mask status, `summary()`")
+  .cat_h2("Soft-mask status, `summary()`")
   .print_indices(x)
 
   invisible(x)

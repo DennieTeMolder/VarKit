@@ -171,29 +171,37 @@
   pillar::style_subtle(paste0(...))
 }
 
+# .cat_x() functions target stdout()
+.cat_info <- function(...) {
+  .catn(.style_subtle("# ", cli::symbol$info, " ", ...))
+}
+
+.cat_h1 <- function(...) {
+  print(cli::rule(left = paste0(...), line = 2))
+}
+
+.cat_h2 <- function(...) {
+  print(cli::rule(left = paste0(...), line = 1))
+}
+
+.cat_vec <- function(x, before = NULL, after = NULL, sep = ", ", last = sep, n_max = 50L) {
+  if (is.null(x)) return(NULL)
+  x <- cli::cli_vec(x, style = list(`vec-sep` = sep, `vec-last` = last, `vec-trunc` = n_max))
+  text <- cli::format_inline(c(before, "{x}", after))
+  cat(cli::ansi_strwrap(text), sep = "\n")
+}
+
+# .alert_x() functions target stderr()
 .alert_info <- function(...) {
   cli::cli_alert_info(paste0(...))
 }
 
-.msg_vec <- function(x, before = NULL, after = NULL, sep = ", ", last = sep, n_max = 100L) {
-  if (is.null(x)) return(NULL)
-  x <- cli::cli_vec(x, style = list(`vec-sep` = sep, `vec-last` = last, `vec-trunc` = n_max))
-  cli::cli_text(c(before, "{x}", after))
+.alert_warn <- function(...) {
+  cli::cli_alert_warning(paste0(...))
 }
 
-.msg_info <- function(...) {
-  .catn(.style_subtle("# ", cli::symbol$info, " ", ...))
-}
-
-.msg_h1 <- function(...) {
-  print(cli::rule(left = paste0(...), line = 2))
-}
-
-.msg_h2 <- function(...) {
-  print(cli::rule(left = paste0(...), line = 1))
-}
-
-.msg_step <- function(..., .envir = parent.frame()) {
+# CLI progress messages target stderr() by design
+.cli_step <- function(..., .envir = parent.frame()) {
   msg <- paste0(...)
   msg_time <- paste0(msg, " <", .curr_time(), ">")
   cli::cli_progress_step(msg_time, msg_done = msg, .envir = .envir)

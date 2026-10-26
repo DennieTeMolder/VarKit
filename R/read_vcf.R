@@ -45,7 +45,7 @@ read_vcf <- function(file,
   }
 
   if (is.null(header)) {
-    .msg_step("Reading VCF header")
+    .cli_step("Reading VCF header")
     header <- read_vcf_header(file, max_lines = max_header_lines)
   } else {
     file <- .skip_header(file)
@@ -87,7 +87,7 @@ read_vcf <- function(file,
   if (!is.null(geno_ptype)) {
     geno_class <- typeof(geno_ptype)
   } else if (guess_max >= 1) {
-    .msg_step("Guessing data type of genotype matrix")
+    .cli_step("Guessing data type of genotype matrix")
     skip_known <- rlang::rep_named(names(which(!is.na(colClasses))), "NULL")
     geno_col_classes <- do.call(guess_col_classes, c(shared_args, list(
       nmax = guess_max, col.names = names(colClasses), colClasses = skip_known
@@ -102,7 +102,7 @@ read_vcf <- function(file,
 
   colClasses[geno_cols] <- geno_class
 
-  .msg_step("Reading VCF body")
+  .cli_step("Reading VCF body")
 
   # We have already performed the guessing if requested, disable GUESS.MAX here
   body <- do.call(read_tbl, c(shared_args, list(col.names = colClasses, nrows = n_max, guess.max = -1)))
@@ -110,7 +110,7 @@ read_vcf <- function(file,
   if (nrow(body) < 1L)
     return(NULL)
 
-  .msg_step("Collecting results")
+  .cli_step("Collecting results")
 
   # Convert columns that only contains NAs to logical for memory efficiency
   all_na <- which(purrr::map_lgl(body, function(col) all(is.na(col))))
