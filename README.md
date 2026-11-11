@@ -1,6 +1,3 @@
-
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
 # VarKit
 
 R toolkit for working with variant data.
@@ -22,6 +19,7 @@ You can install the latest release of VarKit using the `pak` package via
 this custom function:
 
 ``` r
+# install.packages("pak")
 pak::pkg_install("DennieTeMolder/VarKit@stable", upgrade = FALSE)
 ```
 
@@ -39,8 +37,7 @@ For examples please run the following after installation:
 browseVignettes("varkit")
 ```
 
-Or download the [introduction
-vignette](https://github.com/DennieTeMolder/VarKit/raw/refs/heads/stable/doc/varkit.html)
+Or download the [introduction vignette](https://github.com/DennieTeMolder/VarKit/raw/refs/heads/stable/doc/varkit.html)
 and open it in your browser.
 
 ## Development version
