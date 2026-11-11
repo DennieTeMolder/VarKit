@@ -22,15 +22,7 @@ You can install the latest release of VarKit using the `pak` package via
 this custom function:
 
 ``` r
-install_varkit <- function(version = "latest", upgrade_deps = FALSE) {
-  url <- readLines(paste0("https://git.wur.nl/molde006/varkit/-/raw/main/releases/", version))
-  message("Installing: ", url)
-  install.packages(setdiff("pak", installed.packages()))
-  path <- pak::pkg_download(paste0("url::", url), dest_dir = tempdir())$fulltarget
-  pak::pkg_install(paste0("deps::", path), upgrade = upgrade_deps)
-  install.packages(path, type = "source", repos = NULL)
-}
-install_varkit()
+pak::pkg_install("DennieTeMolder/VarKit@stable", upgrade = FALSE)
 ```
 
 And load the package using:
@@ -48,7 +40,7 @@ browseVignettes("varkit")
 ```
 
 Or download the [introduction
-vignette](https://git.wur.nl/molde006/varkit/-/raw/main/doc/varkit.html?inline=false)
+vignette](https://github.com/DennieTeMolder/VarKit/raw/refs/heads/stable/doc/varkit.html)
 and open it in your browser.
 
 ## Development version
@@ -56,7 +48,7 @@ and open it in your browser.
 To install the latest development version of varkit run:
 
 ``` r
-pak::pkg_install("git::https://git.wur.nl/molde006/varkit.git", upgrade = TRUE, dependencies = TRUE)
+pak::pkg_install("DennieTeMolder/VarKit@main", upgrade = TRUE, dependencies = TRUE)
 ```
 
 ## Authors and acknowledgements
